@@ -26,16 +26,30 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 | # | Scope item (Sprint 0) | Status |
 |---|---|---|
-| 1 | Monorepo layout (apps/web, apps/api, supabase, packs, evals) | |
-| 2 | Makefile targets | |
-| 3 | Supabase local stack, first migration, generated seed | |
-| 4 | API skeleton: config, logging + redaction, errors, health, Sentry | |
-| 5 | Worker skeleton: arq settings, no-op cron, test task | |
-| 6 | AI provider interface + FakeProvider + AI_MODE switch | |
-| 7 | Web: tokens, fonts, base components, app shell, placeholder routes | |
-| 8 | PWA: manifest, icons, service worker (offline shell) | |
-| 9 | CI (GitHub Actions) | |
+| 1 | Monorepo layout (apps/web, apps/api, supabase, packs, evals) | ✅ |
+| 2 | Makefile targets | ✅ written; ⚠ not yet run (no `make`/WSL on the build machine) |
+| 3 | Supabase local stack, first migration, generated seed | ✅ written, SQL parses (pglast); ⚠ not yet applied to Postgres |
+| 4 | API skeleton: config, logging + redaction, errors, health, Sentry | ✅ |
+| 5 | Worker skeleton: arq settings, no-op cron, test task | ✅ |
+| 6 | AI provider interface + FakeProvider + AI_MODE switch | ✅ |
+| 7 | Web: tokens, fonts, base components, app shell, placeholder routes | ✅ |
+| 8 | PWA: manifest, icons, service worker (offline shell) | ✅ |
+| 9 | CI (GitHub Actions) | ✅ written; ⚠ first run needs the GitHub remote |
 | 10 | PROGRESS.md initialised | ✅ |
+
+### Verification so far (Windows build machine, 25 Oct 2026)
+
+| Check | Result |
+|---|---|
+| API ruff + format + mypy (strict, all of `app/`) | ✅ pass |
+| API unit tests (`pytest -m "not integration"`) | ✅ 61 passed |
+| API integration tests (20: RLS everywhere, anon privileges, server-managed columns, second pack in DB, generic checks, no `starts_on` default, payments kept, live health, worker, Data API off) | ⚠ not run: Docker/WSL unavailable here. Run `make test-int` in WSL; CI runs them |
+| Seed + OpenAPI client in sync | ✅ |
+| Web eslint + prettier + `tsc` | ✅ pass |
+| Web unit tests (Vitest) | ✅ 26 passed |
+| `next build` | ✅ |
+| E2E (Playwright, Pixel 7): shell, nav, 44 px targets, no horizontal scroll at 390 px, manifest/icons, service worker control, offline page | ✅ 8 passed |
+| Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
 
@@ -66,20 +80,62 @@ Kickoff review, approved by the founder on 25 Oct 2026:
 - Pack config gains `sort_order` and `copy.picker_label` ("Get referred"); Goal screen gets a collapsed "Add job links (optional)" field (Sprint 1).
 - New tokens: `--color-on-dark-soft`, `--color-waveform-idle`, `--color-dot-neutral`.
 
+Sprint 0 build:
+
+- Token import from `design/tokens.css` works with Tailwind v4 + Turbopack (no copy script). Tokens are unlayered and win over Tailwind's theme layer; verified in the compiled CSS.
+- Fonts via `next/font/google` exposed as `--font-bricolage`/`--font-instrument` and mapped to `font-display`/`font-body`.
+- Manifest is `app/manifest.ts` (Next's typed convention) served at `/manifest.webmanifest`, not a static file in `public/`. Manifest and `themeColor` repeat token hex values (they can't read CSS variables); the no-hex test allows only those two files.
+- Service worker (`public/sw.js`, hand-written) registers in production builds only; network-first navigations with `/offline` fallback, cache-first for hashed `/_next/static/`; never caches `/api/`.
+- `StageBadge` takes a tone (ask / nurture / thanks) derived from pack stage config, not stage ids (ADR-0006).
+- Stepper buttons are 44 px (the design file shows 38 px, below the touch minimum).
+- `GET /v1/health` returns 503 with the same `HealthResponse` body when a dependency is down; each check has a 2 s timeout.
+- uvicorn runs via `--factory app.main:create_app` (no app built at import time).
+- Seed generator and OpenAPI exporter are modules (`python -m app.db_seed [--check]`, `python -m app.openapi_export`).
+- Migration adds `drafts.regenerations` and `drafts.send_opened_at` (free regeneration cap; once-per-draft send cap), `goal_contacts.thanked_at`, `calendar_events unique (date, name)`, and column-level `insert` grants on `profiles` as well as `update`.
+- Sentry `before_send` drops request bodies/cookies/query strings and auth/signature headers, masks the top-level `message`, pattern-redacts the rest.
+- Logs drop uvicorn's ANSI `color_message` duplicate.
+- Web calls `fetch` only through `lib/api` (ESLint `no-restricted-globals`).
+- `Settings.app_env` also accepts `test`.
+- jsdom pinned to 26: jsdom 30 makes Vitest workers hang at startup on the Windows machine. Retry 30 on WSL/CI later.
+
 ## Dependencies added
 
 | Package | Where | Why |
 |---|---|---|
+| fastapi, uvicorn[standard], pydantic, pydantic-settings | api | Stack (tech spec §2) |
+| sqlalchemy[asyncio], asyncpg | api | Stack: async Postgres |
+| arq, redis | api | Stack: queue/cron (redis capped at 5.x by arq) |
+| sentry-sdk[fastapi] | api | Error reporting (no-op without DSN) |
+| tzdata | api | IANA timezones on Windows and slim containers (`zoneinfo`) |
+| pytest, pytest-asyncio, httpx, ruff, mypy | api (dev) | Tests, lint, types |
+| next, react, react-dom, tailwindcss, @tailwindcss/turbopack | web | Stack (scaffolded by create-next-app 16.4) |
+| @tanstack/react-query | web | Server state (CLAUDE.md) |
+| openapi-fetch, openapi-typescript | web | Typed client generated from FastAPI OpenAPI |
+| vitest, @vitejs/plugin-react, jsdom@26, @testing-library/{react,jest-dom,user-event} | web (dev) | Component tests |
+| @playwright/test | web (dev) | E2E, Pixel 7 emulation |
+| prettier, eslint, eslint-config-next | web (dev) | Format/lint |
+| concurrently | root (dev) | `make dev` runs web + api + worker together |
 
 ## Open issues / questions for the human
 
-- GitHub repo URL needed to add the remote and open the Sprint 0 PR.
+- GitHub repo URL needed to add the remote, push `main` + `sprint-0/foundations` and open the Sprint 0 PR (CI's first run).
+- Run in WSL before sign-off: `make setup && make check && make test && make test-int && make e2e`. The Makefile, Supabase start, migration and integration tests haven't run on a real Postgres yet.
+- Verify with `supabase start` that `[api] enabled = false` still serves Auth through Kong (needed in Sprint 1) and that `supabase status -o env` prints `ANON_KEY`.
+- Hosted Supabase (staging/prod, Sprint 1): turn the Data API off in the dashboard (ADR-0007).
+- CI action versions (`actions/checkout@v4`, `setup-node@v4`, `pnpm/action-setup@v4`, `astral-sh/setup-uv@v6`, `supabase/setup-cli@v1`): confirm on first run.
+- Placeholder icons (blue square + marigold dot) until branding exists.
 
 ## Needs manual testing on a real phone
 
--
+Sprint 0 (USB port forwarding, see `docs/DEV-SETUP-WSL.md` §4; use a production build `pnpm --filter web build && pnpm --filter web start` so the service worker registers):
+
+- [ ] Open `http://localhost:3000` on Android Chrome: redirects to Today; status card shows API/DB/Redis ok.
+- [ ] Bottom nav: 5 items, marigold capture button raised, active tab highlighted; tap through all tabs.
+- [ ] Chrome menu → **Install app** / Add to Home screen → opens full-screen from the icon.
+- [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
 
+- 25 Oct 2026 — Sprint 0 built on the Windows machine (WSL not installed yet): all scope items written; API + web lint/type/unit, build and E2E green; integration tests, Makefile and Supabase pending a WSL/CI run.
 - 25 Oct 2026 — Kickoff review; decisions above approved; docs, schema draft, ADR-0007/0008 updated; Sprint 0 started.
 - 25 Oct 2026 — Kickoff pack created (docs, ADRs, schema draft, pack config, design reference).

@@ -48,18 +48,21 @@ If docs conflict: PRD principles > ADRs > tech spec > sprint plan > design guide
 
 ## Commands
 
-(Create these in Sprint 0; keep this list accurate.)
+Linux / WSL2 only (setup: `docs/DEV-SETUP-WSL.md`). Keep this list accurate.
 
 ```bash
-make setup      # install deps (pnpm, uv), start supabase local, apply migrations + seed
+make setup      # install deps (pnpm, uv), start supabase local + redis, apply migrations + seed
 make dev        # web :3000, api :8000, worker, redis (docker), supabase
 make check      # lint + format check + typecheck (web + api)
+make fmt        # auto-fix lint and formatting (web + api)
 make test       # unit tests (web + api)
 make test-int   # API integration tests (needs supabase + redis running)
-make e2e        # Playwright (mobile emulation)
-make gen-api    # regenerate TS client from FastAPI OpenAPI
-make db-reset   # reset local DB, re-run migrations + seed
+make e2e        # Playwright (Pixel 7 emulation) against a production build
+make gen-api    # regenerate TS client from FastAPI OpenAPI (commit the result)
+make db-reset   # regenerate seed.sql from packs/*.json, reset local DB, re-run migrations + seed
 ```
+
+Generated files (CI fails if stale): `supabase/seed.sql` (from `packs/*.json`), `apps/web/lib/api/openapi.json` + `schema.d.ts` (from FastAPI).
 
 Run `make check && make test` before saying a task is done. Run `make test-int` when you touched the API, DB or workers.
 
