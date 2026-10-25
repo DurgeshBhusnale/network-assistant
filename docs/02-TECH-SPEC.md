@@ -20,7 +20,7 @@
     └──────────────▶ Meta WhatsApp Cloud API ──webhook──▶ │                           ▲
                          ▲                         ┌──────▼──────────┐                │
                          └─────── send ─────────── │ Workers (arq)   │ ───────────────┘
-                                                   │ ranking, media, │ ───▶ AI router ─▶ Groq / Claude / Sarvam
+                                                   │ ranking, media, │ ───▶ AI router ─▶ Groq
  Razorpay ──────────────webhook──────────────────▶ │ briefs, digests │
                                                    └─────────────────┘   Redis (queue + rate limits)
 ```
@@ -41,7 +41,7 @@
 | Database | Supabase Postgres + pgvector, migrations via Supabase CLI (`supabase/migrations`) | Mumbai region `ap-south-1` |
 | Auth | Supabase Auth: Google OAuth + email OTP | Phone is verified via WhatsApp linking, not SMS (ADR-0005) |
 | File storage | Supabase Storage, private bucket `captures` (audio, short-lived) | Signed upload URLs |
-| AI | Groq (gpt-oss-20B, gpt-oss-120B, Whisper Large v3 Turbo), Anthropic Claude (Sonnet 5.5, Haiku 5.5 fallback), Sarvam (Indian-language STT) | Model IDs in env, never hard-coded |
+| AI | Groq only in v1 (ADR-0010): gpt-oss-20B, gpt-oss-120B, Whisper Large v3 Turbo / Large v3 | Model IDs in env, never hard-coded |
 | Messaging | Meta WhatsApp Cloud API (direct, no BSP), Web Push (VAPID), email via Resend (or SES ap-south-1) | |
 | Payments | Razorpay (Orders + Checkout + webhooks); Cashfree as alternative | UPI first |
 | Observability | Sentry (web + api), structured JSON logs with PII redaction | |
@@ -95,7 +95,7 @@ Pin exact versions in lockfiles (`pnpm-lock.yaml`, `uv.lock`). Use the latest st
 
 | Env | Purpose | Data |
 |---|---|---|
-| local | Development | Supabase CLI local stack + docker Redis; `AI_MODE=fake` by default |
+| local | Development (Windows or Linux) | Cloud Supabase **dev** project (ADR-0009) + Redis; `AI_MODE=fake` by default. CI uses a throwaway Supabase CLI stack |
 | staging | Beta testing, webhook testing | Separate Supabase project, WhatsApp test number, Razorpay test mode |
 | production | Users | Supabase Mumbai, live keys |
 
@@ -263,13 +263,13 @@ class AIRouter:
 
 | Task | Primary | Fallback | Notes |
 |---|---|---|---|
-| extract_people, label_relevance, factcheck, summarise_style | Groq `openai/gpt-oss-20b` | Claude Haiku 5.5 | JSON output; batch where possible |
-| draft (free, or paid warm-up/thank) | Groq `openai/gpt-oss-120b` | Claude Haiku 5.5 | Free: Haiku only as failure fallback; never Sonnet |
-| draft (paid, ask stage to senior contact\*, or paid "Another version" 2nd+ time) | Claude Sonnet 5.5 | Groq gpt-oss-120b | \*title matches senior/lead/manager/director/head/VP/founder/principal |
-| transcribe (English or unknown) | Groq `whisper-large-v3-turbo` | OpenAI gpt-4o-mini-transcribe | |
-| transcribe (hi, mr, Hinglish hint) | Sarvam STT | Groq Whisper | Final routing decided by Sprint 5 test |
+| extract_people, label_relevance, factcheck, summarise_style | Groq `openai/gpt-oss-20b` (`MODEL_SMALL`) | Groq `openai/gpt-oss-120b` (`MODEL_FALLBACK_SMALL`) | JSON output; batch where possible |
+| draft (all tiers and stages) | Groq `openai/gpt-oss-120b` (`MODEL_DRAFT`) | Groq `openai/gpt-oss-20b` (`MODEL_FALLBACK_DRAFT`) | Paid vs free differs in limits, not models |
+| transcribe (all languages) | Groq `whisper-large-v3-turbo` (`MODEL_STT`) | Groq `whisper-large-v3` (`MODEL_STT_FALLBACK`) | Hindi/Marathi/Hinglish quality checked in Sprint 5 |
 
-Model IDs come from env (`MODEL_*`). Provider data rule: only Groq, Anthropic, Sarvam, OpenAI (fallback STT) receive user data; no DeepSeek first-party API; send only fields the task needs (no phone numbers or emails in prompts).
+Groq only (ADR-0010): "fallback" is a second Groq model, so a full Groq outage degrades AI features (drafts show a retry message). Adding another approved provider later is config + one provider file.
+
+Model IDs come from env (`MODEL_*`). Provider data rule: in v1 only Groq receives user data (approved list: Groq, Anthropic, Sarvam, OpenAI STT); no DeepSeek first-party API; send only fields the task needs (no phone numbers or emails in prompts).
 
 ### 8.3 Drafting pipeline
 

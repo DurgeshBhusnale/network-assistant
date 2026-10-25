@@ -1,4 +1,7 @@
-"""Integration tests run against the local Supabase stack and Redis (`make test-int`)."""
+"""Integration tests: Supabase Postgres (cloud dev project locally, CLI stack in CI) and Redis.
+
+Every DB test runs in a transaction that is rolled back, so the dev project is left unchanged.
+"""
 
 import json
 import uuid

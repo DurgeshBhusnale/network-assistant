@@ -27,8 +27,8 @@ The coding agent updates this file at the end of every session. Newest entries a
 | # | Scope item (Sprint 0) | Status |
 |---|---|---|
 | 1 | Monorepo layout (apps/web, apps/api, supabase, packs, evals) | ✅ |
-| 2 | Makefile targets | ✅ written; ⚠ not yet run (no `make`/WSL on the build machine) |
-| 3 | Supabase local stack, first migration, generated seed | ✅ written, SQL parses (pglast); ⚠ not yet applied to Postgres |
+| 2 | Dev commands (root `package.json` scripts, ADR-0009; Makefile removed) | ✅ `pnpm check`, `pnpm test` run on Windows |
+| 3 | Supabase dev project (ADR-0009), first migration, generated seed | ✅ written, SQL parses (pglast); ⚠ not applied: project is in Seoul, awaiting region decision |
 | 4 | API skeleton: config, logging + redaction, errors, health, Sentry | ✅ |
 | 5 | Worker skeleton: arq settings, no-op cron, test task | ✅ |
 | 6 | AI provider interface + FakeProvider + AI_MODE switch | ✅ |
@@ -42,8 +42,8 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Check | Result |
 |---|---|
 | API ruff + format + mypy (strict, all of `app/`) | ✅ pass |
-| API unit tests (`pytest -m "not integration"`) | ✅ 61 passed |
-| API integration tests (20: RLS everywhere, anon privileges, server-managed columns, second pack in DB, generic checks, no `starts_on` default, payments kept, live health, worker, Data API off) | ⚠ not run: Docker/WSL unavailable here. Run `make test-int` in WSL; CI runs them |
+| API unit tests (`pytest -m "not integration"`) | ✅ 64 passed |
+| API integration tests (20: RLS everywhere, anon privileges, server-managed columns, second pack in DB, generic checks, no `starts_on` default, payments kept, live health, worker, anon key can't read tables) | ⚠ not run: needs the migrated dev DB and Redis |
 | Seed + OpenAPI client in sync | ✅ |
 | Web eslint + prettier + `tsc` | ✅ pass |
 | Web unit tests (Vitest) | ✅ 26 passed |
@@ -61,9 +61,9 @@ Kickoff review, approved by the founder on 25 Oct 2026:
 - `goals.starts_on` has no DB default; the API sets the user's local date.
 - `profiles.plan_cache` dropped from the spec; plan is computed from `entitlements`.
 - `memories.embedding` stays nullable and unused; pgvector and pg_trgm live in the `extensions` schema; embedding provider chosen in a later ADR.
-- `make check` = lint + format check + typecheck; `make test` = unit tests (CLAUDE.md wins over the sprint plan).
+- `pnpm check` = lint + format check + typecheck; `pnpm test` = unit tests (CLAUDE.md wins over the sprint plan).
 - PWA installability verified by Playwright + DevTools + manual install (Lighthouse 12 removed its PWA category).
-- Web calls the API on its own origin via Next.js rewrites (`/api/*`); phone testing via USB port forwarding (`docs/DEV-SETUP-WSL.md`).
+- Web calls the API on its own origin via Next.js rewrites (`/api/*`); phone testing via USB port forwarding (`docs/DEV-SETUP.md`).
 - Tailwind v4 `@theme inline` maps `design/tokens.css` (copy script if importing from outside the app fails).
 - Fake AI fixtures live in `app/ai/fake/fixtures/` (local dev also runs `AI_MODE=fake`).
 - `.gitattributes` forces LF.
@@ -74,11 +74,18 @@ Kickoff review, approved by the founder on 25 Oct 2026:
 - Thank-you and dated follow-up suggestions skip fatigue.
 - Send cap counts the first `POST /drafts/{id}/send` per draft (`drafts.send_opened_at`).
 - Free drafts: first generation counts as 1; tone changes / Another version don't count; free users max 3 regenerations per draft (`drafts.regenerations`, `FREE_REGENERATIONS_PER_DRAFT`).
-- Claude Haiku allowed as a failure fallback for free drafts only, never Sonnet.
+- ~~Claude Haiku allowed as a failure fallback for free drafts only~~ superseded by ADR-0010 (Groq only).
 - All prompt input scrubbed of phones/emails by the redactor (tested).
 - Capture text cleared on confirm/discard; unconfirmed swept after 24 h (Sprint 5). Retention jobs in Sprint 8.
 - Pack config gains `sort_order` and `copy.picker_label` ("Get referred"); Goal screen gets a collapsed "Add job links (optional)" field (Sprint 1).
 - New tokens: `--color-on-dark-soft`, `--color-waveform-idle`, `--color-dot-neutral`.
+
+Windows + cloud dev + Groq (25 Oct 2026, founder's decision):
+
+- **ADR-0009:** native Windows dev, root `pnpm` scripts replace the Makefile, cloud Supabase dev project (never reset; migrations via `pnpm db:push` after asking), CI keeps a throwaway Supabase stack. `docs/DEV-SETUP-WSL.md` replaced by `docs/DEV-SETUP.md`.
+- **ADR-0010:** Groq only. gpt-oss-20b (fallback 120b) for small tasks, gpt-oss-120b (fallback 20b) for all drafts, Whisper turbo (fallback large-v3) for STT. Anthropic/Sarvam/OpenAI settings removed from config and `.env.example`.
+- `DATABASE_URL` accepts plain `postgresql://` (the API adds `+asyncpg`); `app/dbtasks.py` pushes migrations with the Supabase CLI and applies the seed via asyncpg.
+- The "Data API disabled" integration test became "anon key can't read tables over HTTP" (works on cloud and CI); the dashboard Data API toggle is a manual checklist item.
 
 Sprint 0 build:
 
@@ -114,20 +121,22 @@ Sprint 0 build:
 | vitest, @vitejs/plugin-react, jsdom@26, @testing-library/{react,jest-dom,user-event} | web (dev) | Component tests |
 | @playwright/test | web (dev) | E2E, Pixel 7 emulation |
 | prettier, eslint, eslint-config-next | web (dev) | Format/lint |
-| concurrently | root (dev) | `make dev` runs web + api + worker together |
+| concurrently | root (dev) | `pnpm dev` runs web + api + worker together |
 
 ## Open issues / questions for the human
 
 - GitHub repo URL needed to add the remote, push `main` + `sprint-0/foundations` and open the Sprint 0 PR (CI's first run).
-- Run in WSL before sign-off: `make setup && make check && make test && make test-int && make e2e`. The Makefile, Supabase start, migration and integration tests haven't run on a real Postgres yet.
-- Verify with `supabase start` that `[api] enabled = false` still serves Auth through Kong (needed in Sprint 1) and that `supabase status -o env` prints `ANON_KEY`.
-- Hosted Supabase (staging/prod, Sprint 1): turn the Data API off in the dashboard (ADR-0007).
+- **Region:** the dev project `xnjbgyjnecdgclssnquj` is in `ap-northeast-2` (Seoul), not Mumbai. Decide: recreate in `ap-south-1` (recommended) or accept Seoul for dev only. Migration not pushed until then.
+- **Redis:** Docker Desktop reports "unable to start" (no WSL2/Hyper-V backend). Options: enable the backend, or use a managed Redis URL.
+- Turn the Data API off in the dev project dashboard (ADR-0007).
+- Supabase MCP added to `.mcp.json`; the founder must authenticate it (`claude` → `/mcp` → supabase → Authenticate) and restart the session.
+- CI: verify `supabase start` with `[api] enabled = false` still serves Auth, and `supabase status -o env` prints `ANON_KEY`.
 - CI action versions (`actions/checkout@v4`, `setup-node@v4`, `pnpm/action-setup@v4`, `astral-sh/setup-uv@v6`, `supabase/setup-cli@v1`): confirm on first run.
 - Placeholder icons (blue square + marigold dot) until branding exists.
 
 ## Needs manual testing on a real phone
 
-Sprint 0 (USB port forwarding, see `docs/DEV-SETUP-WSL.md` §4; use a production build `pnpm --filter web build && pnpm --filter web start` so the service worker registers):
+Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production build `pnpm --filter web build && pnpm --filter web start` so the service worker registers):
 
 - [ ] Open `http://localhost:3000` on Android Chrome: redirects to Today; status card shows API/DB/Redis ok.
 - [ ] Bottom nav: 5 items, marigold capture button raised, active tab highlighted; tap through all tabs.
@@ -136,6 +145,7 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP-WSL.md` §4; use a production
 
 ## Session log
 
+- 25 Oct 2026 — Switched to Windows + cloud Supabase dev + Groq only (ADR-0009, ADR-0010); found the dev project is in Seoul; Docker backend not available.
 - 25 Oct 2026 — Sprint 0 built on the Windows machine (WSL not installed yet): all scope items written; API + web lint/type/unit, build and E2E green; integration tests, Makefile and Supabase pending a WSL/CI run.
 - 25 Oct 2026 — Kickoff review; decisions above approved; docs, schema draft, ADR-0007/0008 updated; Sprint 0 started.
 - 25 Oct 2026 — Kickoff pack created (docs, ADRs, schema draft, pack config, design reference).

@@ -31,4 +31,4 @@ def test_openapi_lists_health_with_error_envelope() -> None:
 
 def test_openapi_client_schema_in_sync() -> None:
     committed = OPENAPI_PATH.read_text(encoding="utf-8")
-    assert committed == render_openapi(), "run `make gen-api`"
+    assert committed == render_openapi(), "run `pnpm gen-api`"

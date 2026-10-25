@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -40,15 +40,11 @@ class Settings(BaseSettings):
     # AI
     ai_mode: Literal["fake", "live"] = "fake"
     groq_api_key: SecretStr | None = None
-    anthropic_api_key: SecretStr | None = None
-    sarvam_api_key: SecretStr | None = None
-    openai_api_key: SecretStr | None = None
     model_small: str = ""
-    model_draft: str = ""
-    model_draft_premium: str = ""
     model_fallback_small: str = ""
+    model_draft: str = ""
+    model_fallback_draft: str = ""
     model_stt: str = ""
-    model_stt_indic: str = ""
     model_stt_fallback: str = ""
     ai_timeout_llm_seconds: float = 20
     ai_timeout_stt_seconds: float = 60
@@ -84,6 +80,15 @@ class Settings(BaseSettings):
     vapid_subject: str = ""
     resend_api_key: SecretStr | None = None
     email_from: str = ""
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_asyncpg(cls, value: str) -> str:
+        """Accept the plain postgres:// URL copied from the Supabase dashboard."""
+        for prefix in ("postgresql://", "postgres://"):
+            if value.startswith(prefix):
+                return "postgresql+asyncpg://" + value.removeprefix(prefix)
+        return value
 
 
 @lru_cache

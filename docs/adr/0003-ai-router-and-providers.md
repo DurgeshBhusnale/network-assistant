@@ -1,6 +1,6 @@
 # ADR-0003: One AI router; Groq for volume, Claude for high-stakes drafts
 
-- Status: Accepted (25 Oct 2026)
+- Status: Accepted (25 Oct 2026). Provider routing superseded by ADR-0010 (Groq only); the router design still applies.
 
 ## Context
 Report 4 priced the same workload across providers. AI cost per Career Sprint user per month: Groq-only ≈ ₹9, DeepSeek ≈ ₹14, Sarvam ≈ ₹22, Groq + Claude polish ≈ ₹22, Claude Haiku + Sonnet ≈ ₹23, Gemini ≈ ₹27, OpenAI ≈ ₹43, xAI Grok 4.3 ≈ ₹97. Among sensible options, margin differs by ~4 points; draft quality and data location matter more than price.

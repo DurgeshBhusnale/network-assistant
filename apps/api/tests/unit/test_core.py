@@ -47,3 +47,15 @@ def test_sentry_scrub_drops_bodies_and_auth_and_redacts_text() -> None:
     assert scrubbed["message"] == FIELD_MASK
     assert scrubbed["exception"]["values"][0]["value"] == "bad number [phone]"
     assert scrubbed["request"] == {"url": "http://api/v1/contacts", "headers": {"User-Agent": "ua"}}
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "postgresql://u:p@host:5432/postgres",
+        "postgres://u:p@host:5432/postgres",
+        "postgresql+asyncpg://u:p@host:5432/postgres",
+    ],
+)
+def test_database_url_always_uses_asyncpg(url: str) -> None:
+    assert Settings(database_url=url).database_url == "postgresql+asyncpg://u:p@host:5432/postgres"

@@ -70,7 +70,7 @@ jobs:
           uv run python -m app.db_seed --check
           uv run python -m app.openapi_export
       - run: pnpm --filter web gen-api
-      - name: Fail if the OpenAPI client is stale (run `make gen-api`)
+      - name: Fail if the OpenAPI client is stale (run `pnpm gen-api`)
         run: git diff --exit-code -- apps/web/lib/api
 
   integration:
@@ -89,7 +89,7 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Start Supabase (applies migrations + seed)
+      - name: Start a throwaway Supabase (applies migrations + seed; never the cloud project)
         run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
       - working-directory: apps/api
         run: uv sync --frozen

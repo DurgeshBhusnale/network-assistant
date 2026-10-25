@@ -6,12 +6,14 @@ One file per decision: `NNNN-short-title.md`. To change a decision, add a new AD
 |---|---|
 | 0001 | Mobile-first PWA, not native, for v1 |
 | 0002 | Supabase (Mumbai) + FastAPI + Next.js |
-| 0003 | One AI router; Groq for volume, Claude for high-stakes drafts |
+| 0003 | One AI router; Groq for volume, Claude for high-stakes drafts (routing superseded by 0010) |
 | 0004 | The user sends; the app never messages contacts |
 | 0005 | Sign in with Google/email; verify phone via WhatsApp linking |
 | 0006 | Goal packs are configuration over a generic engine |
 | 0007 | Supabase Data API off; server-managed columns not writable by users |
 | 0008 | Stages, states and outcomes are text validated against pack config |
+| 0009 | Native Windows development against a cloud Supabase dev project |
+| 0010 | Groq is the only AI provider in v1 |
 
 ## Template
 

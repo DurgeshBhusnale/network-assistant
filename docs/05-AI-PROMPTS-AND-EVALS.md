@@ -11,7 +11,7 @@ General rules for all prompts:
 
 ## 1. `extract_people.v1` (capture pipeline)
 
-**Model:** Groq gpt-oss-20B (fallback Claude Haiku 5.5). **Output:** JSON.
+**Model:** Groq gpt-oss-20B (fallback gpt-oss-120B). **Output:** JSON.
 
 ```
 You turn a short note about meeting people into structured records.
@@ -159,7 +159,7 @@ Rule first (case-insensitive regex list: `refer`, `referral`, `opening`, `resume
 | Metric | How | Target (v1) |
 |---|---|---|
 | Rule compliance | Word count, ask rule, no phone/email/URL invented (code) | 100% |
-| Factuality | `factcheck` judge with Claude Sonnet 5.5 as judge (offline only) | ≥ 95% drafts with zero unsupported claims |
+| Factuality | `factcheck` judge with Groq gpt-oss-120B as judge (offline only) | ≥ 95% drafts with zero unsupported claims |
 | Personal detail | Mentions ≥ 1 memory fact (warm_up/thank) | ≥ 90% |
 | Would send | Blind human review (founder + 5 users), 1–5 scale | ≥ 70% score 4–5 |
 | Extraction | Person-level F1 on name/company/title; exact follow-up date | F1 ≥ 0.9; date ≥ 95% |

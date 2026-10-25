@@ -22,7 +22,7 @@ export const copy = {
   status: {
     title: "System status",
     checking: "Checking the API…",
-    unreachable: "Can't reach the API. Is `make dev` running?",
+    unreachable: "Can't reach the API. Is `pnpm dev` running?",
     api: "API",
     db: "Database",
     redis: "Redis",

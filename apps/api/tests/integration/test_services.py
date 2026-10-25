@@ -39,10 +39,10 @@ async def test_worker_runs_ping_task(live_settings: Settings) -> None:
         await pool.aclose()
 
 
-async def test_supabase_data_api_is_disabled(live_settings: Settings) -> None:
-    """ADR-0007: PostgREST must not serve the public schema, even with the anon key."""
+async def test_anon_key_cannot_read_tables_over_http(live_settings: Settings) -> None:
+    """ADR-0007: the browser's anon key must never read tables (Data API off + anon revoked)."""
     if live_settings.supabase_anon_key is None:
-        pytest.fail("SUPABASE_ANON_KEY not set; `make test-int` exports it from `supabase status`")
+        pytest.fail("SUPABASE_ANON_KEY not set (.env locally; `supabase status` in CI)")
     anon = live_settings.supabase_anon_key.get_secret_value()
     async with httpx.AsyncClient(base_url=live_settings.supabase_url, timeout=10) as client:
         response = await client.get(

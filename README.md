@@ -27,7 +27,7 @@ This folder is the starting point of the repository. It contains the product and
 
 ## How to start
 
-1. **Install locally:** Git, Node.js LTS + pnpm, Python 3.12 + uv, Docker Desktop (for Supabase local + Redis), Supabase CLI, Claude Code.
+1. **Install locally:** see `docs/DEV-SETUP.md` (Windows: Git, Node.js LTS + pnpm, uv, Supabase CLI, Docker Desktop or a managed Redis, Claude Code).
 2. **Create the repo:** extract this folder, `cd` into it, `git init`, first commit, push to a private GitHub repo.
 3. **Open the agent** in the repo root and paste **Prompt 0** from `PROMPTS.md`. Answer its questions, approve its Sprint 0 plan, then continue with the next prompts.
 4. After each sprint, run the verification prompt and test on your Android phone before moving on.
@@ -40,8 +40,6 @@ This folder is the starting point of the repository. It contains the product and
 | Supabase: staging project (Mumbai `ap-south-1`) | Sprint 1 | Local dev uses the Supabase CLI; enable Google provider + email OTP |
 | Google Cloud OAuth client | Sprint 1 | For Google sign-in via Supabase |
 | Groq API key | Sprint 3 | Default AI provider |
-| Anthropic API key | Sprint 3 | Premium drafts + fallback |
-| Sarvam API key | Sprint 5 | Indian-language speech-to-text |
 | **Meta Business + WhatsApp Cloud API** | **Start in Sprint 4**, needed Sprint 6 | Business verification and template approval take time |
 | **Razorpay** | **Start KYC early**, needed Sprint 7 | Test mode works before KYC completes |
 | Vercel (web), Fly.io or AWS Mumbai (API + workers), managed Redis | Before beta (Sprint 8) | Pick hosts with a Mumbai region |

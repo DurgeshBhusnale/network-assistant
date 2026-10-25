@@ -278,15 +278,15 @@ Visual reference: Design canvas "Networking Assistant App Screens" and `design/`
 | Best Sprint price | ₹799 | Concierge + A/B |
 | Sprint → Pro | 15% | Day-50 offer |
 | Drafts per Sprint user per month | 60 | Usage logs |
-| Drafts needing frontier model | 25% | Blind test Groq vs Claude |
+| Drafts needing frontier model | 25% | Deferred: v1 is Groq only (ADR-0010); revisit with beta edit ratios |
 | Free users active month to month | 45% | Cohorts |
 
 ## 10. Open questions
 
 1. Legal basis/notice for storing third parties' (contacts') data under DPDP — lawyer review before public launch.
 2. Google Contacts import via People API — check OAuth verification requirements before building (P2).
-3. Groq vs Claude draft quality — blind test with 20 users before Sprint 3 ends.
-4. Sarvam vs Whisper on Hinglish voice notes — test before Sprint 5.
+3. ~~Groq vs Claude draft quality~~ — v1 is Groq only (ADR-0010); compare gpt-oss-120B vs 20B instead and revisit Claude with beta edit ratios.
+4. Groq Whisper quality on Hinglish/Hindi/Marathi voice notes — test in Sprint 5; add Sarvam via ADR if poor.
 5. Final app name and brand.
 
 ## 11. Release criteria
