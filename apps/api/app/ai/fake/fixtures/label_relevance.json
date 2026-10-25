@@ -1,0 +1,11 @@
+{
+  "output": {
+    "labels": [
+      {
+        "id": "fake-contact-1",
+        "label": "same_field",
+        "reason": "Backend engineer at a product company"
+      }
+    ]
+  }
+}

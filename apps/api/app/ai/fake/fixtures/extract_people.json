@@ -1,0 +1,21 @@
+{
+  "output": {
+    "people": [
+      {
+        "first_name": "Priya",
+        "last_name": "Nair",
+        "company": "Zoho",
+        "title": "PM",
+        "where_met": "eChai",
+        "facts": [
+          "interested in AI agents"
+        ],
+        "commitments": [
+          "send her the deck"
+        ],
+        "follow_up_date": "2026-10-26"
+      }
+    ],
+    "unassigned_facts": []
+  }
+}
