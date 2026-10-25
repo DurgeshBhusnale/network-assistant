@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     supabase_jwks_url: str = ""
     supabase_jwt_secret: SecretStr | None = None
     database_url: str = "postgresql+asyncpg://postgres:postgres@127.0.0.1:54322/postgres"
+    # Per process. The Supabase session pooler caps clients per project (about 15 on the dev
+    # plan) across the API, worker and test runs, so keep pool_size + max_overflow small there.
+    db_pool_size: int = Field(default=5, ge=1)
+    db_max_overflow: int = Field(default=5, ge=0)
+    db_pool_timeout_seconds: float = Field(default=10, gt=0)
     storage_bucket_captures: str = "captures"
 
     # Redis / workers
