@@ -412,3 +412,76 @@ class ProgressOut(BaseModel):
     warm_replies_this_week: int
     funnel: list[FunnelStep]
     by_company: list[CompanyProgress]
+
+
+# --- Capture (Sprint 5) --------------------------------------------------------------------
+
+
+class UploadUrlIn(_In):
+    mime: Literal["audio/webm", "audio/ogg", "audio/mp4", "audio/mpeg", "audio/wav", "audio/aac"]
+
+
+class UploadUrlOut(BaseModel):
+    upload_url: str
+    storage_path: str
+
+
+class CaptureCreate(_In):
+    text: str | None = Field(default=None, min_length=3, max_length=4000)
+    storage_path: str | None = Field(default=None, max_length=300)
+    language_hint: Literal["en", "hi", "mr", "hinglish"] | None = None
+    contact_id: uuid.UUID | None = Field(default=None, description="Voice memory for this person")
+
+
+class CaptureMatch(BaseModel):
+    contact_id: uuid.UUID
+    full_name: str
+    score: int
+
+
+class CaptureCandidate(BaseModel):
+    key: str
+    full_name: str
+    first_name: str | None
+    last_name: str | None
+    company: str | None
+    title: str | None
+    where_met: str | None
+    facts: list[str]
+    commitments: list[str]
+    follow_up_date: date | None
+    matches: list[CaptureMatch]
+
+
+class CaptureOut(BaseModel):
+    id: uuid.UUID
+    source: Literal["app_audio", "app_text", "wa_audio", "wa_text"]
+    status: Literal["queued", "processing", "ready", "committed", "failed"]
+    transcript: str | None
+    people: list[CaptureCandidate]
+    unassigned_facts: list[str]
+    error: str | None
+    for_contact_id: uuid.UUID | None
+
+
+class CaptureDecision(_In):
+    key: str = Field(max_length=10)
+    action: Literal["new", "merge", "discard"]
+    contact_id: uuid.UUID | None = None
+    full_name: str | None = Field(default=None, min_length=1, max_length=200)
+    company: str | None = Field(default=None, max_length=120)
+    title: str | None = Field(default=None, max_length=120)
+    facts: list[str] | None = Field(default=None, max_length=20)
+    follow_up_date: date | None = None
+
+
+class CaptureConfirm(_In):
+    decisions: list[CaptureDecision] = Field(min_length=1, max_length=20)
+
+
+class CaptureResult(BaseModel):
+    created: int
+    merged: int
+    memories: int
+    follow_ups: int
+    contact_ids: list[uuid.UUID]

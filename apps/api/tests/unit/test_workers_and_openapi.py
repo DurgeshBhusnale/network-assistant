@@ -23,6 +23,7 @@ def test_worker_settings_register_tasks_and_cron() -> None:
     assert [job.name for job in WorkerSettings.cron_jobs] == [
         "cron:app.workers.tasks.heartbeat",
         "cron:app.workers.tasks.rank_due_users",
+        "cron:app.workers.tasks.sweep_captures",
     ]
 
 

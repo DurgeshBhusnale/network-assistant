@@ -4,6 +4,91 @@
  */
 
 export interface paths {
+    "/v1/captures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Capture */
+        post: operations["create_capture_v1_captures_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captures/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Url */
+        post: operations["upload_url_v1_captures_upload_url_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captures/{capture_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Capture */
+        get: operations["get_capture_v1_captures__capture_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captures/{capture_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Capture */
+        post: operations["confirm_capture_v1_captures__capture_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captures/{capture_id}/discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discard Capture */
+        post: operations["discard_capture_v1_captures__capture_id__discard_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/contacts": {
         parameters: {
             query?: never;
@@ -502,6 +587,125 @@ export interface components {
              */
             file: string;
         };
+        /** CaptureCandidate */
+        CaptureCandidate: {
+            /** Commitments */
+            commitments: string[];
+            /** Company */
+            company: string | null;
+            /** Facts */
+            facts: string[];
+            /** First Name */
+            first_name: string | null;
+            /** Follow Up Date */
+            follow_up_date: string | null;
+            /** Full Name */
+            full_name: string;
+            /** Key */
+            key: string;
+            /** Last Name */
+            last_name: string | null;
+            /** Matches */
+            matches: components["schemas"]["CaptureMatch"][];
+            /** Title */
+            title: string | null;
+            /** Where Met */
+            where_met: string | null;
+        };
+        /** CaptureConfirm */
+        CaptureConfirm: {
+            /** Decisions */
+            decisions: components["schemas"]["CaptureDecision"][];
+        };
+        /** CaptureCreate */
+        CaptureCreate: {
+            /**
+             * Contact Id
+             * @description Voice memory for this person
+             */
+            contact_id?: string | null;
+            /** Language Hint */
+            language_hint?: ("en" | "hinglish" | "hi" | "mr") | null;
+            /** Storage Path */
+            storage_path?: string | null;
+            /** Text */
+            text?: string | null;
+        };
+        /** CaptureDecision */
+        CaptureDecision: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "new" | "merge" | "discard";
+            /** Company */
+            company?: string | null;
+            /** Contact Id */
+            contact_id?: string | null;
+            /** Facts */
+            facts?: string[] | null;
+            /** Follow Up Date */
+            follow_up_date?: string | null;
+            /** Full Name */
+            full_name?: string | null;
+            /** Key */
+            key: string;
+            /** Title */
+            title?: string | null;
+        };
+        /** CaptureMatch */
+        CaptureMatch: {
+            /**
+             * Contact Id
+             * Format: uuid
+             */
+            contact_id: string;
+            /** Full Name */
+            full_name: string;
+            /** Score */
+            score: number;
+        };
+        /** CaptureOut */
+        CaptureOut: {
+            /** Error */
+            error: string | null;
+            /** For Contact Id */
+            for_contact_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** People */
+            people: components["schemas"]["CaptureCandidate"][];
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "app_audio" | "app_text" | "wa_audio" | "wa_text";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "processing" | "ready" | "committed" | "failed";
+            /** Transcript */
+            transcript: string | null;
+            /** Unassigned Facts */
+            unassigned_facts: string[];
+        };
+        /** CaptureResult */
+        CaptureResult: {
+            /** Contact Ids */
+            contact_ids: string[];
+            /** Created */
+            created: number;
+            /** Follow Ups */
+            follow_ups: number;
+            /** Memories */
+            memories: number;
+            /** Merged */
+            merged: number;
+        };
         /** CompanyProgress */
         CompanyProgress: {
             /** Company */
@@ -687,7 +891,7 @@ export interface components {
          * ErrorCode
          * @enum {string}
          */
-        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "SEND_CAP_REACHED" | "NO_PHONE" | "INTERNAL_ERROR";
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "SEND_CAP_REACHED" | "NO_PHONE" | "CAPTURE_NOT_READY" | "STORAGE_UNAVAILABLE" | "INTERNAL_ERROR";
         /** ErrorDetail */
         ErrorDetail: {
             code: components["schemas"]["ErrorCode"];
@@ -1253,6 +1457,21 @@ export interface components {
              */
             weekly: boolean;
         };
+        /** UploadUrlIn */
+        UploadUrlIn: {
+            /**
+             * Mime
+             * @enum {string}
+             */
+            mime: "audio/webm" | "audio/ogg" | "audio/mp4" | "audio/mpeg" | "audio/wav" | "audio/aac";
+        };
+        /** UploadUrlOut */
+        UploadUrlOut: {
+            /** Storage Path */
+            storage_path: string;
+            /** Upload Url */
+            upload_url: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1262,6 +1481,212 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    create_capture_v1_captures_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptureCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    upload_url_v1_captures_upload_url_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadUrlIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadUrlOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_capture_v1_captures__capture_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                capture_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirm_capture_v1_captures__capture_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                capture_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptureConfirm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureResult"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    discard_capture_v1_captures__capture_id__discard_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                capture_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_contacts_v1_contacts_get: {
         parameters: {
             query?: {

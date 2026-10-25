@@ -284,3 +284,32 @@ class CalendarEvent(Base):
     name: Mapped[str] = mapped_column(Text)
     kind: Mapped[str] = mapped_column(Text)
     active: Mapped[bool] = mapped_column(Boolean)
+
+
+CAPTURE_SOURCE = _pg_enum("capture_source", "app_audio", "app_text", "wa_audio", "wa_text")
+
+
+class Capture(Base):
+    __tablename__ = "captures"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    source: Mapped[str] = mapped_column(CAPTURE_SOURCE)
+    storage_path: Mapped[str | None] = mapped_column(Text)
+    wa_media_id: Mapped[str | None] = mapped_column(Text)
+    language: Mapped[str | None] = mapped_column(Text)
+    transcript: Mapped[str | None] = mapped_column(Text)
+    extracted: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    status: Mapped[str] = mapped_column(JOB_STATUS, server_default="queued")
+    error: Mapped[str | None] = mapped_column(Text)
+    audio_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_log"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_ref: Mapped[str] = mapped_column(Text)
+    action: Mapped[str] = mapped_column(Text)
+    meta: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")

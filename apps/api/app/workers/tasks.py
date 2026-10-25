@@ -9,8 +9,11 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 
 from app.core.db import service_session
+from app.core.storage import Storage
 from app.domain.models import Goal, Profile
 from app.services import billing, ranking
+from app.services.captures import process_capture as process_capture_svc
+from app.services.captures import sweep_audio, sweep_transcripts
 from app.services.loop import active_goal_and_pack
 from app.services.relevance import label_contacts
 
@@ -77,3 +80,20 @@ async def label_relevance(ctx: dict[str, Any], user_id: str) -> int:
     if router is None:
         return 0
     return await label_contacts(ctx["engine"], router, uuid.UUID(user_id))
+
+
+async def process_capture(ctx: dict[str, Any], capture_id: str) -> None:
+    router = ctx.get("ai_router")
+    if router is None:
+        return
+    await process_capture_svc(
+        ctx["engine"], router, Storage(ctx["settings"]), uuid.UUID(capture_id)
+    )
+
+
+async def sweep_captures(ctx: dict[str, Any]) -> None:
+    """Hourly: leftover audio (> 1 h) and unconfirmed capture text (> 24 h)."""
+    now = datetime.now(UTC)
+    audio = await sweep_audio(ctx["engine"], Storage(ctx["settings"]), now)
+    texts = await sweep_transcripts(ctx["engine"], now)
+    logger.info("capture_sweep_done", extra={"audio_deleted": audio, "texts_cleared": texts})

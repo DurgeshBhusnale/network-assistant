@@ -6,6 +6,7 @@ from typing import Literal, Protocol
 from pydantic import BaseModel
 
 Task = Literal[
+    "transcribe",
     "extract_people",
     "label_relevance",
     "draft",

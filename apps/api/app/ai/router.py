@@ -15,7 +15,16 @@ from typing import TypeVar
 from pydantic import BaseModel, ValidationError
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.ai.base import LLMProvider, LLMRequest, LLMResult, ProviderError, Task
+from app.ai.base import (
+    LLMProvider,
+    LLMRequest,
+    LLMResult,
+    ProviderError,
+    STTProvider,
+    Task,
+    TranscribeRequest,
+    Transcript,
+)
 from app.core.config import Settings
 from app.core.db import service_session
 from app.domain.models import AICall
@@ -48,9 +57,16 @@ class StyleOutput(BaseModel):
 
 
 class AIRouter:
-    def __init__(self, settings: Settings, llm: LLMProvider, engine: AsyncEngine | None) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        llm: LLMProvider,
+        engine: AsyncEngine | None,
+        stt: STTProvider | None = None,
+    ) -> None:
         self._settings = settings
         self._llm = llm
+        self._stt = stt
         self._engine = engine
 
     def _models(self, task: Task) -> list[str]:
@@ -71,27 +87,35 @@ class AIRouter:
     async def _log(
         self,
         user_id: uuid.UUID | None,
-        task: Task,
-        prompt_version: str,
+        task: str,
+        prompt_version: str | None,
         model: str,
         result: LLMResult | None,
         ok: bool,
+        transcript: Transcript | None = None,
     ) -> None:
         if self._engine is None:
             return
+        source: LLMResult | Transcript | None = result or transcript
+        cost = self._cost(result) if result else None
+        if transcript is not None:
+            per_hour = self._settings.ai_price_inr_per_audio_hour.get(transcript.model)
+            if per_hour is not None:
+                cost = Decimal(str(round(transcript.audio_seconds / 3600 * per_hour, 4)))
         try:
             async with service_session(self._engine) as session:
                 session.add(
                     AICall(
                         user_id=user_id,
                         task=task,
-                        provider=result.provider if result else self._llm.name,
+                        provider=source.provider if source else self._llm.name,
                         model=model,
                         prompt_version=prompt_version,
                         tokens_in=result.tokens_in if result else None,
                         tokens_out=result.tokens_out if result else None,
-                        cost_inr=self._cost(result) if result else None,
-                        latency_ms=result.latency_ms if result else None,
+                        audio_seconds=transcript.audio_seconds if transcript else None,
+                        cost_inr=cost,
+                        latency_ms=source.latency_ms if source else None,
                         ok=ok,
                     )
                 )
@@ -151,3 +175,30 @@ class AIRouter:
                     extra={"task": task, "model": model, "error_type": type(exc).__name__},
                 )
         raise AIUnavailableError(task) from last_error
+
+    async def transcribe(
+        self, audio: bytes, mime: str, *, user_id: uuid.UUID | None, language_hint: str | None
+    ) -> Transcript:
+        """Speech to text: Whisper turbo, then the fallback model (ADR-0010)."""
+        if self._stt is None:
+            raise AIUnavailableError("transcribe")
+        s = self._settings
+        models = [m for m in dict.fromkeys([s.model_stt, s.model_stt_fallback]) if m] or ["fake"]
+        last_error: Exception | None = None
+        for model in models:
+            request = TranscribeRequest(
+                audio=audio, mime=mime, model=model, language_hint=language_hint
+            )
+            for attempt in range(2):
+                try:
+                    transcript = await self._stt.transcribe(request)
+                except ProviderError as exc:
+                    last_error = exc
+                    await self._log(user_id, "transcribe", None, model, None, False)
+                    if not exc.retryable or attempt == 1:
+                        break
+                    await asyncio.sleep(0.5 + random.random())  # noqa: S311 - jitter
+                    continue
+                await self._log(user_id, "transcribe", None, model, None, True, transcript)
+                return transcript
+        raise AIUnavailableError("transcribe") from last_error

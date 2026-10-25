@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 def build_router(settings: Settings, engine: AsyncEngine) -> AIRouter | None:
     try:
-        return AIRouter(settings, build_providers(settings).llm, engine)
+        providers = build_providers(settings)
+        return AIRouter(settings, providers.llm, engine, providers.stt)
     except LiveProvidersUnavailableError as exc:
         logger.error("ai_router_unavailable", extra={"reason": str(exc)})
         return None
