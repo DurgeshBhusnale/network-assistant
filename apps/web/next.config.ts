@@ -2,8 +2,14 @@ import { loadEnvConfig } from "@next/env";
 import path from "node:path";
 import type { NextConfig } from "next";
 
-// One .env at the repo root serves the API and the web app.
-loadEnvConfig(path.resolve(process.cwd(), "../.."));
+// One .env at the repo root serves the API and the web app. forceReload: Next has already
+// loaded (and cached) apps/web's env files, so without it this call is a no-op.
+loadEnvConfig(
+  path.resolve(process.cwd(), "../.."),
+  process.env.NODE_ENV !== "production",
+  undefined,
+  true,
+);
 
 const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:8000";
 
