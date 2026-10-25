@@ -4,9 +4,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 4 — Engine and daily loop (Sprints 0–3 done)
+- **Current sprint:** Sprint 5 — Capture (Sprints 0–4 done)
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-3/ai-drafting` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-4/engine-loop` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -17,7 +17,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 1 Accounts and goal setup | Done (tests deferred) | | Live API smoke passed; needs Google/email auth config in Supabase |
 | 2 People | Done (tests deferred) | | Live API smoke passed incl. 1,000-row import in 7.5 s |
 | 3 AI drafting | Done (tests deferred; evals runner deferred) | | Live Groq smoke: 17 calls ₹0.25, rules + fact check + free caps verified |
-| 4 Engine and daily loop | Not started | | |
+| 4 Engine and daily loop | Done (tests deferred) | | Live smoke of the full loop passed (ranking → draft → send → reply → referred → thank → progress) |
 | 5 Capture | Not started | | |
 | 6 WhatsApp assistant | Not started | | |
 | 7 Billing and notifications | Not started | | |
@@ -65,6 +65,21 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 4:
+
+- Pack stages gain a `role` (`reconnect`/`ask`/`follow_up`/`thank`); the engine reasons about roles, never stage ids (ADR-0006/0008). Pack copy adds `relevance_reasons`, `outcome_labels`, `outcome_past`, `state_labels`, `stage_past`, `funnel_labels`, `success_label`, `minutes_per_person`. Pack config changes need `pnpm db:seed` on the dev DB.
+- `app/engine/ranking.py` (pure): score = R·W·T·E·(1−F) per tech spec; unlabelled contacts get R = 0.3 until the LLM labels them; thank-yous skip fatigue; daily cap groups contacts by the matched target company ("Razorpay" = "Razorpay Software Pvt Ltd"), else by `company_norm`.
+- Timing signals computed at ranking time (birthday incl. Feb 29, festival from `calendar_events` as a global boost, met recently from `met` interactions, job change from `triggers`); no separate daily triggers job.
+- `goal_contacts.state` only moves forward (none → warmed → asked → replied → won); funnel counts come from interactions on the goal (distinct contacts).
+- Ranking keeps forced (capture follow-up, Sprint 5) and acted-on suggestions; re-ranking replaces only unacted pending ones; older pending/opened expire. First `GET /today` ranks synchronously (FR-ONB-2).
+- Free plan: one list per week (`for_date` = Monday), paid: daily. Nightly cron every 15 min ranks users whose local time just passed 02:00; LLM relevance labelling is an arq task queued after goal creation and import commits (skipped silently if Redis is down).
+- Send: `POST /drafts/{id}/send` returns the `wa.me`/LinkedIn link; the first call per draft per local day counts toward `DAILY_SEND_CAP` (429 `SEND_CAP_REACHED`); 422 `NO_PHONE`. Sent is recorded only via `POST /interactions` (type `sent` + `draft_id`) after the user confirms ("Sent?" on return, or Mark as sent).
+- `POST /interactions` handles sent/replied/no_reply/outcome; outcome validated against pack outcomes, sets `won`, adds a thank-you suggestion to the current list.
+- Routes read the app's own settings (`app.state.settings`), so tests/workers can pass their own.
+- Analytics batched per request (`track_many`).
+- Performance: first `GET /today` ≈ 11 s and later views ≈ 2 s from a laptop in India to the Seoul dev DB (~140 ms round trip; first use of each statement/type on a pooled connection costs extra round trips). In production the API and DB share the Mumbai region (~1 ms), so the < 3 s target is expected to hold; verify on staging. Engine work itself is milliseconds.
+- Web: Today (greeting, goal strip, person cards with reasons and snooze/not-relevant sheet, empty states), send panel (WhatsApp, Copy for LinkedIn, Mark as sent, "Sent?" on return), Did they reply? (Replied / Not yet / pack outcomes, thank-you card), Progress (north star, days left, funnel, by company), replies badge. The Sprint 0 system-status card and `useHealth` were removed.
 
 Sprint 3:
 
@@ -194,6 +209,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 4 built: relevance, ranking, stage machine, Today, send flow with cap, interactions, reply check-ins, progress, nightly ranking + LLM labelling jobs; UI for Today/Draft send/Replies/Progress. Live smoke found and fixed: company-cap grouping, suggestion-draft body, app-scoped settings, free-plan thank-you date.
 
 - 25 Oct 2026 — Sprint 3 built: Groq provider, AI router, draft pipeline with rules + fact check, free limits, style profile; draft screen, stage chooser, style step, upgrade screen. Live Groq smoke after two prompt fixes: correct script, no false fact-check flags.
 

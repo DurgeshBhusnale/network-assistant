@@ -268,5 +268,7 @@ def draft_out(
         regenerations=draft.regenerations,
         regenerations_left=regenerations_left,
         drafts_left_this_month=drafts_left_this_month,
+        sent_at=draft.sent_at,
+        sent_channel=draft.sent_channel,
         created_at=draft.created_at,
     )

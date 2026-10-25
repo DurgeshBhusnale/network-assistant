@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { SendPanel } from "@/components/drafts/SendPanel";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/components/ui/cn";
 import { ApiError } from "@/lib/api/client";
@@ -31,7 +32,6 @@ function DraftView({ draft }: { draft: Draft }) {
   const serverText = draft.final_text ?? draft.text;
   const [text, setText] = useState(serverText);
   const [shownFor, setShownFor] = useState(serverText);
-  const [copied, setCopied] = useState(false);
 
   // A regenerated draft replaces the editor text (render-time sync, no effect needed).
   if (serverText !== shownFor) {
@@ -59,17 +59,6 @@ function DraftView({ draft }: { draft: Draft }) {
   async function saveEdit() {
     const trimmed = text.trim();
     if (trimmed && trimmed !== serverText.trim()) await edit.mutateAsync(trimmed);
-  }
-
-  async function copyText() {
-    await saveEdit();
-    try {
-      await navigator.clipboard.writeText(text.trim());
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
   }
 
   return (
@@ -196,12 +185,7 @@ function DraftView({ draft }: { draft: Draft }) {
         </div>
       )}
 
-      <Button size="lg" fullWidth disabled={busy} onClick={() => void copyText()}>
-        {copied ? t.copied : t.copy}
-      </Button>
-      <p className="text-caption text-muted">
-        {t.trust} {t.sendSoon}
-      </p>
+      <SendPanel draft={draft} person={p} beforeSend={saveEdit} />
       {limitHit === null && regenerate.error && (
         <p role="alert" className="text-small text-danger">
           {regenerate.error instanceof ApiError

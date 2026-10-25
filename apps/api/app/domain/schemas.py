@@ -281,6 +281,8 @@ class DraftOut(BaseModel):
     regenerations: int
     regenerations_left: int | None
     drafts_left_this_month: int | None
+    sent_at: datetime | None = None
+    sent_channel: str | None = None
     created_at: datetime
 
 

@@ -652,6 +652,10 @@ export interface components {
             regenerations: number;
             /** Regenerations Left */
             regenerations_left: number | null;
+            /** Sent At */
+            sent_at?: string | null;
+            /** Sent Channel */
+            sent_channel?: string | null;
             /** Stage */
             stage: string;
             /** Stage Label */
