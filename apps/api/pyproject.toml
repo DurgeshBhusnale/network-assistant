@@ -59,7 +59,9 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
+# One event loop for the session so integration tests can share one running app.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 markers = ["integration: needs Supabase Postgres and Redis (pnpm test:int)"]
 addopts = "-ra --strict-markers"
