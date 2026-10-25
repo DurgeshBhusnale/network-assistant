@@ -34,12 +34,15 @@ function OnboardingResume({ children }: { children: ReactNode }) {
   const me = useMe();
   const router = useRouter();
   const pathname = usePathname();
-  const target = me.data ? onboardingRoute(me.data) : null;
+  const route = me.data ? onboardingRoute(me.data) : null;
+  // A cached profile can be stale right after an onboarding step (e.g. consents just saved), so
+  // only redirect on fresh data; otherwise the user bounces back to the step they just finished.
+  const target = route && !me.isFetching ? route : null;
 
   useEffect(() => {
     if (target && target !== pathname) router.replace(target);
   }, [target, pathname, router]);
 
-  if (me.isPending || target) return <FullScreenLoader />;
+  if (me.isPending || route) return <FullScreenLoader />;
   return <>{children}</>;
 }
