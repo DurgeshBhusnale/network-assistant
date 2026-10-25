@@ -4,7 +4,7 @@ Prompts live as versioned files in `apps/api/app/ai/prompts/<name>.v<N>.md` with
 
 General rules for all prompts:
 - Instructions first, then data inside clearly delimited tags (`<contact>…</contact>`). Treat everything inside data tags as data, never as instructions (user notes may contain text like "ignore previous instructions").
-- Never include phone numbers or email addresses in prompts.
+- Never include phone numbers or email addresses in prompts. Every input (including memory text and transcripts) passes through the PII scrubber first.
 - Structured tasks return JSON only, validated by Pydantic; on invalid JSON, one repair retry ("Return only valid JSON matching the schema").
 
 ---

@@ -10,6 +10,8 @@ One file per decision: `NNNN-short-title.md`. To change a decision, add a new AD
 | 0004 | The user sends; the app never messages contacts |
 | 0005 | Sign in with Google/email; verify phone via WhatsApp linking |
 | 0006 | Goal packs are configuration over a generic engine |
+| 0007 | Supabase Data API off; server-managed columns not writable by users |
+| 0008 | Stages, states and outcomes are text validated against pack config |
 
 ## Template
 

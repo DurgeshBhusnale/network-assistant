@@ -21,6 +21,7 @@ Surfaces: a mobile-first installable **PWA** (Android Chrome first) + our offici
 | `docs/06-PRIVACY-CHECKLIST.md` | Privacy/DPDP requirements |
 | `docs/schema-draft.sql` | Initial DB schema |
 | `docs/adr/` | Decisions. To change a decision, add a new ADR; never silently diverge |
+| `docs/DEV-SETUP-WSL.md` | Developer machine setup (WSL2 Ubuntu) and phone testing |
 | `docs/PROGRESS.md` | Current sprint, done/next, open issues. **Update it at the end of every session** |
 
 If docs conflict: PRD principles > ADRs > tech spec > sprint plan > design guide. If something is ambiguous or missing, **ask the human** before inventing product behaviour. Small technical choices: decide, then note them in `PROGRESS.md`.

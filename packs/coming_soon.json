@@ -1,0 +1,29 @@
+[
+  {
+    "id": "freelance_clients",
+    "name": "Freelance & Clients",
+    "status": "coming_soon",
+    "sort_order": 2,
+    "copy": {
+      "picker_label": "Win clients"
+    }
+  },
+  {
+    "id": "fundraising",
+    "name": "Fundraising",
+    "status": "coming_soon",
+    "sort_order": 3,
+    "copy": {
+      "picker_label": "Raise funding"
+    }
+  },
+  {
+    "id": "partners_hires_vendors",
+    "name": "Partners, Hires & Vendors",
+    "status": "coming_soon",
+    "sort_order": 4,
+    "copy": {
+      "picker_label": "Find partners, hires, vendors"
+    }
+  }
+]

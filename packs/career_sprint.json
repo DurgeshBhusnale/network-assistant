@@ -3,37 +3,68 @@
   "name": "Career Sprint",
   "tagline": "Get referred by people you already know",
   "status": "active",
+  "sort_order": 1,
   "duration_days": 60,
   "goal_schema": {
     "type": "object",
-    "required": ["role", "companies", "referrals_target"],
+    "required": [
+      "role",
+      "companies",
+      "referrals_target"
+    ],
     "properties": {
-      "role": { "type": "string", "minLength": 2, "maxLength": 120 },
+      "role": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120
+      },
       "companies": {
         "type": "array",
         "minItems": 1,
         "maxItems": 15,
-        "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       },
       "locations": {
         "type": "array",
         "maxItems": 10,
-        "items": { "type": "string", "maxLength": 60 },
+        "items": {
+          "type": "string",
+          "maxLength": 60
+        },
         "default": []
       },
-      "referrals_target": { "type": "integer", "minimum": 1, "maximum": 10, "default": 4 },
+      "referrals_target": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 4
+      },
       "job_links": {
         "type": "array",
         "maxItems": 20,
-        "items": { "type": "string", "format": "uri" },
+        "items": {
+          "type": "string",
+          "format": "uri"
+        },
         "default": []
       }
     },
     "additionalProperties": false
   },
   "relevance": {
-    "deterministic": { "company_match_threshold": 90, "label": "target_company" },
-    "llm_labels": ["same_field", "can_introduce", "not_relevant"],
+    "deterministic": {
+      "company_match_threshold": 90,
+      "label": "target_company"
+    },
+    "llm_labels": [
+      "same_field",
+      "can_introduce",
+      "not_relevant"
+    ],
     "weights": {
       "target_company": 1.0,
       "same_field": 0.6,
@@ -42,13 +73,42 @@
     }
   },
   "stages": [
-    { "id": "warm_up", "label": "Warm up", "has_ask": false, "step": 1 },
-    { "id": "ask", "label": "Ask", "has_ask": true, "step": 2, "min_days_after_warm_up": 3, "direct_if_warmth_at_least": 0.6 },
-    { "id": "follow_up", "label": "Follow up", "has_ask": false, "step": 2, "after_no_reply_days": 30 },
-    { "id": "thank", "label": "Thank", "has_ask": false, "step": 3 }
+    {
+      "id": "warm_up",
+      "label": "Warm up",
+      "has_ask": false,
+      "step": 1
+    },
+    {
+      "id": "ask",
+      "label": "Ask",
+      "has_ask": true,
+      "step": 2,
+      "min_days_after_warm_up": 3,
+      "direct_if_warmth_at_least": 0.6
+    },
+    {
+      "id": "follow_up",
+      "label": "Follow up",
+      "has_ask": false,
+      "step": 2,
+      "after_no_reply_days": 30
+    },
+    {
+      "id": "thank",
+      "label": "Thank",
+      "has_ask": false,
+      "step": 3
+    }
   ],
-  "outcomes": ["referred", "interview"],
-  "success_metric": { "outcome": "referred", "target_param": "referrals_target" },
+  "outcomes": [
+    "referred",
+    "interview"
+  ],
+  "success_metric": {
+    "outcome": "referred",
+    "target_param": "referrals_target"
+  },
   "timing_boosts": {
     "birthday": 1.5,
     "festival": 1.5,
@@ -62,13 +122,22 @@
     "after_any_message_days": 7,
     "any_message_factor": 0.5
   },
-  "daily_list": { "min": 3, "max": 7, "default": 5, "max_per_company": 2 },
-  "reply_check_in": { "from_days": 2, "to_days": 5 },
+  "daily_list": {
+    "min": 3,
+    "max": 7,
+    "default": 5,
+    "max_per_company": 2
+  },
+  "reply_check_in": {
+    "from_days": 2,
+    "to_days": 5
+  },
   "prompts": {
     "relevance": "career_sprint.relevance.v1",
     "draft": "career_sprint.draft.v1"
   },
   "copy": {
+    "picker_label": "Get referred",
     "goal_strip_label": "Career Sprint",
     "progress_title": "{count} of {target} referrals",
     "stage_descriptions": {

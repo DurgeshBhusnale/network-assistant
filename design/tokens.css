@@ -1,6 +1,6 @@
 /* Design tokens — Networking Assistant v1
    Source: Design canvas "Networking Assistant App Screens" (claude.ai).
-   Use these via Tailwind theme extension (tailwind.config.ts → theme.extend.colors = { bg: 'var(--color-bg)', ... }).
+   Mapped into Tailwind v4 with `@theme inline` in apps/web/app/globals.css.
    Components must reference tokens, never raw hex values. */
 
 :root {
@@ -15,6 +15,7 @@
   --color-muted: #5B6270;         /* captions, meta (passes 4.5:1 on bg and surface) */
   --color-on-dark: #FFFFFF;
   --color-on-dark-muted: #C9CED8;
+  --color-on-dark-soft: #E4E7EC;  /* live transcript on the recorder panel */
 
   /* Lines */
   --color-line: #E2E5EA;          /* card borders */
@@ -37,6 +38,10 @@
   --color-success-soft: #E3F4EA;
   --color-send: #1F7A4A;          /* "Send on WhatsApp" button (generic green, not WhatsApp brand) */
   --color-danger: #B4321F;        /* badges, destructive actions */
+
+  /* Decorative (non-text) */
+  --color-waveform-idle: #4A505C; /* unplayed waveform bars on dark */
+  --color-dot-neutral: #9AA1AD;   /* neutral timeline dots */
 
   /* Type */
   --font-display: 'Bricolage Grotesque', system-ui, sans-serif; /* weights 600, 700 */

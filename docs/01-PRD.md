@@ -139,8 +139,8 @@ IDs are referenced by the sprint plan and tests.
 
 | ID | Requirement | Pri |
 |---|---|---|
-| FR-GOAL-1 | Pack picker shows Career Sprint (active) and other packs as "Coming soon" (disabled), driven by `packs` table config. | P0 |
-| FR-GOAL-2 | Career Sprint goal fields: target role (text), target companies (list, 1–15), locations (list), referrals target (1–10, default 4), optional job links (used in ask drafts), deadline (default start + 60 days). | P0 |
+| FR-GOAL-1 | Pack picker shows Career Sprint (active) and other packs as "Coming soon" (disabled), driven by `packs` table config. Tile label comes from `config.copy.picker_label` (Career Sprint: "Get referred"). | P0 |
+| FR-GOAL-2 | Career Sprint goal fields: target role (text), target companies (list, 1–15), locations (list), referrals target (1–10, default 4), optional job links (used in ask drafts; shown as a collapsed field "Add job links (optional)"), deadline (default start + 60 days). | P0 |
 | FR-GOAL-3 | One active goal per user in v1 (data model supports many). | P0 |
 | FR-GOAL-4 | Edit goal; pause/end goal. | P1 |
 
@@ -156,7 +156,7 @@ IDs are referenced by the sprint plan and tests.
 | FR-CON-6 | Fuzzy name match suggestions for possible duplicates (never auto-merge on name alone). | P1 |
 | FR-CON-7 | Import of 1,000 contacts completes in < 30 s and shows progress; partial failures keep successful rows and list skipped rows with reasons. | P0 |
 | FR-CON-8 | People list with search by name/company; Person page (see 7.6). | P0 |
-| FR-CON-9 | Edit/delete a person; deleting removes memories, interactions, suggestions, drafts for them. | P0 |
+| FR-CON-9 | Edit/delete a person; deleting immediately hard-deletes their memories, interactions, suggestions, goal state, triggers and drafts and hides the person; the contact row itself is purged after 30 days. | P0 |
 
 ### 7.4 Memories and capture
 
@@ -168,6 +168,8 @@ IDs are referenced by the sprint plan and tests.
 | FR-MEM-4 | Confirmed follow-up date creates a dated suggestion for that day. | P0 |
 | FR-MEM-5 | Raw audio deleted after transcription; deletion logged. | P0 |
 | FR-MEM-6 | Text quick-capture box with the same extraction ("met Priya at eChai…"). | P0 |
+| FR-MEM-7 | Capture text (voice transcripts, typed notes, WhatsApp notes) is cleared once the user confirms or discards the candidates; unconfirmed captures are cleared after 24 h. | P0 |
+| FR-MEM-7 | Capture text (voice transcripts, typed notes, WhatsApp notes) is cleared once the user confirms or discards the candidates; unconfirmed captures are cleared after 24 h. | P0 |
 
 ### 7.5 Today (daily ranked list)
 
@@ -204,7 +206,7 @@ IDs are referenced by the sprint plan and tests.
 | FR-SEND-2 | "Copy for LinkedIn" copies text and opens the person's LinkedIn URL (if any). | P0 |
 | FR-SEND-3 | On returning to the app, ask "Sent?" (Yes / Not yet); "Mark as sent" button as fallback. | P0 |
 | FR-SEND-4 | A send creates `interactions(type='sent')`, marks the suggestion done, schedules a reply check-in in 3 days. | P0 |
-| FR-SEND-5 | Daily send cap (default 20); the 21st send action is blocked with a friendly message. | P0 |
+| FR-SEND-5 | Daily send cap (default 20). A send action is the first "Send on WhatsApp"/"Copy for LinkedIn" for a draft (`POST /drafts/{id}/send`); reopening the same draft doesn't count again. The 21st is blocked with a friendly message. | P0 |
 
 ### 7.8 Reply tracking and progress
 
@@ -232,7 +234,7 @@ IDs are referenced by the sprint plan and tests.
 | ID | Requirement | Pri |
 |---|---|---|
 | FR-PAY-1 | Plans: Free; Career Sprint ₹799 one-time for 60 days; Pro ₹299/month or ₹2,499/year. Prices include GST. Prices configurable server-side. | P0 (Sprint), P1 (Pro) |
-| FR-PAY-2 | Free limits: 3 AI drafts per calendar month; weekly digest; no WhatsApp brief; small-model drafts only. | P0 |
+| FR-PAY-2 | Free limits: 3 AI drafts per calendar month (the first generation of a draft counts as 1; tone changes and "Another version" on the same draft don't count, capped at 3 regenerations per draft); weekly digest; no WhatsApp brief; small-model drafts only (Claude Haiku allowed only as a failure fallback, never Sonnet). | P0 |
 | FR-PAY-3 | Paywall appears when free draft limit is hit or user tries a paid-only action; shows plan cards per design. | P0 |
 | FR-PAY-4 | Web checkout via Razorpay (UPI first, cards); entitlement activated only by verified webhook. | P0 |
 | FR-PAY-5 | Sprint fair-use cap: 400 drafts per Sprint (protects margins); configurable. | P0 |
