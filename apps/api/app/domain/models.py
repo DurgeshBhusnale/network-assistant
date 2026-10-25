@@ -5,7 +5,7 @@ from datetime import date, datetime, time
 from typing import Any, ClassVar
 
 from sqlalchemy import BigInteger, Date, DateTime, Enum, ForeignKey, Integer, String, Text, Time
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -82,3 +82,81 @@ class Event(Base):
     name: Mapped[str] = mapped_column(String)
     props: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+IMPORT_SOURCE = _pg_enum("import_source", "picker", "vcard", "linkedin_csv", "manual")
+JOB_STATUS = _pg_enum("job_status", "queued", "processing", "ready", "committed", "failed")
+MEMORY_SOURCE = _pg_enum("memory_source", "note", "voice", "whatsapp", "import")
+
+
+class Contact(Base):
+    __tablename__ = "contacts"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    full_name: Mapped[str] = mapped_column(Text)
+    first_name: Mapped[str | None] = mapped_column(Text)
+    last_name: Mapped[str | None] = mapped_column(Text)
+    phones: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
+    emails: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
+    linkedin_url: Mapped[str | None] = mapped_column(Text)
+    company: Mapped[str | None] = mapped_column(Text)
+    company_norm: Mapped[str | None] = mapped_column(Text)
+    title: Mapped[str | None] = mapped_column(Text)
+    city: Mapped[str | None] = mapped_column(Text)
+    how_known: Mapped[str | None] = mapped_column(Text)
+    birthday: Mapped[date | None] = mapped_column(Date)
+    sources: Mapped[list[str]] = mapped_column(ARRAY(IMPORT_SOURCE), server_default="{}")
+    last_interaction_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class Memory(Base):
+    __tablename__ = "memories"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    contact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contacts.id"))
+    text: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(MEMORY_SOURCE)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class Interaction(Base):
+    __tablename__ = "interactions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    contact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contacts.id"))
+    goal_id: Mapped[uuid.UUID | None] = mapped_column()
+    type: Mapped[str] = mapped_column(Text)
+    stage: Mapped[str | None] = mapped_column(Text)
+    outcome: Mapped[str | None] = mapped_column(Text)
+    channel: Mapped[str | None] = mapped_column(Text)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+    meta: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+
+
+class ImportJob(Base):
+    __tablename__ = "imports"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    source: Mapped[str] = mapped_column(IMPORT_SOURCE)
+    status: Mapped[str] = mapped_column(JOB_STATUS, server_default="queued")
+    counts: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+    errors: Mapped[list[Any]] = mapped_column(JSONB, server_default="[]")
+    preview: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class Trigger(Base):
+    __tablename__ = "triggers"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    contact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contacts.id"))
+    type: Mapped[str] = mapped_column(Text)
+    date: Mapped[date] = mapped_column(Date)
