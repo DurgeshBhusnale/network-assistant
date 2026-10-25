@@ -4,15 +4,17 @@ import uuid
 
 from fastapi import APIRouter
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.ai.deps import AIRouterDep
 from app.ai.prompts import render
-from app.ai.router import AIUnavailableError, StyleOutput
+from app.ai.router import AIRouter, AIUnavailableError, StyleOutput
 from app.analytics.track import track
 from app.api.v1.deps import ClockDep, SettingsDep
 from app.billing.limits import Decision, can_create_draft, can_regenerate, regenerations_left
-from app.core.auth import CurrentUser
+from app.core.auth import AuthUser, CurrentUser
+from app.core.clock import Clock
+from app.core.config import Settings
 from app.core.db import Engine, user_session
 from app.core.errors import AppError, ErrorCode
 from app.domain.models import Draft, StyleProfile
@@ -23,6 +25,7 @@ from app.domain.schemas import (
     DraftRegenerate,
     StyleOut,
     StyleSamplesUpdate,
+    Tone,
 )
 from app.services import billing
 from app.services import contacts as contacts_svc
@@ -92,13 +95,32 @@ async def create_draft(
     settings: SettingsDep,
     clock: ClockDep,
 ) -> DraftOut:
+    return await create_draft_for(
+        engine, user, ai, settings, clock, contact_id, body.stage, body.tone
+    )
+
+
+async def create_draft_for(
+    engine: AsyncEngine,
+    user: AuthUser,
+    ai: AIRouter,
+    settings: Settings,
+    clock: Clock,
+    contact_id: uuid.UUID,
+    stage: str,
+    tone: Tone | None,
+    *,
+    suggestion_id: uuid.UUID | None = None,
+    reasons: list[str] | None = None,
+) -> DraftOut:
+    """Shared by the Person page and Today suggestions (FR-DRAFT-1)."""
     now = clock.now()
     limits = billing.limits_from(settings)
     # Read phase: limits and context in a short transaction (no AI call while holding it).
     async with user_session(engine, user) as session:
         profile = await ensure_profile(session, user)
         contact = await contacts_svc.get_contact(session, user.id, contact_id)
-        ctx = await load_context(session, user.id, contact, body.stage)
+        ctx = await load_context(session, user.id, contact, stage)
         plan = await billing.current_plan(session, user.id, now)
         used = await billing.drafts_this_month(session, user.id, now, profile.timezone)
         decision = can_create_draft(plan, used, limits)
@@ -106,17 +128,18 @@ async def create_draft(
         entitlement = await billing.active_entitlement(session, user.id, now)
 
     try:
-        gen = await generate(ai, ctx, body.tone, user.id, variation=False)
+        gen = await generate(ai, ctx, tone, user.id, variation=False)
     except AIUnavailableError as exc:
         raise _ai_down(exc) from exc
 
     async with user_session(engine, user) as session:
         draft = Draft(
             user_id=user.id,
+            suggestion_id=suggestion_id,
             contact_id=contact_id,
             stage=ctx.stage.id,
-            tone=body.tone,
-            language="hinglish" if body.tone == "hinglish" else ctx.profile.language,
+            tone=tone,
+            language="hinglish" if tone == "hinglish" else ctx.profile.language,
             provider=gen.provider,
             model=gen.model,
             prompt_version=gen.prompt_version,
@@ -131,6 +154,7 @@ async def create_draft(
             ctx.pack,
             regenerations_left=regenerations_left(plan, 0, limits),
             drafts_left_this_month=decision.remaining,
+            reasons=reasons,
         )
     if entitlement is not None:
         await count_paid_draft(engine, entitlement.id)

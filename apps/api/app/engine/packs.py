@@ -24,9 +24,15 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="allow", frozen=True)
 
 
+StageRole = Literal["reconnect", "ask", "follow_up", "thank"]
+
+
 class Stage(_Model):
+    """`role` is what the engine reasons about; `id` and `label` are pack vocabulary."""
+
     id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     label: str
+    role: StageRole
     has_ask: bool
     step: int = Field(ge=1)
 
@@ -91,7 +97,22 @@ class Pack(PackSummary):
             raise ValueError("success_metric.outcome must be one of outcomes")
         if not any(not s.has_ask for s in self.stages):
             raise ValueError("a pack needs at least one stage without an ask")
+        roles = [s.role for s in self.stages]
+        for role in ("reconnect", "ask", "thank"):
+            if roles.count(role) != 1:
+                raise ValueError(f"a pack needs exactly one '{role}' stage")
+        if roles.count("follow_up") > 1:
+            raise ValueError("a pack has at most one 'follow_up' stage")
         return self
+
+    def by_role(self, role: StageRole) -> Stage | None:
+        return next((s for s in self.stages if s.role == role), None)
+
+    def stage_for(self, role: StageRole) -> Stage:
+        stage = self.by_role(role)
+        if stage is None:
+            raise UnknownStageError(f"pack {self.id!r} has no {role!r} stage")
+        return stage
 
     def stage(self, stage_id: str) -> Stage:
         for stage in self.stages:

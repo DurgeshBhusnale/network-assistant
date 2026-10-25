@@ -244,6 +244,7 @@ def draft_out(
     *,
     regenerations_left: int | None,
     drafts_left_this_month: int | None,
+    reasons: list[str] | None = None,
 ) -> DraftOut:
     stage = pack.stage(draft.stage)
     fc = draft.factcheck or {}
@@ -263,7 +264,7 @@ def draft_out(
         word_count=word_count(draft.final_text or draft.text),
         unsupported_claims=list(fc.get("unsupported", [])),
         warnings=list(fc.get("warnings", [])),
-        reasons=[],
+        reasons=reasons or [],
         regenerations=draft.regenerations,
         regenerations_left=regenerations_left,
         drafts_left_this_month=drafts_left_this_month,

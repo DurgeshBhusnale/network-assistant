@@ -16,6 +16,29 @@
         "title": "Body_import_file_v1_imports_file_post",
         "type": "object"
       },
+      "CompanyProgress": {
+        "properties": {
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "company",
+          "people",
+          "status"
+        ],
+        "title": "CompanyProgress",
+        "type": "object"
+      },
       "ConsentState": {
         "properties": {
           "granted": {
@@ -696,6 +719,8 @@
           "FREE_REGEN_LIMIT_REACHED",
           "FAIR_USE_REACHED",
           "AI_UNAVAILABLE",
+          "SEND_CAP_REACHED",
+          "NO_PHONE",
           "INTERNAL_ERROR"
         ],
         "title": "ErrorCode",
@@ -728,6 +753,34 @@
           "error"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "FunnelStep": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "highlight": {
+            "default": false,
+            "title": "Highlight",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "count"
+        ],
+        "title": "FunnelStep",
         "type": "object"
       },
       "GoalCreate": {
@@ -820,6 +873,60 @@
           "days_left"
         ],
         "title": "GoalOut",
+        "type": "object"
+      },
+      "GoalStripOut": {
+        "properties": {
+          "day_number": {
+            "title": "Day Number",
+            "type": "integer"
+          },
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "goal_id": {
+            "format": "uuid",
+            "title": "Goal Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "stats": {
+            "items": {
+              "$ref": "#/components/schemas/StatOut"
+            },
+            "title": "Stats",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "total_days": {
+            "title": "Total Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "goal_id",
+          "label",
+          "title",
+          "day_number",
+          "total_days",
+          "days_left",
+          "stats"
+        ],
+        "title": "GoalStripOut",
         "type": "object"
       },
       "GoalUpdate": {
@@ -1052,6 +1159,126 @@
         "title": "ImportRowError",
         "type": "object"
       },
+      "InteractionIn": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "anyOf": [
+              {
+                "enum": [
+                  "whatsapp",
+                  "linkedin",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel"
+          },
+          "contact_id": {
+            "format": "uuid",
+            "title": "Contact Id",
+            "type": "string"
+          },
+          "draft_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Id"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "type": {
+            "enum": [
+              "sent",
+              "replied",
+              "no_reply",
+              "outcome"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id",
+          "type"
+        ],
+        "title": "InteractionIn",
+        "type": "object"
+      },
+      "InteractionOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "thank_suggestion": {
+            "default": false,
+            "title": "Thank Suggestion",
+            "type": "boolean"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "stage",
+          "outcome",
+          "occurred_at"
+        ],
+        "title": "InteractionOut",
+        "type": "object"
+      },
       "MemoryCreate": {
         "additionalProperties": false,
         "properties": {
@@ -1139,6 +1366,24 @@
           "stage_label"
         ],
         "title": "NextStep",
+        "type": "object"
+      },
+      "OutcomeOption": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "OutcomeOption",
         "type": "object"
       },
       "PackOut": {
@@ -1230,6 +1475,58 @@
           "copy_text"
         ],
         "title": "PackOut",
+        "type": "object"
+      },
+      "PendingReply": {
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/SuggestionContact"
+          },
+          "days_ago": {
+            "title": "Days Ago",
+            "type": "integer"
+          },
+          "sent_at": {
+            "format": "date-time",
+            "title": "Sent At",
+            "type": "string"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "stage_has_ask": {
+            "title": "Stage Has Ask",
+            "type": "boolean"
+          },
+          "stage_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Label"
+          }
+        },
+        "required": [
+          "contact",
+          "sent_at",
+          "days_ago",
+          "stage",
+          "stage_label",
+          "stage_has_ask"
+        ],
+        "title": "PendingReply",
         "type": "object"
       },
       "PersonOut": {
@@ -1612,6 +1909,189 @@
         "title": "ProfileUpdate",
         "type": "object"
       },
+      "ProgressOut": {
+        "properties": {
+          "by_company": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyProgress"
+            },
+            "title": "By Company",
+            "type": "array"
+          },
+          "funnel": {
+            "items": {
+              "$ref": "#/components/schemas/FunnelStep"
+            },
+            "title": "Funnel",
+            "type": "array"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalStripOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "warm_replies_this_week": {
+            "title": "Warm Replies This Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "goal",
+          "headline",
+          "warm_replies_this_week",
+          "funnel",
+          "by_company"
+        ],
+        "title": "ProgressOut",
+        "type": "object"
+      },
+      "ReasonOut": {
+        "properties": {
+          "highlight": {
+            "title": "Highlight",
+            "type": "boolean"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "highlight"
+        ],
+        "title": "ReasonOut",
+        "type": "object"
+      },
+      "RepliesOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PendingReply"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "outcomes": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeOption"
+            },
+            "title": "Outcomes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "outcomes"
+        ],
+        "title": "RepliesOut",
+        "type": "object"
+      },
+      "SendIn": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "enum": [
+              "whatsapp",
+              "linkedin"
+            ],
+            "title": "Channel",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel"
+        ],
+        "title": "SendIn",
+        "type": "object"
+      },
+      "SendOut": {
+        "properties": {
+          "copy_text": {
+            "title": "Copy Text",
+            "type": "string"
+          },
+          "open_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Url"
+          },
+          "sends_left_today": {
+            "title": "Sends Left Today",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "open_url",
+          "copy_text",
+          "sends_left_today"
+        ],
+        "title": "SendOut",
+        "type": "object"
+      },
+      "SnoozeIn": {
+        "additionalProperties": false,
+        "properties": {
+          "days": {
+            "enum": [
+              1,
+              7
+            ],
+            "title": "Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "days"
+        ],
+        "title": "SnoozeIn",
+        "type": "object"
+      },
+      "StatOut": {
+        "properties": {
+          "highlight": {
+            "default": false,
+            "title": "Highlight",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "StatOut",
+        "type": "object"
+      },
       "StyleOut": {
         "properties": {
           "samples": {
@@ -1657,6 +2137,223 @@
           "samples"
         ],
         "title": "StyleSamplesUpdate",
+        "type": "object"
+      },
+      "SuggestionContact": {
+        "properties": {
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "how_known": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "How Known"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "title",
+          "company",
+          "how_known"
+        ],
+        "title": "SuggestionContact",
+        "type": "object"
+      },
+      "SuggestionDraftIn": {
+        "additionalProperties": false,
+        "properties": {
+          "tone": {
+            "anyOf": [
+              {
+                "enum": [
+                  "shorter",
+                  "warmer",
+                  "formal",
+                  "hinglish"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          }
+        },
+        "title": "SuggestionDraftIn",
+        "type": "object"
+      },
+      "SuggestionOut": {
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/SuggestionContact"
+          },
+          "draft_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonOut"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stage_label": {
+            "title": "Stage Label",
+            "type": "string"
+          },
+          "stage_tone": {
+            "enum": [
+              "ask",
+              "nurture",
+              "thanks"
+            ],
+            "title": "Stage Tone",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "opened",
+              "sent",
+              "snoozed",
+              "dismissed",
+              "expired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "contact",
+          "stage",
+          "stage_label",
+          "stage_tone",
+          "reasons",
+          "status",
+          "draft_id"
+        ],
+        "title": "SuggestionOut",
+        "type": "object"
+      },
+      "TodayOut": {
+        "properties": {
+          "contacts_count": {
+            "title": "Contacts Count",
+            "type": "integer"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "done": {
+            "title": "Done",
+            "type": "boolean"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalStripOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "minutes": {
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "weekly": {
+            "description": "Free plan: one list per week (FR-TODAY-4)",
+            "title": "Weekly",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "date",
+          "weekly",
+          "display_name",
+          "goal",
+          "items",
+          "minutes",
+          "contacts_count",
+          "done"
+        ],
+        "title": "TodayOut",
         "type": "object"
       }
     }
@@ -2254,6 +2951,70 @@
         ]
       }
     },
+    "/v1/drafts/{draft_id}/send": {
+      "post": {
+        "description": "Builds the link that opens the user's own app (ADR-0004). Counts toward the daily cap once\nper draft (FR-SEND-5). Nothing is recorded as sent until the user confirms.",
+        "operationId": "send_draft_v1_drafts__draft_id__send_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Send Draft",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
     "/v1/goals": {
       "post": {
         "operationId": "create_goal_v1_goals_post",
@@ -2676,6 +3437,57 @@
         ]
       }
     },
+    "/v1/interactions": {
+      "post": {
+        "operationId": "log_interaction_v1_interactions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InteractionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InteractionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Log Interaction",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "get_me_v1_me_get",
@@ -2947,6 +3759,88 @@
         ]
       }
     },
+    "/v1/progress": {
+      "get": {
+        "operationId": "get_progress_v1_progress_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Progress",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
+    "/v1/replies/pending": {
+      "get": {
+        "operationId": "replies_pending_v1_replies_pending_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepliesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Replies Pending",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
     "/v1/style": {
       "get": {
         "operationId": "get_style_v1_style_get",
@@ -3036,6 +3930,212 @@
         "summary": "Put Style Samples",
         "tags": [
           "drafts"
+        ]
+      }
+    },
+    "/v1/suggestions/{suggestion_id}/dismiss": {
+      "post": {
+        "operationId": "dismiss_v1_suggestions__suggestion_id__dismiss_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Suggestion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Dismiss",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
+    "/v1/suggestions/{suggestion_id}/draft": {
+      "post": {
+        "operationId": "draft_for_suggestion_v1_suggestions__suggestion_id__draft_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Suggestion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestionDraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Draft For Suggestion",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
+    "/v1/suggestions/{suggestion_id}/snooze": {
+      "post": {
+        "operationId": "snooze_v1_suggestions__suggestion_id__snooze_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Suggestion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnoozeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Snooze",
+        "tags": [
+          "daily loop"
+        ]
+      }
+    },
+    "/v1/today": {
+      "get": {
+        "operationId": "get_today_v1_today_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodayOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Today",
+        "tags": [
+          "daily loop"
         ]
       }
     }

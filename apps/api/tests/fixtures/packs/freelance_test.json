@@ -38,25 +38,30 @@
       "id": "check_in",
       "label": "Check in",
       "has_ask": false,
-      "step": 1
+      "step": 1,
+      "role": "reconnect"
     },
     {
       "id": "pitch",
       "label": "Pitch",
       "has_ask": true,
-      "step": 2
+      "step": 2,
+      "role": "ask"
     },
     {
       "id": "nudge",
       "label": "Nudge",
       "has_ask": false,
-      "step": 2
+      "step": 2,
+      "role": "follow_up",
+      "after_no_reply_days": 21
     },
     {
       "id": "thank",
       "label": "Thank",
       "has_ask": false,
-      "step": 3
+      "step": 3,
+      "role": "thank"
     }
   ],
   "outcomes": [

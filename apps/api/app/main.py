@@ -13,6 +13,7 @@ from app.core.errors import ErrorResponse, register_error_handlers
 from app.core.logging import setup_logging
 from app.core.redis import create_redis
 from app.core.sentry import init_sentry
+from app.workers.queue import create_queue
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -25,10 +26,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.db_engine = create_engine(settings)
         app.state.redis = create_redis(settings)
         app.state.ai_router = build_router(settings, app.state.db_engine)
+        app.state.queue = await create_queue(settings)
         await warm_db_pool(app.state.db_engine)
         try:
             yield
         finally:
+            if app.state.queue is not None:
+                await app.state.queue.aclose()
             await app.state.redis.aclose()
             await app.state.db_engine.dispose()
 
@@ -38,6 +42,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
         responses={422: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
     )
+    app.state.settings = settings
     register_error_handlers(app)
     app.include_router(v1_router)
     return app

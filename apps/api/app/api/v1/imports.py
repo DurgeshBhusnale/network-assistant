@@ -3,7 +3,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Request, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +20,7 @@ from app.imports.parsers import ImportFileError, parse_linkedin_csv, parse_picke
 from app.services.consents import require_consent
 from app.services.imports import commit_import, import_out, stage_import
 from app.services.profiles import ensure_profile
+from app.workers.queue import enqueue
 
 router = APIRouter(prefix="/imports", tags=["imports"])
 
@@ -96,7 +97,7 @@ async def get_import(import_id: uuid.UUID, user: CurrentUser, engine: Engine) ->
 
 @router.post("/{import_id}/commit", response_model=ImportOut)
 async def commit(
-    import_id: uuid.UUID, user: CurrentUser, engine: Engine, clock: ClockDep
+    import_id: uuid.UUID, request: Request, user: CurrentUser, engine: Engine, clock: ClockDep
 ) -> ImportOut:
     async with user_session(engine, user) as session:
         await require_consent(session, user.id, "contacts", CONSENT_MESSAGE)
@@ -106,6 +107,7 @@ async def commit(
         job = await commit_import(session, user.id, job, local_today(clock, profile.timezone))
         result = import_out(job)
     if not already:
+        await enqueue(request, "label_relevance", str(user.id))
         await track(
             engine,
             user.id,

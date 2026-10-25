@@ -236,3 +236,51 @@ class Entitlement(Base):
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     drafts_used: Mapped[int] = mapped_column(Integer, server_default="0")
+
+
+SUGGESTION_STATUS = _pg_enum(
+    "suggestion_status", "pending", "opened", "sent", "snoozed", "dismissed", "expired"
+)
+
+
+class Suggestion(Base):
+    __tablename__ = "suggestions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    goal_id: Mapped[uuid.UUID | None] = mapped_column()
+    contact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contacts.id"))
+    for_date: Mapped[date] = mapped_column(Date)
+    score: Mapped[float] = mapped_column(Float)
+    reasons: Mapped[list[Any]] = mapped_column(JSONB, server_default="[]")
+    stage: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(SUGGESTION_STATUS, server_default="pending")
+    snoozed_until: Mapped[date | None] = mapped_column(Date)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class GoalContact(Base):
+    __tablename__ = "goal_contacts"
+
+    goal_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    contact_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    relevance_label: Mapped[str | None] = mapped_column(Text)
+    relevance: Mapped[float | None] = mapped_column(Float)
+    relevance_reason: Mapped[str | None] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(Text, server_default="none")
+    outcome: Mapped[str | None] = mapped_column(Text)
+    last_suggested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    thanked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    dismissed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class CalendarEvent(Base):
+    __tablename__ = "calendar_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    date: Mapped[date] = mapped_column(Date)
+    name: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(Text)
+    active: Mapped[bool] = mapped_column(Boolean)

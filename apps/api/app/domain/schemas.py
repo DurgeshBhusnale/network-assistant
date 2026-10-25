@@ -251,6 +251,10 @@ class DraftCreate(_In):
     tone: Tone | None = None
 
 
+class SuggestionDraftIn(_In):
+    tone: Tone | None = None
+
+
 class DraftRegenerate(_In):
     tone: Tone | None = Field(default=None, description="None = Another version")
 
@@ -278,3 +282,131 @@ class DraftOut(BaseModel):
     regenerations_left: int | None
     drafts_left_this_month: int | None
     created_at: datetime
+
+
+# --- Daily loop (Sprint 4) -----------------------------------------------------------------
+
+StageTone = Literal["ask", "nurture", "thanks"]
+SendChannel = Literal["whatsapp", "linkedin"]
+
+
+class ReasonOut(BaseModel):
+    text: str
+    highlight: bool
+
+
+class SuggestionContact(BaseModel):
+    id: uuid.UUID
+    full_name: str
+    title: str | None
+    company: str | None
+    how_known: str | None
+
+
+class SuggestionOut(BaseModel):
+    id: uuid.UUID
+    contact: SuggestionContact
+    stage: str
+    stage_label: str
+    stage_tone: StageTone
+    reasons: list[ReasonOut]
+    status: Literal["pending", "opened", "sent", "snoozed", "dismissed", "expired"]
+    draft_id: uuid.UUID | None
+
+
+class StatOut(BaseModel):
+    label: str
+    value: str
+    highlight: bool = False
+
+
+class GoalStripOut(BaseModel):
+    goal_id: uuid.UUID
+    label: str
+    title: str
+    day_number: int
+    total_days: int
+    days_left: int | None
+    stats: list[StatOut]
+
+
+class TodayOut(BaseModel):
+    date: date
+    weekly: bool = Field(description="Free plan: one list per week (FR-TODAY-4)")
+    display_name: str | None
+    goal: GoalStripOut | None
+    items: list[SuggestionOut]
+    minutes: int
+    contacts_count: int
+    done: bool
+
+
+class SnoozeIn(_In):
+    days: Literal[1, 7]
+
+
+class SendIn(_In):
+    channel: SendChannel
+
+
+class SendOut(BaseModel):
+    open_url: str | None
+    copy_text: str
+    sends_left_today: int
+
+
+class InteractionIn(_In):
+    contact_id: uuid.UUID
+    type: Literal["sent", "replied", "no_reply", "outcome"]
+    outcome: str | None = Field(default=None, max_length=40)
+    draft_id: uuid.UUID | None = None
+    channel: Literal["whatsapp", "linkedin", "other"] | None = None
+
+
+class InteractionOut(BaseModel):
+    id: uuid.UUID
+    type: str
+    stage: str | None
+    outcome: str | None
+    occurred_at: datetime
+    thank_suggestion: bool = False
+
+
+class PendingReply(BaseModel):
+    contact: SuggestionContact
+    sent_at: datetime
+    days_ago: int
+    stage: str | None
+    stage_label: str | None
+    stage_has_ask: bool
+
+
+class OutcomeOption(BaseModel):
+    id: str
+    label: str
+
+
+class RepliesOut(BaseModel):
+    items: list[PendingReply]
+    outcomes: list[OutcomeOption]
+
+
+class FunnelStep(BaseModel):
+    key: str
+    label: str
+    count: int
+    highlight: bool = False
+
+
+class CompanyProgress(BaseModel):
+    company: str
+    people: int
+    status: str
+
+
+class ProgressOut(BaseModel):
+    goal: GoalStripOut | None
+    headline: str | None
+    warm_replies_this_week: int
+    funnel: list[FunnelStep]
+    by_company: list[CompanyProgress]

@@ -110,6 +110,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/drafts/{draft_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Draft
+         * @description Builds the link that opens the user's own app (ADR-0004). Counts toward the daily cap once
+         *     per draft (FR-SEND-5). Nothing is recorded as sent until the user confirms.
+         */
+        post: operations["send_draft_v1_drafts__draft_id__send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/goals": {
         parameters: {
             query?: never;
@@ -246,6 +267,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/interactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log Interaction */
+        post: operations["log_interaction_v1_interactions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me": {
         parameters: {
             query?: never;
@@ -316,6 +354,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Progress */
+        get: operations["get_progress_v1_progress_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/replies/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Replies Pending */
+        get: operations["replies_pending_v1_replies_pending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/style": {
         parameters: {
             query?: never;
@@ -350,6 +422,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/suggestions/{suggestion_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss */
+        post: operations["dismiss_v1_suggestions__suggestion_id__dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/suggestions/{suggestion_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Draft For Suggestion */
+        post: operations["draft_for_suggestion_v1_suggestions__suggestion_id__draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/suggestions/{suggestion_id}/snooze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Snooze */
+        post: operations["snooze_v1_suggestions__suggestion_id__snooze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Today */
+        get: operations["get_today_v1_today_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -361,6 +501,15 @@ export interface components {
              * @description .vcf or LinkedIn Connections.csv
              */
             file: string;
+        };
+        /** CompanyProgress */
+        CompanyProgress: {
+            /** Company */
+            company: string;
+            /** People */
+            people: number;
+            /** Status */
+            status: string;
         };
         /** ConsentState */
         ConsentState: {
@@ -534,7 +683,7 @@ export interface components {
          * ErrorCode
          * @enum {string}
          */
-        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "INTERNAL_ERROR";
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "SEND_CAP_REACHED" | "NO_PHONE" | "INTERNAL_ERROR";
         /** ErrorDetail */
         ErrorDetail: {
             code: components["schemas"]["ErrorCode"];
@@ -544,6 +693,20 @@ export interface components {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
+        };
+        /** FunnelStep */
+        FunnelStep: {
+            /** Count */
+            count: number;
+            /**
+             * Highlight
+             * @default false
+             */
+            highlight: boolean;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
         };
         /** GoalCreate */
         GoalCreate: {
@@ -586,6 +749,26 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "paused" | "done";
+        };
+        /** GoalStripOut */
+        GoalStripOut: {
+            /** Day Number */
+            day_number: number;
+            /** Days Left */
+            days_left: number | null;
+            /**
+             * Goal Id
+             * Format: uuid
+             */
+            goal_id: string;
+            /** Label */
+            label: string;
+            /** Stats */
+            stats: components["schemas"]["StatOut"][];
+            /** Title */
+            title: string;
+            /** Total Days */
+            total_days: number;
         };
         /** GoalUpdate */
         GoalUpdate: {
@@ -686,6 +869,49 @@ export interface components {
             /** Row */
             row: number;
         };
+        /** InteractionIn */
+        InteractionIn: {
+            /** Channel */
+            channel?: ("whatsapp" | "linkedin" | "other") | null;
+            /**
+             * Contact Id
+             * Format: uuid
+             */
+            contact_id: string;
+            /** Draft Id */
+            draft_id?: string | null;
+            /** Outcome */
+            outcome?: string | null;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "sent" | "replied" | "no_reply" | "outcome";
+        };
+        /** InteractionOut */
+        InteractionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Outcome */
+            outcome: string | null;
+            /** Stage */
+            stage: string | null;
+            /**
+             * Thank Suggestion
+             * @default false
+             */
+            thank_suggestion: boolean;
+            /** Type */
+            type: string;
+        };
         /** MemoryCreate */
         MemoryCreate: {
             /** Text */
@@ -719,6 +945,13 @@ export interface components {
             stage: string | null;
             /** Stage Label */
             stage_label: string | null;
+        };
+        /** OutcomeOption */
+        OutcomeOption: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
         };
         /** PackOut */
         PackOut: {
@@ -754,6 +987,23 @@ export interface components {
             status: "active" | "coming_soon" | "retired";
             /** Tagline */
             tagline: string | null;
+        };
+        /** PendingReply */
+        PendingReply: {
+            contact: components["schemas"]["SuggestionContact"];
+            /** Days Ago */
+            days_ago: number;
+            /**
+             * Sent At
+             * Format: date-time
+             */
+            sent_at: string;
+            /** Stage */
+            stage: string | null;
+            /** Stage Has Ask */
+            stage_has_ask: boolean;
+            /** Stage Label */
+            stage_label: string | null;
         };
         /** PersonOut */
         PersonOut: {
@@ -852,6 +1102,69 @@ export interface components {
             /** Timezone */
             timezone?: string | null;
         };
+        /** ProgressOut */
+        ProgressOut: {
+            /** By Company */
+            by_company: components["schemas"]["CompanyProgress"][];
+            /** Funnel */
+            funnel: components["schemas"]["FunnelStep"][];
+            goal: components["schemas"]["GoalStripOut"] | null;
+            /** Headline */
+            headline: string | null;
+            /** Warm Replies This Week */
+            warm_replies_this_week: number;
+        };
+        /** ReasonOut */
+        ReasonOut: {
+            /** Highlight */
+            highlight: boolean;
+            /** Text */
+            text: string;
+        };
+        /** RepliesOut */
+        RepliesOut: {
+            /** Items */
+            items: components["schemas"]["PendingReply"][];
+            /** Outcomes */
+            outcomes: components["schemas"]["OutcomeOption"][];
+        };
+        /** SendIn */
+        SendIn: {
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "whatsapp" | "linkedin";
+        };
+        /** SendOut */
+        SendOut: {
+            /** Copy Text */
+            copy_text: string;
+            /** Open Url */
+            open_url: string | null;
+            /** Sends Left Today */
+            sends_left_today: number;
+        };
+        /** SnoozeIn */
+        SnoozeIn: {
+            /**
+             * Days
+             * @enum {integer}
+             */
+            days: 1 | 7;
+        };
+        /** StatOut */
+        StatOut: {
+            /**
+             * Highlight
+             * @default false
+             */
+            highlight: boolean;
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
+        };
         /** StyleOut */
         StyleOut: {
             /** Samples */
@@ -863,6 +1176,78 @@ export interface components {
         StyleSamplesUpdate: {
             /** Samples */
             samples: string[];
+        };
+        /** SuggestionContact */
+        SuggestionContact: {
+            /** Company */
+            company: string | null;
+            /** Full Name */
+            full_name: string;
+            /** How Known */
+            how_known: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string | null;
+        };
+        /** SuggestionDraftIn */
+        SuggestionDraftIn: {
+            /** Tone */
+            tone?: ("shorter" | "warmer" | "formal" | "hinglish") | null;
+        };
+        /** SuggestionOut */
+        SuggestionOut: {
+            contact: components["schemas"]["SuggestionContact"];
+            /** Draft Id */
+            draft_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reasons */
+            reasons: components["schemas"]["ReasonOut"][];
+            /** Stage */
+            stage: string;
+            /** Stage Label */
+            stage_label: string;
+            /**
+             * Stage Tone
+             * @enum {string}
+             */
+            stage_tone: "ask" | "nurture" | "thanks";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "opened" | "sent" | "snoozed" | "dismissed" | "expired";
+        };
+        /** TodayOut */
+        TodayOut: {
+            /** Contacts Count */
+            contacts_count: number;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Display Name */
+            display_name: string | null;
+            /** Done */
+            done: boolean;
+            goal: components["schemas"]["GoalStripOut"] | null;
+            /** Items */
+            items: components["schemas"]["SuggestionOut"][];
+            /** Minutes */
+            minutes: number;
+            /**
+             * Weekly
+             * @description Free plan: one list per week (FR-TODAY-4)
+             */
+            weekly: boolean;
         };
     };
     responses: never;
@@ -1294,6 +1679,50 @@ export interface operations {
             };
         };
     };
+    send_draft_v1_drafts__draft_id__send_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_goal_v1_goals_post: {
         parameters: {
             query?: never;
@@ -1629,6 +2058,48 @@ export interface operations {
             };
         };
     };
+    log_interaction_v1_interactions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InteractionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InteractionOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_me_v1_me_get: {
         parameters: {
             query?: never;
@@ -1865,6 +2336,82 @@ export interface operations {
             };
         };
     };
+    get_progress_v1_progress_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgressOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    replies_pending_v1_replies_pending_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepliesOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_style_v1_style_get: {
         parameters: {
             query?: never;
@@ -1923,6 +2470,168 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StyleOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss_v1_suggestions__suggestion_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    draft_for_suggestion_v1_suggestions__suggestion_id__draft_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuggestionDraftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    snooze_v1_suggestions__suggestion_id__snooze_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SnoozeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_today_v1_today_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodayOut"];
                 };
             };
             /** @description Unprocessable Entity */

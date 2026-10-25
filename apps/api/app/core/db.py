@@ -30,7 +30,10 @@ logger = logging.getLogger(__name__)
 
 
 def create_engine(settings: Settings) -> AsyncEngine:
-    return create_async_engine(settings.database_url, pool_pre_ping=True)
+    # No pre-ping: it costs a round trip per checkout (slow to a remote DB). Recycle instead.
+    return create_async_engine(
+        settings.database_url, pool_recycle=300, pool_size=5, max_overflow=10
+    )
 
 
 async def ping_db(engine: AsyncEngine) -> None:
@@ -59,9 +62,12 @@ Engine = Annotated[AsyncEngine, Depends(get_engine)]
 async def user_session(engine: AsyncEngine, user: "AuthUser") -> AsyncIterator[AsyncSession]:
     maker = async_sessionmaker(engine, expire_on_commit=False)
     async with maker() as session, session.begin():
-        await session.execute(text("set local role authenticated"))
+        # One round trip: SET LOCAL ROLE + the JWT claims that auth.uid() reads.
         await session.execute(
-            text("select set_config('request.jwt.claims', :claims, true)"),
+            text(
+                "select set_config('role', 'authenticated', true), "
+                "set_config('request.jwt.claims', :claims, true)"
+            ),
             {"claims": json.dumps(user.claims)},
         )
         yield session

@@ -3,7 +3,7 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +20,7 @@ from app.domain.schemas import GoalCreate, GoalOut, GoalUpdate
 from app.engine.goals import GoalParamsError, goal_end_date, validate_goal_params
 from app.engine.packs import Pack, parse_pack
 from app.services.profiles import ensure_profile
+from app.workers.queue import enqueue
 
 router = APIRouter(tags=["goals"])
 
@@ -64,7 +65,12 @@ def _already_active() -> AppError:
 
 @router.post("/goals", response_model=GoalOut, status_code=201)
 async def create_goal(
-    body: GoalCreate, user: CurrentUser, engine: Engine, settings: SettingsDep, clock: ClockDep
+    body: GoalCreate,
+    request: Request,
+    user: CurrentUser,
+    engine: Engine,
+    settings: SettingsDep,
+    clock: ClockDep,
 ) -> GoalOut:
     async with user_session(engine, user) as session:
         profile = await ensure_profile(session, user)
@@ -92,6 +98,7 @@ async def create_goal(
         await session.refresh(goal)
         result = goal_out(goal, today)
     await track(engine, user.id, "goal_created", {"pack_id": pack.id})
+    await enqueue(request, "label_relevance", str(user.id))
     return result
 
 

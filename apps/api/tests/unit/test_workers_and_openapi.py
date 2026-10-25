@@ -20,7 +20,10 @@ async def test_heartbeat_cron_logs(caplog: pytest.LogCaptureFixture) -> None:
 
 def test_worker_settings_register_tasks_and_cron() -> None:
     assert ping in WorkerSettings.functions
-    assert [job.name for job in WorkerSettings.cron_jobs] == ["cron:app.workers.tasks.heartbeat"]
+    assert [job.name for job in WorkerSettings.cron_jobs] == [
+        "cron:app.workers.tasks.heartbeat",
+        "cron:app.workers.tasks.rank_due_users",
+    ]
 
 
 def test_openapi_lists_health_with_error_envelope() -> None:

@@ -77,7 +77,8 @@
       "id": "warm_up",
       "label": "Warm up",
       "has_ask": false,
-      "step": 1
+      "step": 1,
+      "role": "reconnect"
     },
     {
       "id": "ask",
@@ -85,20 +86,23 @@
       "has_ask": true,
       "step": 2,
       "min_days_after_warm_up": 3,
-      "direct_if_warmth_at_least": 0.6
+      "direct_if_warmth_at_least": 0.6,
+      "role": "ask"
     },
     {
       "id": "follow_up",
       "label": "Follow up",
       "has_ask": false,
       "step": 2,
-      "after_no_reply_days": 30
+      "after_no_reply_days": 30,
+      "role": "follow_up"
     },
     {
       "id": "thank",
       "label": "Thank",
       "has_ask": false,
-      "step": 3
+      "step": 3,
+      "role": "thank"
     }
   ],
   "outcomes": [
@@ -145,6 +149,39 @@
       "ask": "Ask for a referral",
       "follow_up": "A gentle nudge",
       "thank": "Say thanks"
+    },
+    "relevance_reasons": {
+      "target_company": "Target company",
+      "same_field": "Works in your field",
+      "can_introduce": "Can introduce you"
+    },
+    "outcome_labels": {
+      "referred": "Referred me",
+      "interview": "Interview"
+    },
+    "outcome_past": {
+      "referred": "Referred you",
+      "interview": "Got you an interview"
+    },
+    "state_labels": {
+      "warmed": "Warmed up",
+      "asked": "Asked",
+      "replied": "Replied"
+    },
+    "stage_past": {
+      "warm_up": "Warmed up",
+      "ask": "Asked for a referral",
+      "follow_up": "Followed up",
+      "thank": "Thanked"
+    },
+    "success_label": "Referrals",
+    "minutes_per_person": 1.5,
+    "funnel_labels": {
+      "warmed": "Warmed up",
+      "asked": "Asked",
+      "replied": "Replied",
+      "referred": "Referred",
+      "interview": "Interview"
     }
   }
 }
