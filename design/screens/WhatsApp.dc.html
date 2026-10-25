@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WhatsApp assistant chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2340C9}a:hover{color:#1A2F96}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #ECEAE4; font-family: 'Instrument Sans', system-ui, sans-serif; color: #14171F; display: flex; flex-direction: column; overflow: hidden">
+  <div style="background: #FFFFFF; border-bottom: 1px solid #DDDAD2; padding: 14px 16px; display: flex; gap: 12px; align-items: center">
+    <div style="width: 40px; height: 40px; border-radius: 20px; background: #2340C9; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700">A</div>
+    <div style="display: flex; flex-direction: column"><span style="font-weight: 600; font-size: 15.5px">[App name] Assistant</span><span style="font-size: 12.5px; color: #5B6270">Business account · replies instantly</span></div>
+  </div>
+
+  <div style="flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px">
+    <span style="align-self: center; font-size: 11.5px; background: #FFFFFF; color: #5B6270; padding: 3px 10px; border-radius: 6px">Today</span>
+
+    <div style="align-self: flex-start; max-width: 300px; background: #FFFFFF; border-radius: 4px 12px 12px 12px; overflow: hidden">
+      <div style="padding: 10px 12px; font-size: 14px; line-height: 1.5">Good morning Rohan. 3 people for today:<br>• Ananya (Razorpay): ask for the referral<br>• Vikram: birthday today<br>• Priya (Zoho): follow up from Thursday</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #EEECE6">
+        <button style="height: 44px; border: 0; border-right: 1px solid #EEECE6; background: #FFFFFF; color: #2340C9; font: 600 14px 'Instrument Sans', sans-serif">Show drafts</button>
+        <button style="height: 44px; border: 0; background: #FFFFFF; color: #2340C9; font: 600 14px 'Instrument Sans', sans-serif">Snooze today</button>
+      </div>
+    </div>
+
+    <div style="align-self: flex-end; background: #DCE4FB; border-radius: 12px 4px 12px 12px; padding: 8px 12px; font-size: 14px">Show drafts</div>
+
+    <div style="align-self: flex-start; max-width: 300px; background: #FFFFFF; border-radius: 4px 12px 12px 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 12px; color: #5B6270; font-weight: 600">For Vikram · long-press to forward or copy</span>
+      <span style="font-size: 14px; line-height: 1.5">Happy birthday Vikram! Still remember you carrying the whole hostel cricket team in final year. Hope Postman and Bengaluru are treating you well. Party pending whenever you're in Pune!</span>
+    </div>
+
+    <div style="align-self: flex-end; background: #DCE4FB; border-radius: 12px 4px 12px 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; width: 220px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#2340C9" aria-hidden="true"><path d="M7 5v14l12-7z"></path></svg>
+      <div style="flex: 1; height: 4px; border-radius: 2px; background: #9FB0EE"></div>
+      <span style="font-size: 12.5px; color: #3E4450">0:31</span>
+    </div>
+
+    <div style="align-self: flex-start; max-width: 300px; background: #FFFFFF; border-radius: 4px 12px 12px 12px; overflow: hidden">
+      <div style="padding: 10px 12px; font-size: 14px; line-height: 1.5">Got it. I'll add <b>Priya Nair</b>, PM at Zoho, met at eChai. Follow up on Monday, 26 Oct?</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #EEECE6">
+        <button style="height: 44px; border: 0; border-right: 1px solid #EEECE6; background: #FFFFFF; color: #2340C9; font: 600 14px 'Instrument Sans', sans-serif">Save</button>
+        <button style="height: 44px; border: 0; background: #FFFFFF; color: #2340C9; font: 600 14px 'Instrument Sans', sans-serif">Edit in app</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border-top: 1px solid #DDDAD2; padding: 10px 12px 16px; display: flex; gap: 8px; align-items: center">
+    <label for="msg" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Message</label>
+    <input id="msg" placeholder="Type, or hold the mic" style="flex: 1; height: 44px; border-radius: 22px; border: 1px solid #DDDAD2; padding: 0 16px; font: 14px 'Instrument Sans', sans-serif; background: #F7F6F2">
+    <button aria-label="Record a voice note" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #2340C9; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

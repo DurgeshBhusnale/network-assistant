@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Set your goal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2340C9}a:hover{color:#1A2F96}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F5F7; font-family: 'Instrument Sans', system-ui, sans-serif; color: #14171F; display: flex; flex-direction: column; overflow: hidden">
+  <div style="padding: 24px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px" aria-label="Step 1 of 3">
+      <div style="height: 4px; border-radius: 2px; background: #2340C9"></div>
+      <div style="height: 4px; border-radius: 2px; background: #D9DDE4"></div>
+      <div style="height: 4px; border-radius: 2px; background: #D9DDE4"></div>
+    </div>
+    <span style="font-size: 13px; color: #5B6270">Step 1 of 3</span>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700; line-height: 1.15">What do you want your network to help with?</h1>
+  </div>
+
+  <div style="padding: 16px 20px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <button style="text-align: left; padding: 12px; border-radius: 12px; border: 2px solid #2340C9; background: #E8ECFC; display: flex; flex-direction: column; gap: 4px; font-family: 'Instrument Sans', sans-serif; color: #14171F"><span style="font-weight: 600; font-size: 14.5px">Get referred</span><span style="font-size: 12.5px; color: #3E4450">Career Sprint</span></button>
+    <button disabled style="text-align: left; padding: 12px; border-radius: 12px; border: 1px solid #E2E5EA; background: #FFFFFF; display: flex; flex-direction: column; gap: 4px; font-family: 'Instrument Sans', sans-serif; color: #5B6270"><span style="font-weight: 600; font-size: 14.5px; color: #3E4450">Win clients</span><span style="font-size: 12.5px">Coming soon</span></button>
+    <button disabled style="text-align: left; padding: 12px; border-radius: 12px; border: 1px solid #E2E5EA; background: #FFFFFF; display: flex; flex-direction: column; gap: 4px; font-family: 'Instrument Sans', sans-serif; color: #5B6270"><span style="font-weight: 600; font-size: 14.5px; color: #3E4450">Raise funding</span><span style="font-size: 12.5px">Coming soon</span></button>
+    <button disabled style="text-align: left; padding: 12px; border-radius: 12px; border: 1px solid #E2E5EA; background: #FFFFFF; display: flex; flex-direction: column; gap: 4px; font-family: 'Instrument Sans', sans-serif; color: #5B6270"><span style="font-weight: 600; font-size: 14.5px; color: #3E4450">Find partners, hires, vendors</span><span style="font-size: 12.5px">Coming soon</span></button>
+  </div>
+
+  <div style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="role" style="font-size: 13px; font-weight: 600">Role you want</label>
+      <input id="role" value="Backend Engineer, product company" style="height: 46px; border-radius: 10px; border: 1px solid #D9DDE4; background: #FFFFFF; padding: 0 12px; font: 15px 'Instrument Sans', sans-serif; color: #14171F">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; font-weight: 600">Target companies</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <span style="font-size: 13px; background: #FFFFFF; border: 1px solid #D9DDE4; padding: 6px 10px; border-radius: 999px">Razorpay</span>
+        <span style="font-size: 13px; background: #FFFFFF; border: 1px solid #D9DDE4; padding: 6px 10px; border-radius: 999px">Postman</span>
+        <span style="font-size: 13px; background: #FFFFFF; border: 1px solid #D9DDE4; padding: 6px 10px; border-radius: 999px">Freshworks</span>
+        <span style="font-size: 13px; background: #FFFFFF; border: 1px solid #D9DDE4; padding: 6px 10px; border-radius: 999px">Druva</span>
+        <span style="font-size: 13px; background: #FFFFFF; border: 1px solid #D9DDE4; padding: 6px 10px; border-radius: 999px">Zoho</span>
+        <button style="font: 600 13px 'Instrument Sans', sans-serif; background: transparent; border: 1px dashed #2340C9; color: #2340C9; padding: 6px 10px; border-radius: 999px">+ Add</button>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 600">Referrals to aim for</span>
+        <div style="height: 46px; border-radius: 10px; border: 1px solid #D9DDE4; background: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 4px">
+          <button aria-label="Fewer" style="width: 38px; height: 38px; border: 0; background: #F3F5F7; border-radius: 8px; font-size: 18px; color: #14171F">−</button>
+          <span style="font-weight: 600; font-size: 16px">4</span>
+          <button aria-label="More" style="width: 38px; height: 38px; border: 0; background: #F3F5F7; border-radius: 8px; font-size: 18px; color: #14171F">+</button>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="cities" style="font-size: 13px; font-weight: 600">Where</label>
+        <input id="cities" value="Pune, remote" style="height: 46px; border-radius: 10px; border: 1px solid #D9DDE4; background: #FFFFFF; padding: 0 12px; font: 15px 'Instrument Sans', sans-serif; color: #14171F">
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: auto; padding: 16px 20px 28px">
+    <a href="Import.dc.html" style="height: 52px; border-radius: 12px; background: #2340C9; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; text-decoration: none">Continue</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

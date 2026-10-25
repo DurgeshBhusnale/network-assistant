@@ -1,0 +1,442 @@
+# Sprint Plan — Networking Assistant v1
+
+Nine sprints from an empty repo to a private-beta-ready product. Each sprint ends with working, tested, demo-able software. Sprints are ordered so every one builds on the last; **do not start a sprint until the previous sprint's acceptance criteria pass.**
+
+- Requirement IDs (FR-…) → `01-PRD.md`. Technical detail → `02-TECH-SPEC.md`.
+- Suggested length: 1–2 weeks each at ~15 founder hours/week with a coding agent. Target: private beta by end of Sprint 8, public launch 1 Apr 2027.
+- After each sprint: update `docs/PROGRESS.md`, tag `sprint-N`, run the demo script on a real Android phone.
+
+| # | Sprint | Outcome | Key PRD IDs |
+|---|---|---|---|
+| 0 | Foundations | Monorepo, CI, database, design tokens, app shell, fake AI mode | — |
+| 1 | Accounts and goal setup | Sign in, profile, consents, Career Sprint goal | FR-AUTH-*, FR-ONB-1/3, FR-GOAL-1/2/3, FR-PRIV-1 (capture) |
+| 2 | People | Import (picker, vCard, LinkedIn CSV, manual), dedupe, people list, person page, notes | FR-CON-*, FR-PER-*, FR-MEM-1 |
+| 3 | AI drafting | AI router, prompts v1, style profile, drafts with tones + fact check, free limit counting, evals | FR-DRAFT-*, FR-PAY-2 (counting) |
+| 4 | Engine and daily loop | Relevance, ranking, stages, triggers, Today, send flow, reply check-ins, progress | FR-TODAY-*, FR-SEND-*, FR-REP-*, FR-PROG-1, FR-ONB-2 |
+| 5 | Capture | Voice + text capture → confirm cards → contacts, memories, follow-ups | FR-MEM-2..6 |
+| 6 | WhatsApp assistant | Linking, webhook, commands, inbound capture, daily brief, show drafts | FR-WA-* |
+| 7 | Billing and notifications | Razorpay, entitlements, paywall, limits, web push, email digest | FR-PAY-*, FR-NOT-* |
+| 8 | Privacy, analytics, hardening | Export/delete, consents UI, analytics, admin metrics, performance, a11y, beta checklist | FR-PRIV-*, FR-AN-*, release criteria |
+
+---
+
+## Global Definition of Done (every story)
+
+- [ ] Code meets `CLAUDE.md` rules; lint, format, typecheck pass (`make check`).
+- [ ] Unit tests for new logic; integration test for every new endpoint (including an RLS "user B can't see user A's data" test for user-owned resources).
+- [ ] No live calls to AI/WhatsApp/Razorpay in tests (`AI_MODE=fake`, recorded fixtures).
+- [ ] UI matches `04-DESIGN-GUIDE.md` at 390×844; touch targets ≥ 44 px; labels on inputs; works on Android Chrome.
+- [ ] Analytics events in tech spec §13 emitted where relevant.
+- [ ] No PII in logs. No secrets committed.
+- [ ] `docs/PROGRESS.md` updated; any deviation from the spec recorded as an ADR.
+
+---
+
+## Sprint 0 — Foundations
+
+**Goal:** a developer can clone, run one command, and see the app shell talking to the API and database locally, with CI green.
+
+### Scope
+1. Monorepo per tech spec §3: `apps/web` (Next.js, TS strict, Tailwind, ESLint, Prettier), `apps/api` (FastAPI, uv, ruff, mypy), `supabase/`, `packs/`, `evals/`.
+2. `Makefile` (or `justfile`) targets: `setup`, `dev` (web + api + worker + supabase + redis), `check` (lint+type+unit), `test`, `test-int`, `e2e`, `db-reset`, `gen-api` (OpenAPI → TS client).
+3. Supabase local stack; first migration from `docs/schema-draft.sql`; `seed.sql` loading `packs/career_sprint.json`, the coming-soon packs, and calendar events.
+4. API skeleton: app factory, config (pydantic-settings), structured logging with PII redaction filter, error envelope, `GET /v1/health` (DB + Redis), Sentry init (no-op without DSN).
+5. Worker skeleton: arq settings, one no-op cron, one test task.
+6. AI provider interface + `FakeProvider` + `AI_MODE` switch (no real providers yet).
+7. Web: design tokens from `design/tokens.css`, fonts (Bricolage Grotesque, Instrument Sans), base components (Button, Card, Chip, Input, Stepper, BottomNav, Avatar, StageBadge, EmptyState), app shell with bottom nav (Today, People, Capture FAB, Progress, Replies), placeholder routes.
+8. PWA: manifest, icons placeholder, service worker (offline shell only), installable on Android.
+9. CI (GitHub Actions): web lint/type/unit, api lint/type/unit, integration with Supabase + Redis services.
+10. `docs/PROGRESS.md` initialised.
+
+### Out of scope
+Auth, real AI providers, any feature screens beyond placeholders.
+
+### Tests
+- API: `test_health_ok`, `test_health_reports_db_down` (mock), `test_error_envelope_shape`, `test_log_redaction_masks_phone_and_email`.
+- Migration test: `supabase db reset` succeeds; seed inserts 4 packs; RLS enabled on every table (query `pg_tables`/`pg_class.relrowsecurity` — test fails if any public table lacks RLS).
+- Web: component tests for Button (renders, disabled state, 44 px min height), BottomNav (active item), snapshot of app shell.
+- Fake AI: `FakeProvider` returns fixture deterministically.
+
+### Acceptance criteria
+- **Given** a fresh clone and `.env` from `.env.example`, **when** I run `make setup && make dev`, **then** web runs on :3000, API on :8000, `/v1/health` returns `{"status":"ok","db":"ok","redis":"ok"}`.
+- **Given** the shell on a 390×844 viewport, **then** bottom nav shows 5 items with the marigold capture button raised, matching the design guide.
+- **Given** a PR, **then** CI runs all checks and passes.
+- **Given** the schema, **then** every table has RLS enabled (automated test).
+- Lighthouse (mobile) on the shell: PWA installable.
+
+### Demo
+Clone → setup → open on Android phone via LAN/tunnel → install to home screen → tap through placeholder tabs.
+
+---
+
+## Sprint 1 — Accounts and goal setup
+
+**Goal:** a user can sign up, accept consents, set a Career Sprint goal, and resume onboarding where they left off.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S1-1 | As a new user I can sign up/in with Google or an email code. | FR-AUTH-1/2 |
+| S1-2 | As a new user I see an itemised privacy notice and choose consents (contacts, voice, WhatsApp, analytics) before continuing. | FR-ONB-3, FR-PRIV-1 |
+| S1-3 | As a user I pick "Get referred" (Career Sprint); other packs show "Coming soon". | FR-GOAL-1 |
+| S1-4 | As a user I enter role, target companies (chips, 1–15), locations, referrals target (stepper 1–10, default 4); deadline defaults to +60 days. | FR-GOAL-2 |
+| S1-5 | As a user who quits mid-onboarding, I return to the step I left. | FR-ONB-1 |
+| S1-6 | As a user I can set name, language, timezone, nudge time in Settings. | FR-AUTH-3 |
+
+### Technical tasks
+- API JWT verification (JWKS) dependency; `user_session` helper applying RLS claims (tech spec §5.1).
+- `profiles` auto-created on first authenticated request (or DB trigger on `auth.users` insert).
+- Endpoints: `GET/PATCH /me`, `GET /packs`, `POST /goals`, `GET /goals/active`, `PATCH /goals/{id}`, `GET/PUT /privacy/consents`.
+- Validate `goals.params` against pack `goal_schema` (jsonschema).
+- Web: sign-in screen, consent screen, Goal screen (per design `Goal.dc.html`), Settings basic, route guard by `onboarding_step`.
+- Analytics: `signup`, `goal_created`.
+
+### Tests
+- Unit: goal params validation (missing role → 422; 16 companies → 422; target 0 → 422; defaults applied).
+- Integration: unauthenticated → 401; expired token → 401; profile created on first call; user B cannot `GET /goals/active` of user A (gets their own/none); second active goal → 409 (partial unique index); consents saved with version and withdrawable.
+- E2E (Playwright, auth via Supabase test user/magic link helper): sign in → consents → goal → lands on Import step; reload mid-flow resumes at same step.
+
+### Acceptance criteria
+- **Given** a new Google account, **when** I sign in, **then** I see the consent screen, and cannot continue without acknowledging the privacy notice (individual consents remain optional except contacts, which is required to import).
+- **Given** the Goal screen, **when** I add 5 companies and tap Continue, **then** a goal is saved with `ends_on = today + 60` and I move to Import.
+- **Given** "Win clients" is coming soon, **then** it is visibly disabled and not selectable.
+- **Given** I close the app on Import and reopen, **then** I return to Import.
+
+### Demo
+Fresh user on phone: sign in → consents → Career Sprint goal with Rohan's example data.
+
+---
+
+## Sprint 2 — People
+
+**Goal:** a user can bring in 1,000 contacts from three sources without duplicates and see a useful Person page.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S2-1 | Import phone contacts with the Contact Picker (Android Chrome); hidden where unsupported, with vCard fallback copy. | FR-CON-1 |
+| S2-2 | Upload a `.vcf` file. | FR-CON-2 |
+| S2-3 | Upload LinkedIn `Connections.csv`, with step-by-step export help and "Remind me later". | FR-CON-3 |
+| S2-4 | Add a person by hand. | FR-CON-4 |
+| S2-5 | See a preview "X new, Y merged, Z skipped (reasons)" and confirm. | FR-CON-5/7 |
+| S2-6 | Browse/search people; open a Person page with header, actions, memories, history. | FR-CON-8, FR-PER-1..5 |
+| S2-7 | Add a text note (memory); edit/delete a person. | FR-MEM-1, FR-CON-9 |
+
+### Technical tasks
+- `imports/normalise.py`: names (split first/last, trim, title-case only if all caps/lower), phones → E.164 via `phonenumbers` default region IN (drop invalid with reason), emails lower-case + basic validation, LinkedIn URL → `https://www.linkedin.com/in/<slug>`, `company_norm` (lower, strip "pvt ltd", "private limited", "inc", "llp", punctuation).
+- `imports/linkedin_csv.py`: skip preamble lines until header row containing `First Name` and `URL`; map columns; parse `Connected On` (formats `DD Mon YYYY` and `MM/DD/YYYY`).
+- `imports/vcard.py` (`vobject`): FN/N, TEL (multiple), EMAIL, ORG, TITLE, BDAY.
+- `imports/dedupe.py`: match order phone → email → LinkedIn URL; merge = union of arrays, fill empty scalar fields, never overwrite non-empty with empty; company change on existing contact → `job_change` trigger.
+- Import flow: `POST /imports/picker` / `POST /imports/file` → staged preview in `imports.preview` → `POST /imports/{id}/commit` (worker task for > 200 rows) → counts. Max file 5 MB / 10,000 rows.
+- Contacts CRUD, memories endpoints, Person aggregate endpoint.
+- Web: Import screen (per design), People list (virtualised, search debounced 250 ms), Person page (per design), add-person form, note sheet.
+- Analytics: `contacts_imported`.
+
+### Fixtures (commit to `apps/api/tests/fixtures/imports/`)
+- `linkedin_connections_sample.csv` with preamble, 20 rows incl. missing emails, unicode names, duplicate of a vCard contact.
+- `contacts_sample.vcf` with multi-TEL, BDAY, ORG/TITLE, an invalid phone, a contact with only email.
+- `picker_payload.json` (array of `{name:[], tel:[], email:[]}` as the Contact Picker returns).
+
+### Tests
+- Unit: normalisers (table-driven: `+91 98765 43210`, `098765 43210`, `9876543210`, `+1 415…`, invalid); LinkedIn parser handles preamble and both date formats; vCard parser; dedupe merge rules (phone match, email match, LinkedIn match, no match; never auto-merge on name alone); company_norm cases.
+- Integration: preview then commit idempotent (committing twice doesn't duplicate); 1,000-row CSV commit < 30 s in CI budget; partial errors reported with row numbers; RLS isolation on contacts/memories; delete person cascades memories/interactions/suggestions/drafts.
+- E2E: upload CSV fixture → preview counts → commit → People list shows 20 → open person → add note → appears in memories.
+- Manual (Android): Contact Picker multi-select of 10 contacts imports correctly.
+
+### Acceptance criteria
+- **Given** the LinkedIn fixture plus the vCard fixture with one overlapping person, **when** both are imported, **then** that person exists once with phone, email, LinkedIn URL and company merged.
+- **Given** a CSV with 3 invalid rows, **then** valid rows import and the 3 are listed with reasons.
+- **Given** a browser without Contact Picker, **then** the phone-contacts card shows the vCard upload instead.
+- **Given** a Person page, **then** header, three actions, next-step placeholder, memories and history render per design.
+
+### Demo
+Import own LinkedIn export + 20 phone contacts on Android; show dedupe preview; open a person; add a note.
+
+---
+
+## Sprint 3 — AI drafting
+
+**Goal:** from any Person page a user gets a fact-checked draft in their own voice, can change tone, edit, and copy it. Costs are logged; free users are limited.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S3-1 | Paste 3–10 messages I've written so drafts sound like me (onboarding step 3 + Settings). | FR-ONB-1 |
+| S3-2 | Tap "Draft message" on a person, choose stage (warm up / ask / thank) → draft in ≤ 6 s. | FR-DRAFT-1/5 |
+| S3-3 | Tone chips: Shorter, Warmer, More formal, Hinglish; Another version. | FR-DRAFT-2 |
+| S3-4 | Drafts never state facts I didn't give; unsupported claims are highlighted if they survive one regeneration. | FR-DRAFT-4 |
+| S3-5 | Edit the draft inline; edits are saved. | FR-DRAFT-6 |
+| S3-6 | Free users get 3 drafts per calendar month; the 4th shows the upgrade screen (static until Sprint 7). | FR-PAY-2/3 |
+
+### Technical tasks
+- Providers: `GroqProvider` (OpenAI-compatible chat + audio endpoints), `AnthropicProvider`, `FakeProvider` (exists). Retries, timeouts, fallback chain, Pydantic-validated JSON outputs with one repair retry.
+- Router with routing table (tech spec §8.2), env model IDs, `ai_calls` logging with cost estimate from a price table in config.
+- Prompts v1 as files from `docs/05-AI-PROMPTS-AND-EVALS.md`: `style_summary`, `draft`, `factcheck`, `ask_detector` (or rule + model flag).
+- Draft service (tech spec §8.3), word limit, ask rules, language/tone handling.
+- `billing/limits.py`: monthly free count (by user timezone), entitlement check stub (paid = always allowed until Sprint 7).
+- Endpoints: `PUT /style/samples`, `POST /suggestions/{id}/draft` (also allow `POST /contacts/{id}/draft` for Person page), `POST /drafts/{id}/regenerate`, `PATCH /drafts/{id}`.
+- Web: Draft sheet per design (`Draft.dc.html`), loading state (skeleton + "Writing in your style…"), warnings highlight, style samples screen.
+- `evals/`: golden set format, runner CLI `uv run evals/run.py --task draft --provider groq`, metrics (word count, ask-rule pass, factuality via judge, human score sheet export).
+
+### Tests
+- Unit: routing decisions (free → gpt-oss-120b; paid ask to "Engineering Manager" → Sonnet; fallback on provider error); JSON repair path; word-limit enforcement; ask detector flags "could you refer me" in warm-up; factcheck loop (fake returns unsupported claim → regenerate once → warning).
+- Integration: draft endpoint with fake provider writes `drafts` + `ai_calls`; 4th free draft in a month → 402 `FREE_LIMIT_REACHED`; month rollover resets (freeze time); RLS on drafts.
+- Evals (manual, not CI): 30-case golden set from concierge users (anonymised); record pass rates for Groq vs Claude; target ≥ 90% factual, 100% ask-rule compliance, ≥ 70% "would send with small edits" in blind review.
+- E2E: Person → Draft → Warmer → edit → copy.
+
+### Acceptance criteria
+- **Given** a contact with memories "met at eChai, interested in AI agents", **when** I generate a warm-up draft, **then** it mentions one of those facts, contains no request, is ≤ 90 words.
+- **Given** the fake provider returns a draft with an invented company, **then** the service regenerates once and, if still unsupported, the UI highlights the claim.
+- **Given** a free user who generated 3 drafts this month, **when** they request a 4th, **then** they see the upgrade screen and no AI call is made.
+- **Given** any draft, **then** `ai_calls` has provider, model, tokens, cost, latency.
+
+### Demo
+Real Groq keys in staging: draft for three real contacts in English and Hinglish; show tones; show `ai_calls` cost per draft.
+
+---
+
+## Sprint 4 — Engine and daily loop
+
+**Goal:** the core product loop works end to end: Today shows the right people with reasons; the user sends from their own WhatsApp/LinkedIn; replies and referrals update progress.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S4-1 | After onboarding I land on Today with 3–7 ranked people and reasons. | FR-ONB-2, FR-TODAY-1/2 |
+| S4-2 | Goal strip shows day N, days left, funnel counts, referrals/target. | FR-TODAY-3 |
+| S4-3 | Snooze (1 day/1 week) or mark Not relevant. | FR-TODAY-2 |
+| S4-4 | Open draft → Send on WhatsApp (wa.me) / Copy for LinkedIn → "Sent?" confirm. | FR-SEND-1..4 |
+| S4-5 | Daily send cap of 20. | FR-SEND-5 |
+| S4-6 | "Did they reply?" check-ins 2–5 days after sending, with badge count. | FR-REP-1/3 |
+| S4-7 | Logging Referred/Interview updates progress and suggests a thank-you. | FR-REP-2 |
+| S4-8 | Progress screen: warm replies this week, days left, funnel, by company. | FR-PROG-1 |
+| S4-9 | Empty states for Today. | FR-TODAY-5 |
+
+### Technical tasks
+- `engine/relevance.py` (deterministic company match) + LLM labelling task (batched 50) on goal create/import commit (tech spec §7.2).
+- `engine/ranking.py` (score formula, selection with company cap, reasons), `engine/stages.py` (state machine), `engine/triggers.py`.
+- Worker cron: nightly ranking per timezone batch (02:00 local), expire stale suggestions; on-demand `rank_user` after onboarding/import/goal change (synchronous path for first run, < 3 s for 1,000 contacts).
+- Endpoints: `GET /today`, snooze/dismiss, `POST /drafts/{id}/send`, `POST /interactions`, `GET /replies/pending`, `GET /progress`.
+- Send flow: build `wa.me` URL (digits only, URL-encoded text), LinkedIn copy + open; "Sent?" prompt on `visibilitychange` back to the app; record `sent` interaction, update goal_contact stage, suggestion status.
+- Web: Today (per `Main.dc.html`), Replies (per `Replies.dc.html`), Progress (per `Progress.dc.html`), badge counts.
+- Analytics: `suggestion_shown`, `suggestion_opened`, `draft_sent` (with edit_ratio), `reply_logged`, `outcome_logged`.
+
+### Tests
+- Unit (table-driven, the most important tests in the codebase):
+  - score components: target company + warm + birthday → expected score; fatigue 1.0 → score 0; ease without phone/LinkedIn = 0.5.
+  - selection: never > 2 per company; respects default size; dated follow-ups always included first.
+  - stages: none + cold → warm_up; warmed + 3 days → ask; none + warm (W ≥ 0.6) → ask; referred → thank; no_reply after ask → 30-day fatigue then follow_up.
+  - reasons text generation.
+  - wa.me builder: `+91 98765 43210` → `https://wa.me/919876543210?text=...` with correct encoding of newlines, emoji, `&`.
+- Integration: nightly job creates suggestions for the user's local date (freeze time in Asia/Kolkata and another timezone); send cap 21st → 429 `SEND_CAP_REACHED`; replies pending window 2–5 days; progress counts consistent with interactions; RLS on suggestions/interactions.
+- Performance: ranking 1,000 contacts < 3 s (pytest-benchmark or timed test).
+- E2E: onboarding → Today shows list → open draft → send (assert `wa.me` URL opened via popup interception) → confirm sent → time-travel 3 days (test hook) → Replies shows person → mark Referred → Progress shows 1 referral and a thank-you suggestion appears.
+
+### Acceptance criteria
+- **Given** a goal with Razorpay as a target and a warm contact at Razorpay, **then** that contact ranks in the top 3 with reason "Works at Razorpay".
+- **Given** 5 contacts at one target company, **then** at most 2 appear on a single day.
+- **Given** I send to someone, **then** they don't reappear for an ask within 30 days, and appear in "Did they reply?" between day 2 and 5.
+- **Given** I log "Referred me", **then** referrals count increments and a thank-you suggestion with a draft is available.
+- **Given** 20 sends today, **when** I try a 21st, **then** I see a friendly limit message and no link opens.
+
+### Demo
+Founder runs his own Career Sprint for a day on the phone: Today → 3 sends via WhatsApp → log replies (simulated) → Progress.
+
+---
+
+## Sprint 5 — Capture
+
+**Goal:** after meeting people, a 30-second voice note or a typed note becomes confirmed contacts, memories and dated follow-ups.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S5-1 | Record a voice note (timer, stop, waveform), see live "Processing…", then confirm cards. | FR-MEM-2 |
+| S5-2 | Type a quick note instead of speaking. | FR-MEM-6 |
+| S5-3 | For each person found: Save new / Merge with suggested / Edit / Discard. | FR-MEM-3 |
+| S5-4 | A confirmed follow-up date appears on Today on that date with a draft ready. | FR-MEM-4 |
+| S5-5 | Audio is deleted after transcription. | FR-MEM-5 |
+| S5-6 | Add a voice memory from a Person page (attached to that person). | FR-PER-2 |
+
+### Technical tasks
+- Signed upload URL to private bucket; client recorder (MediaRecorder, `audio/webm;codecs=opus` on Android Chrome; max 5 min; consent check).
+- Capture worker: STT routing (Groq Whisper; Sarvam for hi/mr/Hinglish), `extract_people` prompt, relative date resolution (user timezone), matching (exact identifiers, then rapidfuzz ≥ 85), save candidates, delete audio + audit.
+- Confirm endpoint applies decisions transactionally: create/merge contacts, memories (source voice/text), `met` interaction, follow-up suggestion for date, relevance relabel for new contacts.
+- Web: Capture screen per `Capture.dc.html`, polling or SSE for status, confirm cards, error states (no speech detected, too long, failed → retry).
+- Language test harness: 20 real Hinglish/English voice notes (recorded by founder/concierge users with consent) → compare Whisper vs Sarvam transcripts and extraction accuracy; record decision in an ADR.
+- Analytics: `voice_captured`.
+
+### Tests
+- Unit: relative dates ("Monday", "next week", "tomorrow", "in 3 days") resolved against a fixed timestamp in Asia/Kolkata; matching thresholds; extraction output validation (missing name → candidate dropped with reason).
+- Integration: capture with fake STT/extract fixtures → candidates; confirm creates exactly the expected rows; audio object deleted and `audio_deleted_at` set; capture without voice consent → 403; RLS.
+- E2E: text capture "Met Priya Nair, PM at Zoho, at eChai. Follow up Monday." → confirm → Priya on Today on that Monday (time travel) with reason "Met at eChai".
+- Manual: record on Android, background/foreground mid-recording, poor network upload retry.
+
+### Acceptance criteria
+- **Given** the sample note above, **then** one candidate Priya Nair, title PM, company Zoho, where_met eChai, follow-up = next Monday in the user's timezone.
+- **Given** "Arjun" and an existing contact "Arjun Mehta", **then** the card offers "Merge with Arjun Mehta" and does not auto-merge.
+- **Given** any processed audio, **then** the storage object no longer exists and an audit row is written.
+- **Given** a 1-minute note, **then** candidates appear in ≤ 25 s (p95 in staging).
+
+### Demo
+Record a real voice note about two people on the phone; confirm one, merge one; see follow-up on Today.
+
+---
+
+## Sprint 6 — WhatsApp assistant
+
+**Goal:** users link WhatsApp, capture by sending notes to our number, and paying users receive a daily brief with drafts they can forward.
+
+### Prerequisites (founder, start in Sprint 4)
+Meta Business verification, WhatsApp Cloud API app, test number + production number, permanent access token, templates submitted (`daily_brief_v1`, `sprint_reminder_v1`, `capture_ready_v1`).
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S6-1 | Link WhatsApp from Settings/onboarding via a START code. | FR-WA-1 |
+| S6-2 | Send a text note to the bot → confirm card with Save / Edit in app. | FR-WA-2 |
+| S6-3 | Send a voice note → same. | FR-WA-3 |
+| S6-4 | Paying users get a daily brief at their nudge time. | FR-WA-4 |
+| S6-5 | "Show drafts" sends each draft as its own message. | FR-WA-5 |
+| S6-6 | TODAY / HELP / STOP / START commands. | FR-WA-6 |
+| S6-7 | Bot never messages anyone except the linked number. | FR-WA-7 |
+
+### Technical tasks
+- `channels/whatsapp/client.py` (send text, interactive buttons, template; get media URL; download media), `webhook.py` (verify GET, signature check, parse, idempotency by message id, enqueue).
+- Link codes (6 chars, 15-min expiry, single use); unlinked sender reply.
+- 24-hour window helper; template vs free-form decision.
+- Daily brief cron (every 15 min, finds users whose local nudge time falls in the window, paid + opted in + not opted out, not already sent today).
+- Interactive reply handlers (show drafts, snooze today, save/edit capture candidate).
+- `wa_messages` logging without bodies; status webhooks update status.
+- Web: Link WhatsApp card (Settings + Today banner), linked state, unlink.
+- Analytics: `wa_linked`.
+
+### Fixtures
+Recorded webhook payloads: verification GET, inbound text, inbound audio (voice true), button reply, interactive list reply, contacts share, status sent/delivered/read, unknown type. Each with a valid and an invalid signature.
+
+### Tests
+- Unit: signature verification (valid, invalid, missing header, tampered body); command parsing (case-insensitive, extra spaces, Hindi text not misread as command); window helper; brief composer (≤ 3 names, template variable lengths within limits).
+- Integration: link flow end to end with fixtures; duplicate webhook delivery processed once; STOP blocks all subsequent sends (assert client not called); free user never gets a brief; brief sent once per local day; outbound only ever to `profiles.wa_phone_e164` (assert on every client call in tests via a guard that raises otherwise).
+- Manual (staging test number): link, text capture, voice capture, brief at a near-future nudge time, Show drafts, forward a draft to a friend, STOP/START.
+
+### Acceptance criteria
+- **Given** I tap Link WhatsApp, **when** WhatsApp opens with "START ABC123" and I send it, **then** my profile shows the linked number within 10 s and the bot confirms.
+- **Given** a voice note to the bot, **then** I receive a confirm card for each person found and saved people appear in the app.
+- **Given** I'm a paying user with nudge time 09:00, **then** I receive exactly one brief that morning with up to 3 names, and "Show drafts" sends each draft separately.
+- **Given** I send STOP, **then** no further messages are sent until I send START.
+
+### Demo
+Full WhatsApp flow on the staging number from a real phone.
+
+---
+
+## Sprint 7 — Billing and notifications
+
+**Goal:** users can pay for a Sprint with UPI; entitlements and limits are enforced everywhere; nudges reach users who installed the app or prefer email.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S7-1 | Upgrade screen per design; pay ₹799 via Razorpay (UPI/card). | FR-PAY-1/3/4 |
+| S7-2 | After payment the Sprint is active for 60 days: unlimited drafts (fair use 400), daily list, WhatsApp brief. | FR-PAY-1/5 |
+| S7-3 | Free limits enforced consistently (drafts, digest cadence, no WA brief). | FR-PAY-2 |
+| S7-4 | Pro monthly/yearly (if time allows; else P1 follow-up). | FR-PAY-1 |
+| S7-5 | Day 50 Pro offer. | FR-PAY-6 (P1) |
+| S7-6 | Web push daily nudge (paid) / weekly digest (free); email weekly digest for free users with unsubscribe. | FR-NOT-1/2 |
+| S7-7 | Price cohort flag for ₹499/₹799/₹999 test. | FR-PAY-7 (P1) |
+
+### Technical tasks
+- `billing/razorpay.py`: create order, verify checkout signature (UX), webhook signature, idempotent event handling; `entitlements` create/extend; refund event → end entitlement.
+- `billing/limits.py` becomes the single gate for: drafts, model tier, digest cadence, WA brief eligibility.
+- Web: Upgrade screen per `Upgrade.dc.html`, Razorpay Checkout script, success/failure states, plan badge in Settings.
+- Push: VAPID keys, subscribe on install prompt, service-worker push handler, cron senders. Email: Resend templates, unsubscribe token.
+- Analytics: `checkout_started`, `payment_succeeded`, `sprint_completed`, `pro_upgraded`.
+
+### Tests
+- Unit: entitlement windows (start/end, overlapping purchases extend, fair-use cap), limits matrix (free/sprint/pro × each gated action), price by cohort.
+- Integration: webhook `payment.captured` fixture with valid signature → payment `paid` + entitlement; invalid signature → 400, nothing written; duplicate event → no double entitlement; client-side success without webhook → no entitlement; refund → entitlement ended.
+- E2E: free user hits draft limit → Upgrade → Razorpay test-mode stub → webhook simulated → drafts unlocked.
+- Manual: real UPI payment of ₹1 test product in Razorpay test/live mode on Android; push notification received on installed PWA.
+
+### Acceptance criteria
+- **Given** a successful UPI payment, **then** within 30 s the Sprint shows active with 60 days left, and drafts are no longer limited.
+- **Given** the webhook never arrives, **then** the user sees "Payment processing" and no entitlement is granted.
+- **Given** a free user, **then** they never receive a WhatsApp brief and receive at most one digest per week.
+
+### Demo
+Buy a Sprint on the phone with UPI in test mode; show entitlement, unlocked drafts, WhatsApp brief eligibility.
+
+---
+
+## Sprint 8 — Privacy, analytics, hardening (beta readiness)
+
+**Goal:** the product is safe, measurable and fast enough to invite 200–300 beta users.
+
+### Stories
+| ID | Story | PRD |
+|---|---|---|
+| S8-1 | Manage consents in Settings; withdrawing disables the related feature. | FR-PRIV-1 |
+| S8-2 | Export all my data (zip). | FR-PRIV-2 |
+| S8-3 | Delete my account and all data (typed confirmation). | FR-PRIV-3 |
+| S8-4 | Privacy policy and terms pages (placeholder text, marked for lawyer review). | FR-PRIV-4 |
+| S8-5 | Owner-only admin metrics: funnel, activation, conversion, north star, AI cost per user. | FR-AN-2 |
+| S8-6 | Stay-in-Touch triggers on Today without a goal (birthdays, festivals). | FR-TODAY-6 |
+| S8-7 | Edit/pause/end goal. | FR-GOAL-4 |
+
+### Technical tasks
+- Export and delete workers (tech spec §12), audit log, 30-day purge of soft-deleted contacts.
+- Analytics completeness audit against tech spec §13; admin metrics SQL views.
+- Performance: query plans for `/today`, `/contacts`, indexes; bundle analysis; image/font loading; Lighthouse ≥ 85 performance, ≥ 95 accessibility.
+- Accessibility pass with TalkBack on Android; axe checks in Playwright.
+- Security review: dependency audit, headers (CSP, HSTS), rate limits, secrets scan, RLS test suite review, PII-in-logs grep test.
+- Cost review: `ai_calls` per Sprint user ≤ ₹60/month target in staging usage.
+- Beta checklist (below) and runbooks (incident, breach, WhatsApp template rejection).
+
+### Tests
+- Integration: delete account removes every row for the user across all tables (test iterates all user-owned tables) and the auth user; export zip contains every table's rows for that user and no other user's; consent withdrawal blocks voice capture and WhatsApp sends.
+- Automated a11y (axe) on all screens; Lighthouse CI budget.
+- Full regression suite (below) green.
+
+### Acceptance criteria
+- **Given** I delete my account, **then** within 24 h no row with my user id exists in any table and I cannot sign in to the old account data.
+- **Given** I export, **then** I get a zip with my profile, goals, contacts (CSV + JSON), memories, interactions, drafts, payments.
+- **Given** the admin page, **then** the owner sees the funnel and cost per user; any other user gets 403.
+- All release criteria in PRD §11 for private beta are met.
+
+### Beta launch checklist
+- [ ] All P0 requirements done and demoed on a real Android phone.
+- [ ] Regression suite green; no open P0/P1 bugs.
+- [ ] Privacy review done; consent texts versioned.
+- [ ] WhatsApp templates approved; production number live; STOP tested.
+- [ ] Razorpay live mode tested with a real ₹1 product.
+- [ ] Sentry alerts and uptime check configured.
+- [ ] Cost dashboard shows per-user AI + WhatsApp cost.
+- [ ] Onboarding < 5 min measured with 5 test users.
+
+---
+
+## Appendix A — Regression suite (run before every sprint sign-off)
+
+| # | Flow | Type |
+|---|---|---|
+| R1 | Sign up → consents → goal → import CSV → Today has suggestions | E2E |
+| R2 | Draft → tone change → edit → Send on WhatsApp → Sent? → interaction logged | E2E |
+| R3 | Reply check-in → Referred → progress updates → thank-you suggestion | E2E |
+| R4 | Text capture → confirm → follow-up appears on date | E2E |
+| R5 | Free limit → upgrade → webhook → unlocked | E2E |
+| R6 | RLS isolation for every user-owned table | Integration |
+| R7 | Webhook signatures (WhatsApp, Razorpay) valid/invalid | Integration |
+| R8 | STOP blocks outbound WhatsApp | Integration |
+| R9 | Delete account removes everything | Integration |
+| R10 | No PII in logs (log capture test across R1–R5) | Integration |
+
+## Appendix B — Manual device checklist (Android Chrome, mid-range phone)
+
+- [ ] Install PWA from browser; opens full-screen; icon correct.
+- [ ] Contact Picker multi-select works; permission denial handled.
+- [ ] Voice recording 10 s, 60 s, 5 min limit; app backgrounded mid-recording.
+- [ ] `wa.me` link opens WhatsApp with text prefilled, Hindi/emoji preserved.
+- [ ] LinkedIn copy + open works (LinkedIn app installed and not installed).
+- [ ] Push notification received when app closed.
+- [ ] UPI intent flow returns to the app.
+- [ ] TalkBack reads Today cards in a sensible order.

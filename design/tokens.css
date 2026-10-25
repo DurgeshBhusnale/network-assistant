@@ -1,0 +1,73 @@
+/* Design tokens — Networking Assistant v1
+   Source: Design canvas "Networking Assistant App Screens" (claude.ai).
+   Use these via Tailwind theme extension (tailwind.config.ts → theme.extend.colors = { bg: 'var(--color-bg)', ... }).
+   Components must reference tokens, never raw hex values. */
+
+:root {
+  /* Surfaces */
+  --color-bg: #F3F5F7;            /* app ground */
+  --color-surface: #FFFFFF;       /* cards, sheets, nav */
+  --color-surface-dark: #14171F;  /* goal strip, stats card, recorder panel */
+
+  /* Text */
+  --color-ink: #14171F;           /* primary text */
+  --color-ink-2: #3E4450;         /* secondary text on light */
+  --color-muted: #5B6270;         /* captions, meta (passes 4.5:1 on bg and surface) */
+  --color-on-dark: #FFFFFF;
+  --color-on-dark-muted: #C9CED8;
+
+  /* Lines */
+  --color-line: #E2E5EA;          /* card borders */
+  --color-line-strong: #D9DDE4;   /* inputs */
+  --color-line-soft: #EEF0F3;     /* dividers inside cards */
+
+  /* Brand */
+  --color-primary: #2340C9;       /* primary buttons, links, active nav */
+  --color-primary-hover: #1A2F96;
+  --color-primary-soft: #E8ECFC;  /* selected states, "Ask" badge bg */
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #F2A33A;        /* marigold: capture FAB, highlights, referral counts */
+  --color-on-accent: #2A1700;
+  --color-accent-soft: #FDF0DC;   /* reason chips, next-step card */
+  --color-accent-text: #7A4300;   /* text on accent-soft */
+
+  /* Semantic */
+  --color-success: #1C7A4D;       /* "Warm up"/"Follow up" badges, done states */
+  --color-success-soft: #E3F4EA;
+  --color-send: #1F7A4A;          /* "Send on WhatsApp" button (generic green, not WhatsApp brand) */
+  --color-danger: #B4321F;        /* badges, destructive actions */
+
+  /* Type */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif; /* weights 600, 700 */
+  --font-body: 'Instrument Sans', system-ui, sans-serif;        /* weights 400, 500, 600 */
+
+  --text-h1: 26px;      /* screen titles, 700, display font */
+  --text-h2: 18px;      /* section titles, 600, display font */
+  --text-body: 15px;    /* names, inputs, body */
+  --text-small: 13px;   /* meta lines, chips */
+  --text-caption: 12px; /* badges, helper text */
+  --text-tiny: 11.5px;  /* nav labels, stat labels */
+  --text-label-tracking: 0.06em; /* uppercase section labels, 13px/600, muted */
+
+  /* Shape */
+  --radius-card: 14px;
+  --radius-panel: 16px;   /* dark goal strip, plan cards */
+  --radius-button: 10px;  /* 44px buttons */
+  --radius-button-lg: 12px; /* 52px primary CTA */
+  --radius-badge: 6px;
+  --radius-pill: 999px;
+
+  /* Spacing (4/8 grid) */
+  --space-screen-x: 20px;
+  --space-card: 14px;
+  --gap-cards: 10px;
+
+  /* Sizing */
+  --tap-min: 44px;
+  --cta-height: 52px;
+  --nav-height: 76px;
+  --fab-size: 56px;
+
+  --shadow-fab: 0 4px 12px rgba(20, 23, 31, 0.18);
+}

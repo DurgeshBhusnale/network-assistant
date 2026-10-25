@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Voice capture</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2340C9}a:hover{color:#1A2F96}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F3F5F7; font-family: 'Instrument Sans', system-ui, sans-serif; color: #14171F; display: flex; flex-direction: column; overflow: hidden">
+  <div style="padding: 16px 12px 0; display: flex; align-items: center">
+    <a href="Main.dc.html" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #14171F"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></a>
+  </div>
+
+  <div style="margin: 0 20px; background: #14171F; color: #FFFFFF; border-radius: 18px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+    <span style="font-size: 13px; color: #C9CED8">Who did you meet? Say names, where, and what you talked about.</span>
+    <div style="height: 48px; display: flex; align-items: center; gap: 3px" aria-hidden="true">
+      <sc-for list="{{bars}}" as="bar" hint-placeholder-count="28">
+        <div style="{{bar.style}}"></div>
+      </sc-for>
+    </div>
+    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 600">0:31</span>
+    <button aria-label="Stop recording" style="width: 64px; height: 64px; border-radius: 32px; border: 0; background: #F2A33A; display: flex; align-items: center; justify-content: center"><span style="width: 20px; height: 20px; border-radius: 4px; background: #2A1700"></span></button>
+    <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #E4E7EC; text-align: center">"Met Priya Nair at the eChai meetup, she's a PM at Zoho, wants help with AI agents, follow up Monday. Also Arjun, founder, building a fintech app…"</p>
+  </div>
+
+  <div style="padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <h2 style="margin: 0; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #5B6270; font-weight: 600">Found 2 people · check before saving</h2>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-weight: 600; font-size: 15px">Priya Nair</span><span style="font-size: 12px; color: #1C7A4D; font-weight: 600">New contact</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; color: #3E4450">
+        <span>Product Manager · Zoho · met at eChai</span>
+        <span>Wants help with AI agents</span>
+        <span style="color: #7A4300; font-weight: 600">Follow up Monday, 26 Oct</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 44px; border-radius: 10px; border: 0; background: #2340C9; color: #FFFFFF; font: 600 14px 'Instrument Sans', sans-serif">Save</button>
+        <button style="height: 44px; border-radius: 10px; border: 1px solid #E2E5EA; background: #FFFFFF; color: #14171F; font: 600 14px 'Instrument Sans', sans-serif">Edit</button>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-weight: 600; font-size: 15px">Arjun</span><span style="font-size: 12px; color: #7A4300; font-weight: 600">Possible match</span></div>
+      <span style="font-size: 13.5px; color: #3E4450">Founder · fintech app. Is this Arjun Mehta from your contacts?</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 44px; border-radius: 10px; border: 0; background: #2340C9; color: #FFFFFF; font: 600 14px 'Instrument Sans', sans-serif">Yes, merge</button>
+        <button style="height: 44px; border-radius: 10px; border: 1px solid #E2E5EA; background: #FFFFFF; color: #14171F; font: 600 14px 'Instrument Sans', sans-serif">New person</button>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin: auto 20px 24px; font-size: 12.5px; color: #5B6270; text-align: center; line-height: 1.5">Tip: you can also send a voice note to our WhatsApp number. Audio is deleted after it's transcribed.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const hs = [10, 18, 26, 14, 34, 42, 22, 30, 16, 38, 46, 28, 20, 36, 24, 12, 30, 40, 26, 18, 34, 22, 14, 28, 20, 12, 8, 6];
+return { bars: hs.map((h, i) => ({ style: 'width: 4px; height: ' + h + 'px; border-radius: 2px; background: ' + (i < 22 ? '#F2A33A' : '#4A505C') })) };
+}
+}
+</script>
+</body>
+</html>
