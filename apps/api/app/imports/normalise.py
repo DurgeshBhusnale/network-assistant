@@ -24,29 +24,30 @@ def clean_text(value: str | None) -> str | None:
 
 
 def _smart_case(name: str) -> str:
-    """Per word: title-case ALL CAPS or all-lower words; keep deliberate casing ('McDonald')."""
-    return " ".join(
-        w[:1].upper() + w[1:].lower() if (w.isupper() or w.islower()) else w
-        for w in name.split(" ")
-    )
+    """Caps-lock names (all upper) and all-lower words get title case. Any other casing is
+    deliberate and kept: 'McDonald', 'IBM', 'A.K.', 'E2E'."""
+    if name.isupper():
+        return " ".join(w[:1].upper() + w[1:].lower() for w in name.split(" "))
+    return " ".join(w[:1].upper() + w[1:] if w.islower() else w for w in name.split(" "))
 
 
 def split_name(
     full: str | None, first: str | None = None, last: str | None = None
 ) -> tuple[str, str | None, str | None] | None:
     """Returns (full_name, first_name, last_name), or None when there is no usable name."""
-    first_c, last_c = clean_text(first), clean_text(last)
-    full_c = clean_text(full) or clean_text(" ".join(p for p in (first_c, last_c) if p))
+    first_c = _smart_case(f) if (f := clean_text(first)) else None
+    last_c = _smart_case(l_) if (l_ := clean_text(last)) else None
+    full_c = clean_text(full)
+    if full_c:
+        full_c = _smart_case(full_c)
+    else:
+        full_c = clean_text(" ".join(p for p in (first_c, last_c) if p))
     if not full_c:
         return None
-    full_c = _smart_case(full_c)
     if first_c is None and last_c is None:
         parts = full_c.split(" ")
         first_c = parts[0]
         last_c = " ".join(parts[1:]) or None
-    else:
-        first_c = _smart_case(first_c) if first_c else None
-        last_c = _smart_case(last_c) if last_c else None
     return full_c, first_c, last_c
 
 
