@@ -4,9 +4,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 7 — Billing and notifications (Sprints 0–6 done)
+- **Current sprint:** Sprint 8 — Privacy, analytics, hardening (Sprints 0–7 done)
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-6/whatsapp` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-7/billing` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -20,7 +20,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 4 Engine and daily loop | Done (tests deferred) | | Live smoke of the full loop passed (ranking → draft → send → reply → referred → thank → progress) |
 | 5 Capture | Done (tests deferred; Hinglish STT check pending real voice notes) | | Live smoke: extraction, possible-match, follow-up date, audio deleted + audit |
 | 6 WhatsApp assistant | Done in dry-run (tests deferred) | | Needs Meta credentials + approved templates to go live |
-| 7 Billing and notifications | Not started | | |
+| 7 Billing and notifications | Done with dev checkout (tests deferred) | | Needs Razorpay keys, VAPID keys, Resend key to go live |
 | 8 Privacy, analytics, hardening | Not started | | |
 
 ## Current sprint stories
@@ -65,6 +65,15 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 7:
+
+- Products from config (`PRICE_*_PAISE`, `SPRINT_DAYS`, `PRO_*`); Pro behind `PRO_ENABLED`. `POST /v1/billing/orders` writes a `payments` row (service role) and a Razorpay order (receipt = our payment id). The Checkout result endpoint only verifies the signature for UX; **entitlements are granted only by the signed webhook** (`/v1/webhooks/razorpay`, HMAC-SHA256 of the raw body, constant time), idempotently (`payment.captured` and `order.paid` both arrive; first one wins; duplicates no-op; conflicting ids don't 500).
+- New purchases chain after the current paid period (extend, never overlap). Refunds end that period and move later chained periods up so the user keeps what they still paid for (found in the smoke).
+- Local dev checkout: with no Razorpay keys and `APP_ENV=local|test`, orders are `order_dev_*` and `POST /v1/billing/dev/complete/{order_id}` runs the same grant path; disabled elsewhere.
+- Entitlement checks tolerate 2 min clock skew. `GET /v1/billing/entitlement` shows plan, days left (end of the whole chained run), fair-use usage or free drafts left.
+- Notifications: web push (VAPID via `pywebpush`; `uv run python -m app.vapid` prints keys; dead subscriptions deleted on 404/410), email via Resend REST (dry run without key) with HMAC-signed one-click unsubscribe (`GET`/`POST /v1/email/unsubscribe`, RFC 8058 headers). Cron `notify` every 15 min: paid = daily push at nudge time unless the WhatsApp brief already went today; free = weekly push + email at `DIGEST_WEEKDAY`/`DIGEST_HOUR` local. Dedup via Redis keys. Migration `20261025030000_notification_prefs.sql` adds `profiles.email_digest`.
+- Web: Upgrade screen with real prices, Razorpay Checkout (UPI first, card), "Payment processing" until the webhook lands, dev simulate step; Settings plan card, notifications card (push on this device, weekly email); service worker shows pushes and opens the app on tap.
 
 Sprint 6:
 
@@ -220,6 +229,9 @@ Sprint 0 build:
 
 ## Open issues / questions for the human
 
+- **Payments go-live:** Razorpay account (KYC) → test keys first: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`; webhook URL `<API_BASE_URL>/v1/webhooks/razorpay` with events `payment.captured`, `order.paid`, `refund.processed`.
+- **Push/email:** run `uv run python -m app.vapid` and put the keys in `.env` (+ `VAPID_SUBJECT=mailto:you@…`); Resend account + verified sending domain → `RESEND_API_KEY`, `EMAIL_FROM`; set `UNSUBSCRIBE_SECRET` to a random string.
+
 - **WhatsApp go-live:** Meta Business verification, a WhatsApp Cloud API app + number, a permanent system-user token, and the 3 templates above approved. Then set `WA_GRAPH_VERSION`, `WA_PHONE_NUMBER_ID`, `WA_BUSINESS_ACCOUNT_ID`, `WA_ACCESS_TOKEN`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_DISPLAY_NUMBER` and point the webhook to `<API_BASE_URL>/v1/webhooks/whatsapp` (needs a public HTTPS API, i.e. a deployed staging API or a tunnel).
 
 - **Supabase Auth setup (needed to sign in):** Authentication → URL Configuration: Site URL `http://localhost:3000`, Redirect URLs `http://localhost:3000/auth/callback` (+ production later). Providers → Google: enable with a Google Cloud OAuth client (redirect URI shown on that page). Email templates → Magic Link: add `{{ .Token }}` so the email shows the 6-digit code (the link also works).
@@ -242,6 +254,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 7 built: Razorpay orders + signed webhook entitlements (idempotent, extend, refund re-chain), dev checkout, web push, email digest, notify cron, unsubscribe; Upgrade wired, Settings plan + notifications. Live smoke passed after fixing refund chaining.
 
 - 25 Oct 2026 — Sprint 6 built: WhatsApp client with recipient guard + dry run, linking, signed webhook with dedupe, commands, notes/voice/contacts capture, show drafts/snooze, daily brief; Settings WhatsApp card. Live smoke (dry run) passed incl. STOP/START, unlinked-sender silence, free vs paid brief.
 

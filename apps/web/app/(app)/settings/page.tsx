@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type ReactNode } from "react";
 
+import { NotificationsCard } from "@/components/settings/NotificationsCard";
+import { PlanCard } from "@/components/settings/PlanCard";
 import { WhatsAppCard } from "@/components/settings/WhatsAppCard";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -141,6 +143,10 @@ function SettingsForm({ profile }: { profile: Profile }) {
           </p>
         )}
       </Card>
+
+      <PlanCard />
+
+      <NotificationsCard profile={profile} />
 
       <WhatsAppCard />
 

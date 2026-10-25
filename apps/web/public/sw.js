@@ -1,5 +1,5 @@
 /* Offline shell service worker (Sprint 0). No API responses or user data are ever cached. */
-const CACHE = "shell-v1";
+const CACHE = "shell-v2";
 const OFFLINE_URL = "/offline";
 const PRECACHE = [OFFLINE_URL, "/manifest.webmanifest", "/icons/icon-192.png"];
 
@@ -48,4 +48,38 @@ self.addEventListener("fetch", (event) => {
       ),
     );
   }
+});
+
+// Web push (FR-NOT-1): names and reasons only; tapping opens the app.
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "[App name]", {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url: data.url || "/today" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/today", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if (client.url.startsWith(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
 });
