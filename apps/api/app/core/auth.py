@@ -13,6 +13,9 @@ from app.core.config import Settings, get_settings
 from app.core.errors import AppError, ErrorCode
 
 AUDIENCE = "authenticated"
+# Supabase's clock can run a little ahead of ours; without leeway a just-issued token fails
+# the `iat` check on the first request after sign-in.
+LEEWAY_SECONDS = 30
 
 
 class AuthUser(BaseModel):
@@ -47,7 +50,11 @@ async def decode_token(token: str, settings: Settings) -> dict[str, Any]:
             signing_key = await anyio.to_thread.run_sync(client.get_signing_key_from_jwt, token)
             key = signing_key.key
         claims: dict[str, Any] = jwt.decode(
-            token, key, algorithms=["ES256", "RS256", "HS256"], audience=AUDIENCE
+            token,
+            key,
+            algorithms=["ES256", "RS256", "HS256"],
+            audience=AUDIENCE,
+            leeway=LEEWAY_SECONDS,
         )
     except jwt.ExpiredSignatureError as exc:
         raise _unauthenticated("Your session has expired. Sign in again.") from exc
