@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@import "../../../design/tokens.css";
+
+/* Tokens (design/tokens.css) mapped into Tailwind utilities. Components use these utilities or
+   var(--token) only, never raw colour values. Unlayered tokens.css wins over Tailwind's theme
+   layer, so self-referencing names (e.g. --color-bg) resolve to the design values. */
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-dark: var(--color-surface-dark);
+  --color-ink: var(--color-ink);
+  --color-ink-2: var(--color-ink-2);
+  --color-muted: var(--color-muted);
+  --color-on-dark: var(--color-on-dark);
+  --color-on-dark-muted: var(--color-on-dark-muted);
+  --color-on-dark-soft: var(--color-on-dark-soft);
+  --color-line: var(--color-line);
+  --color-line-strong: var(--color-line-strong);
+  --color-line-soft: var(--color-line-soft);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-on-primary: var(--color-on-primary);
+  --color-accent: var(--color-accent);
+  --color-on-accent: var(--color-on-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-accent-text: var(--color-accent-text);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-send: var(--color-send);
+  --color-danger: var(--color-danger);
+  --color-waveform-idle: var(--color-waveform-idle);
+  --color-dot-neutral: var(--color-dot-neutral);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* next/font exposes the loaded families as --font-bricolage / --font-instrument. */
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-body: var(--font-instrument), system-ui, sans-serif;
+
+  --text-h1: var(--text-h1);
+  --text-h2: var(--text-h2);
+  --text-body: var(--text-body);
+  --text-small: var(--text-small);
+  --text-caption: var(--text-caption);
+  --text-tiny: var(--text-tiny);
+
+  --radius-card: var(--radius-card);
+  --radius-panel: var(--radius-panel);
+  --radius-button: var(--radius-button);
+  --radius-button-lg: var(--radius-button-lg);
+  --radius-badge: var(--radius-badge);
+  --radius-pill: var(--radius-pill);
+
+  --spacing-screen-x: var(--space-screen-x);
+  --spacing-card: var(--space-card);
+  --spacing-gap-cards: var(--gap-cards);
+  --spacing-tap: var(--tap-min);
+  --spacing-cta: var(--cta-height);
+  --spacing-nav: var(--nav-height);
+  --spacing-fab: var(--fab-size);
+
+  --shadow-fab: var(--shadow-fab);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-instrument), system-ui, sans-serif;
+  font-size: var(--text-body);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
