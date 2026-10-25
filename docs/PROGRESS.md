@@ -278,6 +278,8 @@ Sprint 0 build:
 
 ## Open issues / questions for the human
 
+- **Go-live credentials:** step-by-step guide in `docs/GO-LIVE-CREDENTIALS.md` (the items below give the variable names).
+
 - **CI:** the integration and E2E jobs now run against the CLI Supabase stack with its keys exported; E2E is back on PRs (founder rule: while under 5 minutes). Not yet run on GitHub: check the first PR run.
 - **Dev DB latency:** ~125 ms per round trip to Seoul (`/v1/today` ~2–3 s, `/v1/me` ~1 s, mostly round trips). Fine once API + DB are both in Mumbai; E2E timeouts are raised for now.
 - The draft screen saves edits twice when Send is tapped straight after typing (blur + before-send). Harmless; could dedupe later.

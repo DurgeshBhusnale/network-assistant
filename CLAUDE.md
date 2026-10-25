@@ -22,6 +22,7 @@ Surfaces: a mobile-first installable **PWA** (Android Chrome first) + our offici
 | `docs/schema-draft.sql` | Initial DB schema |
 | `docs/adr/` | Decisions. To change a decision, add a new ADR; never silently diverge |
 | `docs/DEV-SETUP.md` | Developer machine setup (Windows) and phone testing |
+| `docs/GO-LIVE-CREDENTIALS.md` | Step-by-step: Meta WhatsApp, Razorpay, VAPID, Resend, unsubscribe secret, Supabase sign-in |
 | `docs/PROGRESS.md` | Current sprint, done/next, open issues. **Update it at the end of every session** |
 
 If docs conflict: PRD principles > ADRs > tech spec > sprint plan > design guide. If something is ambiguous or missing, **ask the human** before inventing product behaviour. Small technical choices: decide, then note them in `PROGRESS.md`.
