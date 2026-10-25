@@ -7,7 +7,7 @@ The founder develops on Windows and doesn't want to maintain WSL2 or a local Sup
 
 ## Decision
 - Development runs natively on Windows (PowerShell). Dev commands are root `package.json` scripts (`pnpm dev`, `pnpm check`, `pnpm test`, …) that work in Windows and Linux shells. The Makefile is removed.
-- Local development uses a **cloud Supabase dev project** (no real users), in `ap-south-1` like every environment. Staging and production are separate projects created later.
+- Local development uses a **cloud Supabase dev project** (no real users). Exception accepted by the founder: the existing dev project `xnjbgyjnecdgclssnquj` is in `ap-northeast-2` (Seoul). It holds only test data and the founder's own trial data; **staging and production are new projects in `ap-south-1` (Mumbai)**, created before beta by changing credentials and running `pnpm db:push`.
 - Rules for the dev project: never reset it or run destructive SQL; schema changes only via new migrations applied with `pnpm db:push` after the human agrees; integration tests run inside transactions that roll back.
 - Connect through the **Session pooler** (port 5432): the direct host is IPv6-only and the transaction pooler breaks asyncpg prepared statements. The API accepts the plain `postgresql://` URL.
 - The Data API is switched off in the dev project's dashboard (ADR-0007).

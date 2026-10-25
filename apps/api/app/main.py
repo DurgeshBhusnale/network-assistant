@@ -7,7 +7,7 @@ from fastapi import FastAPI
 
 from app.api.v1 import router as v1_router
 from app.core.config import Settings, get_settings
-from app.core.db import create_engine
+from app.core.db import create_engine, warm_db_pool
 from app.core.errors import ErrorResponse, register_error_handlers
 from app.core.logging import setup_logging
 from app.core.redis import create_redis
@@ -23,6 +23,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.db_engine = create_engine(settings)
         app.state.redis = create_redis(settings)
+        await warm_db_pool(app.state.db_engine)
         try:
             yield
         finally:

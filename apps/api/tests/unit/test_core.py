@@ -59,3 +59,17 @@ def test_sentry_scrub_drops_bodies_and_auth_and_redacts_text() -> None:
 )
 def test_database_url_always_uses_asyncpg(url: str) -> None:
     assert Settings(database_url=url).database_url == "postgresql+asyncpg://u:p@host:5432/postgres"
+
+
+async def test_db_warmup_failure_does_not_block_startup(caplog: pytest.LogCaptureFixture) -> None:
+    from sqlalchemy.ext.asyncio import create_async_engine
+
+    from app.core.db import warm_db_pool
+
+    engine = create_async_engine("postgresql+asyncpg://u:p@127.0.0.1:1/postgres")
+    try:
+        await warm_db_pool(engine)
+    finally:
+        await engine.dispose()
+
+    assert "db_warmup_failed" in caplog.messages

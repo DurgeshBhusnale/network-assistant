@@ -11,7 +11,7 @@ Development runs natively on Windows against the cloud Supabase **dev** project 
 | pnpm | `pnpm -v` | `corepack enable` (version pinned in `package.json`) |
 | uv (installs Python 3.12 itself) | `uv --version` | `winget install astral-sh.uv` |
 | Supabase CLI (migrations only) | `supabase --version` | `scoop install supabase` |
-| Redis | see §3 | Docker Desktop, or a managed Redis |
+| Redis | see §3 | Docker Desktop (needs WSL2: `wsl -l -v` must answer), or a managed Redis |
 
 ## 2. Configure `.env`
 
@@ -22,7 +22,7 @@ Copy `.env.example` to `.env` (git-ignored) and fill in, from the Supabase dashb
 - `DATABASE_URL`: **Connect → Session pooler** (port 5432). Not the direct connection (IPv6-only) and not the transaction pooler (6543).
 - `GROQ_API_KEY`: console.groq.com. Keep `AI_MODE=fake` unless you are demoing live drafts.
 
-Dashboard checklist for the dev project: region **ap-south-1 (Mumbai)**; Data API **off** (ADR-0007).
+Dashboard checklist: Data API **off** (ADR-0007). Region: the current dev project is Seoul (accepted for dev only, ADR-0009); staging/production must be **ap-south-1 (Mumbai)**.
 
 ## 3. Redis
 

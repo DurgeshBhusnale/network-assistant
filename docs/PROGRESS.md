@@ -4,7 +4,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 0 — Foundations (in progress)
+- **Current sprint:** Sprint 0 — Foundations (done locally; awaiting CI run + phone check before tag `sprint-0`)
 - **Branch:** `sprint-0/foundations`
 - **Last updated:** 25 Oct 2026
 
@@ -12,7 +12,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 | Sprint | Status | Tag | Notes |
 |---|---|---|---|
-| 0 Foundations | In progress | | |
+| 0 Foundations | Done locally | | CI + phone check pending |
 | 1 Accounts and goal setup | Not started | | |
 | 2 People | Not started | | |
 | 3 AI drafting | Not started | | |
@@ -28,13 +28,25 @@ The coding agent updates this file at the end of every session. Newest entries a
 |---|---|---|
 | 1 | Monorepo layout (apps/web, apps/api, supabase, packs, evals) | ✅ |
 | 2 | Dev commands (root `package.json` scripts, ADR-0009; Makefile removed) | ✅ `pnpm check`, `pnpm test` run on Windows |
-| 3 | Supabase dev project (ADR-0009), first migration, generated seed | ✅ written, SQL parses (pglast); ⚠ not applied: project is in Seoul, awaiting region decision |
+| 3 | Supabase dev project (ADR-0009), first migration, generated seed | ✅ applied to the dev project with `pnpm db:push` |
 | 4 | API skeleton: config, logging + redaction, errors, health, Sentry | ✅ |
 | 5 | Worker skeleton: arq settings, no-op cron, test task | ✅ |
 | 6 | AI provider interface + FakeProvider + AI_MODE switch | ✅ |
 | 7 | Web: tokens, fonts, base components, app shell, placeholder routes | ✅ |
 | 8 | PWA: manifest, icons, service worker (offline shell) | ✅ |
 | 9 | CI (GitHub Actions) | ✅ written; ⚠ first run needs the GitHub remote |
+
+### Final verification (Windows, dev project + Docker Redis, 25 Oct 2026)
+
+| Check | Result |
+|---|---|
+| `pnpm check` (ruff, format, mypy strict; eslint, prettier, tsc) | ✅ |
+| `pnpm test` | ✅ API 65 passed, web 26 passed |
+| `pnpm test:int` against the dev project + Redis | ✅ 20 passed |
+| `pnpm e2e` (Pixel 7) | ✅ 8 passed |
+| `pnpm dev`: web :3000, API :8000, worker; `/v1/health` direct and via web | ✅ `{"status":"ok","db":"ok","redis":"ok"}` |
+| Every table has RLS (automated) | ✅ |
+| Anon key can't read tables over HTTP | ✅ 401 permission denied (Data API itself still on: dashboard toggle pending) |
 | 10 | PROGRESS.md initialised | ✅ |
 
 ### Verification so far (Windows build machine, 25 Oct 2026)
@@ -87,6 +99,8 @@ Windows + cloud dev + Groq (25 Oct 2026, founder's decision):
 - `DATABASE_URL` accepts plain `postgresql://` (the API adds `+asyncpg`); `app/dbtasks.py` pushes migrations with the Supabase CLI and applies the seed via asyncpg.
 - The "Data API disabled" integration test became "anon key can't read tables over HTTP" (works on cloud and CI); the dashboard Data API toggle is a manual checklist item.
 
+- API warms one DB connection at startup (`warm_db_pool`); startup continues with a warning if the DB is down.
+
 Sprint 0 build:
 
 - Token import from `design/tokens.css` works with Tailwind v4 + Turbopack (no copy script). Tokens are unlayered and win over Tailwind's theme layer; verified in the compiled CSS.
@@ -126,10 +140,9 @@ Sprint 0 build:
 ## Open issues / questions for the human
 
 - GitHub repo URL needed to add the remote, push `main` + `sprint-0/foundations` and open the Sprint 0 PR (CI's first run).
-- **Region:** the dev project `xnjbgyjnecdgclssnquj` is in `ap-northeast-2` (Seoul), not Mumbai. Decide: recreate in `ap-south-1` (recommended) or accept Seoul for dev only. Migration not pushed until then.
-- **Redis:** Docker Desktop reports "unable to start" (no WSL2/Hyper-V backend). Options: enable the backend, or use a managed Redis URL.
-- Turn the Data API off in the dev project dashboard (ADR-0007).
-- Supabase MCP added to `.mcp.json`; the founder must authenticate it (`claude` → `/mcp` → supabase → Authenticate) and restart the session.
+- **Before beta:** create staging/production Supabase projects in **ap-south-1 (Mumbai)**; the Seoul dev project is for dev only (ADR-0009).
+- Turn the Data API off in the dev project dashboard (ADR-0007); the anon revoke already blocks reads.
+- Upgrade the Supabase CLI (2.31.8 installed, 2.122 available): `scoop update supabase`.
 - CI: verify `supabase start` with `[api] enabled = false` still serves Auth, and `supabase status -o env` prints `ANON_KEY`.
 - CI action versions (`actions/checkout@v4`, `setup-node@v4`, `pnpm/action-setup@v4`, `astral-sh/setup-uv@v6`, `supabase/setup-cli@v1`): confirm on first run.
 - Placeholder icons (blue square + marigold dot) until branding exists.
@@ -145,6 +158,7 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 
 ## Session log
 
+- 25 Oct 2026 — Fixed Docker (WSL service was never registered; reinstalled WSL 2.6.3 from Microsoft's signed MSI). Accepted Seoul dev project. Pushed migration + seed. Warmed the DB pool at API startup (cold TLS connect to Seoul took 3 s and tripped the 2 s health timeout). All checks, unit, integration (20) and E2E (8) green; `pnpm dev` health ok/ok/ok. Removed the unused Supabase MCP config (different Supabase account).
 - 25 Oct 2026 — Switched to Windows + cloud Supabase dev + Groq only (ADR-0009, ADR-0010); found the dev project is in Seoul; Docker backend not available.
 - 25 Oct 2026 — Sprint 0 built on the Windows machine (WSL not installed yet): all scope items written; API + web lint/type/unit, build and E2E green; integration tests, Makefile and Supabase pending a WSL/CI run.
 - 25 Oct 2026 — Kickoff review; decisions above approved; docs, schema draft, ADR-0007/0008 updated; Sprint 0 started.

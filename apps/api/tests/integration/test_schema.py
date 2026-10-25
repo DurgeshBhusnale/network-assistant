@@ -24,7 +24,7 @@ async def test_every_public_table_has_rls(conn: AsyncConnection) -> None:
             "where n.nspname = 'public' and c.relkind in ('r', 'p')"
         )
     )
-    tables = dict(rows.tuples().all())
+    tables = {name: rls for name, rls in rows.all()}
 
     assert set(tables) == EXPECTED_TABLES
     assert [name for name, rls in tables.items() if not rls] == []
