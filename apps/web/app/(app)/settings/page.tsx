@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type ReactNode } from "react";
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { NotificationsCard } from "@/components/settings/NotificationsCard";
 import { PlanCard } from "@/components/settings/PlanCard";
 import { WhatsAppCard } from "@/components/settings/WhatsAppCard";
@@ -53,6 +54,18 @@ function Select({
         {children}
       </select>
     </div>
+  );
+}
+
+function SettingsLink({ href, title, body }: { href: string; title: string; body: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex min-h-tap flex-col gap-0.5 rounded-card border border-line bg-surface p-card text-ink no-underline"
+    >
+      <span className="text-body font-semibold">{title}</span>
+      <span className="text-small text-muted">{body}</span>
+    </Link>
   );
 }
 
@@ -150,13 +163,9 @@ function SettingsForm({ profile }: { profile: Profile }) {
 
       <WhatsAppCard />
 
-      <Link
-        href="/settings/style"
-        className="flex min-h-tap flex-col gap-0.5 rounded-card border border-line bg-surface p-card text-ink no-underline"
-      >
-        <span className="text-body font-semibold">{t.writingStyle}</span>
-        <span className="text-small text-muted">{t.writingStyleBody}</span>
-      </Link>
+      <SettingsLink href="/settings/goal" title={t.goalLink} body={t.goalLinkBody} />
+      <SettingsLink href="/settings/style" title={t.writingStyle} body={t.writingStyleBody} />
+      <SettingsLink href="/settings/privacy" title={t.privacyLink} body={t.privacyLinkBody} />
 
       <Card>
         <h2 className="m-0 font-display text-h2 font-semibold">{t.account}</h2>
@@ -164,6 +173,7 @@ function SettingsForm({ profile }: { profile: Profile }) {
         <Button variant="secondary" onClick={logout}>
           {t.signOut}
         </Button>
+        <LegalLinks />
       </Card>
     </div>
   );

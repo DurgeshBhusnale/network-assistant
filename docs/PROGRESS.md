@@ -5,9 +5,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 8 — Privacy, analytics, hardening (Sprints 0–7 done)
+- **Current sprint:** core build done (Sprints 0–8). Next: the deferred full test pass, then go-live credentials and the Mumbai staging/prod projects.
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-7/billing` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-8/hardening` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -22,7 +22,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 5 Capture | Done (tests deferred; Hinglish STT check pending real voice notes) | | Live smoke: extraction, possible-match, follow-up date, audio deleted + audit |
 | 6 WhatsApp assistant | Done in dry-run (tests deferred) | | Needs Meta credentials + approved templates to go live |
 | 7 Billing and notifications | Done with dev checkout (tests deferred) | | Needs Razorpay keys, VAPID keys, Resend key to go live |
-| 8 Privacy, analytics, hardening | Not started | | |
+| 8 Privacy, analytics, hardening | Done except S8-6 and perf/a11y audits (tests deferred) | | Live smoke: export, delete, consent-aware guard, admin 403, retention, rate limits, goal pause/resume/end |
 
 ## Current sprint stories
 
@@ -66,6 +66,19 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 8:
+
+- Export (`POST /v1/privacy/export`) streams the zip straight back (one JSON per user-owned table + `contacts.csv`, secrets/embeddings omitted, audit row); no stored copy and no worker. Fine at beta sizes; move to a worker + signed URL if exports get slow.
+- Delete account (`POST /v1/privacy/delete-account`, typed `DELETE`) runs synchronously: Storage files, then the Supabase auth user (FK cascade removes every row), belt-and-braces `delete from auth.users`, hashed audit entry and an anonymous `account_deleted` event. Payments are kept with `user_id` nulled (tax). Old tokens get 401.
+- The WhatsApp guard also requires an active `whatsapp` consent; voice capture already required `voice`.
+- Retention job (`apply_retention`, nightly cron): purge contacts soft-deleted > 30 days, clear draft text > 180 days, delete `wa_messages` > 90 days, `events`/`ai_calls` > 13 months.
+- Admin metrics (`GET /v1/admin/metrics`): owner IDs from `ADMIN_USER_IDS` (comma-separated); aggregates only; 403 for everyone else. Web `/admin` (not linked in the nav).
+- Rate limits in Redis, fixed windows, fail open: 60/min per user overall, plus per-route (imports 5/h, export 3/h, delete 3/h, drafts, captures).
+- `GET /v1/goals/current` (active, else latest paused) so Settings → Your goal can resume a paused goal; `/goals/active` stays active-only for Today. Ending a goal sends the user to `/onboarding/goal`.
+- Web: `ConsentsForm` shared by onboarding and Settings → Privacy & data (consents, download data, delete account); `/privacy` and `/terms` public placeholder pages (marked for lawyer review) linked from sign-in, the notice and Settings.
+- Headers: CSP (self + Supabase URL/wss + Razorpay checkout/api; `'unsafe-inline'` scripts because Next inlines bootstrap scripts without nonces; `'unsafe-eval'` in dev only), HSTS, Permissions-Policy (microphone self only).
+- Deferred: S8-6 Stay-in-Touch on Today without a goal (P1); `sprint_completed` analytics event; Lighthouse/axe/TalkBack audits, query-plan review and bundle analysis (with the testing phase); runbooks.
 
 Sprint 7:
 
@@ -247,6 +260,12 @@ Sprint 0 build:
 
 ## Needs manual testing on a real phone
 
+Sprint 8:
+
+- [ ] With the production build: sign-in (Google + email code), Razorpay Checkout and push still work under the new CSP (watch the console for CSP violations).
+- [ ] Settings → Privacy & data: change a choice and save; Download my data saves a zip; Delete account signs you out.
+- [ ] Settings → Your goal: edit, pause (Today empties), resume, end → new-goal screen.
+
 Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production build `pnpm --filter web build && pnpm --filter web start` so the service worker registers):
 
 - [ ] Open `http://localhost:3000` on Android Chrome: redirects to Today; status card shows API/DB/Redis ok.
@@ -255,6 +274,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 8 built: export zip, delete account, consent-aware WhatsApp guard, retention job, admin metrics, rate limits; Settings Privacy & data, Your goal (edit/pause/resume/end), admin page, privacy/terms pages, CSP + HSTS. Live smokes passed. S8-6 and perf/a11y audits deferred.
 
 - 25 Oct 2026 — Sprint 7 built: Razorpay orders + signed webhook entitlements (idempotent, extend, refund re-chain), dev checkout, web push, email digest, notify cron, unsubscribe; Upgrade wired, Settings plan + notifications. Live smoke passed after fixing refund chaining.
 

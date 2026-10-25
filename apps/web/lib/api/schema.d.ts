@@ -396,6 +396,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/goals/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Current Goal
+         * @description The goal Settings manages: the active one, else the latest paused one (so it can resume).
+         */
+        get: operations["get_current_goal_v1_goals_current_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/goals/{goal_id}": {
         parameters: {
             query?: never;
@@ -2998,6 +3018,44 @@ export interface operations {
         };
     };
     get_active_goal_v1_goals_active_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalOut"] | null;
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_current_goal_v1_goals_current_get: {
         parameters: {
             query?: never;
             header?: never;

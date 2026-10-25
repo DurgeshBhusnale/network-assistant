@@ -112,6 +112,20 @@ async def get_active_goal(user: CurrentUser, engine: Engine, clock: ClockDep) ->
         return goal_out(goal, local_today(clock, profile.timezone)) if goal else None
 
 
+@router.get("/goals/current", response_model=GoalOut | None)
+async def get_current_goal(user: CurrentUser, engine: Engine, clock: ClockDep) -> GoalOut | None:
+    """The goal Settings manages: the active one, else the latest paused one (so it can resume)."""
+    async with user_session(engine, user) as session:
+        profile = await ensure_profile(session, user)
+        goal = await session.scalar(
+            select(Goal)
+            .where(Goal.user_id == user.id, Goal.status.in_(("active", "paused")))
+            .order_by((Goal.status == "active").desc(), Goal.created_at.desc())
+            .limit(1)
+        )
+        return goal_out(goal, local_today(clock, profile.timezone)) if goal else None
+
+
 @router.patch("/goals/{goal_id}", response_model=GoalOut)
 async def update_goal(
     goal_id: uuid.UUID, body: GoalUpdate, user: CurrentUser, engine: Engine, clock: ClockDep

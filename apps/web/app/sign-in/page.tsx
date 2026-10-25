@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -137,6 +138,7 @@ export default function SignInPage() {
         </p>
       )}
       <p className="text-caption text-muted">{t.privacyLine}</p>
+      <LegalLinks />
     </main>
   );
 }

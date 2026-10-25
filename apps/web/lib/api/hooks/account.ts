@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
 
-import { api, unwrap, type Schemas } from "../client";
+import { api, toApiError, unwrap, type Schemas } from "../client";
 
 export type Profile = Schemas["ProfileOut"];
 export type ProfileUpdate = Schemas["ProfileUpdate"];
@@ -82,5 +82,62 @@ export function useUpdateConsents() {
       qc.setQueryData(keys.consents, consents);
       await qc.invalidateQueries({ queryKey: keys.me });
     },
+  });
+}
+
+export const goalKeys = { current: ["goals", "current"] as const };
+
+/** Active goal, else the latest paused one: what Settings manages (FR-GOAL-4). */
+export function useCurrentGoal() {
+  const enabled = useSignedIn();
+  return useQuery({
+    queryKey: goalKeys.current,
+    enabled,
+    queryFn: () => unwrap(api.GET("/v1/goals/current")),
+  });
+}
+
+export function useUpdateGoal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Schemas["GoalUpdate"] }) =>
+      unwrap(api.PATCH("/v1/goals/{goal_id}", { params: { path: { goal_id: id } }, body })),
+    // Ranking, Today and onboarding all depend on the goal.
+    onSuccess: () => qc.invalidateQueries(),
+  });
+}
+
+/** FR-PRIV-2: the zip comes straight back; the caller saves the blob. */
+export function useExportData() {
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST("/v1/privacy/export", { parseAs: "blob" });
+      if (error !== undefined || !(data instanceof Blob)) throw toApiError(response.status, error);
+      const match = /filename="([^"]+)"/.exec(response.headers.get("Content-Disposition") ?? "");
+      return { blob: data, filename: match?.[1] ?? "my-data.zip" };
+    },
+  });
+}
+
+/** FR-PRIV-3: 202 with an empty body, so no unwrap. */
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async (confirm: string) => {
+      const { error, response } = await api.POST("/v1/privacy/delete-account", {
+        body: { confirm },
+        parseAs: "text",
+      });
+      if (!response.ok) throw toApiError(response.status, error);
+    },
+  });
+}
+
+export function useAdminMetrics() {
+  const enabled = useSignedIn();
+  return useQuery({
+    queryKey: ["admin", "metrics"],
+    enabled,
+    retry: false,
+    queryFn: () => unwrap(api.GET("/v1/admin/metrics")),
   });
 }

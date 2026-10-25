@@ -4786,6 +4786,56 @@
         ]
       }
     },
+    "/v1/goals/current": {
+      "get": {
+        "description": "The goal Settings manages: the active one, else the latest paused one (so it can resume).",
+        "operationId": "get_current_goal_v1_goals_current_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/GoalOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Current Goal V1 Goals Current Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Current Goal",
+        "tags": [
+          "goals"
+        ]
+      }
+    },
     "/v1/goals/{goal_id}": {
       "patch": {
         "operationId": "update_goal_v1_goals__goal_id__patch",

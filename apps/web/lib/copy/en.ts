@@ -457,5 +457,105 @@ export const copy = {
     emailDetail: "Free plan: who to reach out to this week, every Monday.",
     writingStyle: "Writing style",
     writingStyleBody: "Messages you've sent, so drafts sound like you.",
+    goalLink: "Your goal",
+    goalLinkBody: "Role, companies, pause or end the sprint.",
+    privacyLink: "Privacy & data",
+    privacyLinkBody: "Your choices, download your data, delete your account.",
+  },
+  goalSettings: {
+    title: "Your goal",
+    none: "You don't have a goal yet.",
+    start: "Set a goal",
+    paused: "Paused. Today's list stops until you resume.",
+    dayOf: (day: number, left: number | null) =>
+      left === null ? `Day ${day}` : `Day ${day} · ${left} days left`,
+    save: "Save goal",
+    saved: "Goal saved",
+    pause: "Pause",
+    resume: "Resume",
+    end: "End this goal",
+    endConfirm: "End this goal? Your people and history stay. You can start a new goal.",
+    endYes: "Yes, end it",
+  },
+  privacyPage: {
+    title: "Privacy & data",
+    choicesSaved: "Choices saved",
+    exportTitle: "Download your data",
+    exportBody:
+      "A zip with everything we hold about you: people, notes, drafts, history, payments.",
+    exportButton: "Download my data",
+    deleteTitle: "Delete account",
+    deleteBody:
+      "Deletes your people, notes, drafts, history and sign-in for good. Payment records are kept without your name for tax law. This can't be undone.",
+    deleteLabel: "Type DELETE to confirm",
+    deleteButton: "Delete my account",
+  },
+  admin: {
+    title: "Metrics",
+    forbidden: "Admins only.",
+    funnel: "Funnel",
+    funnelRows: {
+      signups: "Signed up",
+      accepted_notice: "Accepted notice",
+      set_goal: "Set a goal",
+      imported_contacts: "Brought in people",
+      activated: "Activated (3 sends in 48 h)",
+      paid: "Paid",
+    },
+    conversion: "Paid conversion",
+    activation: "Activation",
+    warmReplies: "Warm replies (7 days)",
+    activeUsers: "Active users (7 days)",
+    repliesPerUser: "Replies per active user",
+    aiCost: "AI cost (30 days)",
+    aiCostPerUser: "AI cost per active user (30 days)",
+    aiFailures: "AI failures (30 days)",
+    waOut: "WhatsApp messages sent (30 days)",
+  },
+  legal: {
+    reviewNote: "[Placeholder text: to be reviewed by a lawyer before public launch.]",
+    privacyTitle: "Privacy policy",
+    termsTitle: "Terms of use",
+    back: "Back",
+    privacyExtra: [
+      {
+        heading: "How long we keep it",
+        body: "Voice recordings: deleted after transcription. Deleted people: purged after 30 days. Draft text: cleared after 180 days. WhatsApp message records (no message text): 90 days. Usage events: 13 months. Payment records: as long as tax law requires, without your name after you delete your account.",
+      },
+      {
+        heading: "Consent",
+        body: "Contacts import, voice processing, WhatsApp messages and analytics each need your separate opt-in. You can withdraw any of them in Settings → Privacy & data, and we stop straight away.",
+      },
+      {
+        heading: "Contact",
+        body: "Questions or grievances: [grievance officer name and email].",
+      },
+    ],
+    termsSections: [
+      {
+        heading: "What the service does",
+        body: "[App name] helps you decide who to contact and drafts messages for you to review. You send every message yourself, from your own phone. We never message your contacts.",
+      },
+      {
+        heading: "Your responsibilities",
+        body: "Only bring in people you know. Don't use the service for spam, bulk messaging or anything unlawful. You're responsible for the messages you choose to send.",
+      },
+      {
+        heading: "Plans and refunds",
+        body: "Paid plans give the listed features for the period you buy. Prices include GST where applicable. Refunds: [refund policy].",
+      },
+      {
+        heading: "AI drafts",
+        body: "Drafts are suggestions written by AI from the facts you give us. Read them before sending; they can be wrong.",
+      },
+      {
+        heading: "Ending",
+        body: "You can delete your account anytime in Settings. We may suspend accounts that break these terms.",
+      },
+      {
+        heading: "Law",
+        body: "These terms are governed by the laws of India. [Jurisdiction and company details].",
+      },
+    ],
   },
 } as const;
