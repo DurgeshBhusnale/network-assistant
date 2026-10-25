@@ -20,6 +20,16 @@ class LLMRequest(BaseModel):
     model: str
     prompt: str
     json_output: bool = True
+    temperature: float = 0.3
+    max_tokens: int = 1500
+
+
+class ProviderError(Exception):
+    """A provider call failed. Retryable errors (timeouts, 429, 5xx) are retried, then fall back."""
+
+    def __init__(self, message: str, *, retryable: bool) -> None:
+        super().__init__(message)
+        self.retryable = retryable
 
 
 class LLMResult(BaseModel):

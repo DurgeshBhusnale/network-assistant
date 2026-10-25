@@ -2,9 +2,23 @@
 
 import uuid
 from datetime import date, datetime, time
+from decimal import Decimal
 from typing import Any, ClassVar
 
-from sqlalchemy import BigInteger, Date, DateTime, Enum, ForeignKey, Integer, String, Text, Time
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Date,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    Time,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -160,3 +174,65 @@ class Trigger(Base):
     contact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contacts.id"))
     type: Mapped[str] = mapped_column(Text)
     date: Mapped[date] = mapped_column(Date)
+
+
+class AICall(Base):
+    __tablename__ = "ai_calls"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column()
+    task: Mapped[str] = mapped_column(Text)
+    provider: Mapped[str] = mapped_column(Text)
+    model: Mapped[str] = mapped_column(Text)
+    prompt_version: Mapped[str | None] = mapped_column(Text)
+    tokens_in: Mapped[int | None] = mapped_column(Integer)
+    tokens_out: Mapped[int | None] = mapped_column(Integer)
+    audio_seconds: Mapped[float | None] = mapped_column(Float)
+    cost_inr: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    latency_ms: Mapped[int | None] = mapped_column(Integer)
+    ok: Mapped[bool] = mapped_column(Boolean)
+
+
+class StyleProfile(Base):
+    __tablename__ = "style_profiles"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    samples: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default="{}")
+    summary: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class Draft(Base):
+    __tablename__ = "drafts"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    suggestion_id: Mapped[uuid.UUID | None] = mapped_column()
+    contact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contacts.id"))
+    stage: Mapped[str] = mapped_column(Text)
+    tone: Mapped[str | None] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(Text, server_default="en")
+    provider: Mapped[str] = mapped_column(Text)
+    model: Mapped[str] = mapped_column(Text)
+    prompt_version: Mapped[str] = mapped_column(Text)
+    text: Mapped[str] = mapped_column(Text)
+    final_text: Mapped[str | None] = mapped_column(Text)
+    regenerations: Mapped[int] = mapped_column(Integer, server_default="0")
+    factcheck: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+    sent_channel: Mapped[str | None] = mapped_column(Text)
+    send_opened_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class Entitlement(Base):
+    __tablename__ = "entitlements"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    product: Mapped[str] = mapped_column(
+        _pg_enum("product_code", "sprint", "pro_monthly", "pro_yearly")
+    )
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    drafts_used: Mapped[int] = mapped_column(Integer, server_default="0")

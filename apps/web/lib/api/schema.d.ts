@@ -41,6 +41,23 @@ export interface paths {
         patch: operations["update_contact_v1_contacts__contact_id__patch"];
         trace?: never;
     };
+    "/v1/contacts/{contact_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Draft */
+        post: operations["create_draft_v1_contacts__contact_id__draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/contacts/{contact_id}/memories": {
         parameters: {
             query?: never;
@@ -52,6 +69,41 @@ export interface paths {
         put?: never;
         /** Add Memory */
         post: operations["add_memory_v1_contacts__contact_id__memories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/drafts/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Draft */
+        get: operations["get_draft_v1_drafts__draft_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Draft */
+        patch: operations["edit_draft_v1_drafts__draft_id__patch"];
+        trace?: never;
+    };
+    "/v1/drafts/{draft_id}/regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate Draft */
+        post: operations["regenerate_draft_v1_drafts__draft_id__regenerate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -264,6 +316,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/style": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Style */
+        get: operations["get_style_v1_style_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/style/samples": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Style Samples */
+        put: operations["put_style_samples_v1_style_samples_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -376,11 +462,79 @@ export interface components {
             /** Title */
             title?: string | null;
         };
+        /** DraftCreate */
+        DraftCreate: {
+            /** Stage */
+            stage: string;
+            /** Tone */
+            tone?: ("shorter" | "warmer" | "formal" | "hinglish") | null;
+        };
+        /** DraftEdit */
+        DraftEdit: {
+            /** Final Text */
+            final_text: string;
+        };
+        /** DraftOut */
+        DraftOut: {
+            /**
+             * Contact Id
+             * Format: uuid
+             */
+            contact_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Drafts Left This Month */
+            drafts_left_this_month: number | null;
+            /** Final Text */
+            final_text: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Language */
+            language: string;
+            /** Reasons */
+            reasons: string[];
+            /** Regenerations */
+            regenerations: number;
+            /** Regenerations Left */
+            regenerations_left: number | null;
+            /** Stage */
+            stage: string;
+            /** Stage Label */
+            stage_label: string;
+            /** Step */
+            step: number;
+            /** Text */
+            text: string;
+            /** Tone */
+            tone: ("shorter" | "warmer" | "formal" | "hinglish") | null;
+            /** Total Steps */
+            total_steps: number;
+            /** Unsupported Claims */
+            unsupported_claims: string[];
+            /** Warnings */
+            warnings: string[];
+            /** Word Count */
+            word_count: number;
+        };
+        /** DraftRegenerate */
+        DraftRegenerate: {
+            /**
+             * Tone
+             * @description None = Another version
+             */
+            tone?: ("shorter" | "warmer" | "formal" | "hinglish") | null;
+        };
         /**
          * ErrorCode
          * @enum {string}
          */
-        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "INTERNAL_ERROR";
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "INTERNAL_ERROR";
         /** ErrorDetail */
         ErrorDetail: {
             code: components["schemas"]["ErrorCode"];
@@ -698,6 +852,18 @@ export interface components {
             /** Timezone */
             timezone?: string | null;
         };
+        /** StyleOut */
+        StyleOut: {
+            /** Samples */
+            samples: string[];
+            /** Summary */
+            summary: string | null;
+        };
+        /** StyleSamplesUpdate */
+        StyleSamplesUpdate: {
+            /** Samples */
+            samples: string[];
+        };
     };
     responses: never;
     parameters: never;
@@ -912,6 +1078,50 @@ export interface operations {
             };
         };
     };
+    create_draft_v1_contacts__contact_id__draft_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     add_memory_v1_contacts__contact_id__memories_post: {
         parameters: {
             query?: never;
@@ -934,6 +1144,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MemoryOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_draft_v1_drafts__draft_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    edit_draft_v1_drafts__draft_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    regenerate_draft_v1_drafts__draft_id__regenerate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftRegenerate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
                 };
             };
             /** @description Unprocessable Entity */
@@ -1505,6 +1843,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConsentsOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_style_v1_style_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StyleOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    put_style_samples_v1_style_samples_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StyleSamplesUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StyleOut"];
                 };
             };
             /** @description Unprocessable Entity */

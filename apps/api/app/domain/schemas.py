@@ -222,3 +222,59 @@ class ImportOut(BaseModel):
     counts: ImportCounts
     errors: list[ImportRowError]
     created_at: datetime
+
+
+# --- Drafting (Sprint 3) -------------------------------------------------------------------
+
+Tone = Literal["shorter", "warmer", "formal", "hinglish"]
+
+
+class StyleOut(BaseModel):
+    samples: list[str]
+    summary: str | None
+
+
+class StyleSamplesUpdate(_In):
+    samples: list[str] = Field(min_length=0, max_length=10)
+
+    @field_validator("samples")
+    @classmethod
+    def _clean_samples(cls, value: list[str]) -> list[str]:
+        cleaned = [s.strip() for s in value if s.strip()]
+        if any(len(s) > 1000 for s in cleaned):
+            raise ValueError("each sample must be at most 1000 characters")
+        return cleaned
+
+
+class DraftCreate(_In):
+    stage: str = Field(min_length=1, max_length=40)
+    tone: Tone | None = None
+
+
+class DraftRegenerate(_In):
+    tone: Tone | None = Field(default=None, description="None = Another version")
+
+
+class DraftEdit(_In):
+    final_text: str = Field(min_length=1, max_length=2000)
+
+
+class DraftOut(BaseModel):
+    id: uuid.UUID
+    contact_id: uuid.UUID
+    stage: str
+    stage_label: str
+    step: int
+    total_steps: int
+    tone: Tone | None
+    language: str
+    text: str
+    final_text: str | None
+    word_count: int
+    unsupported_claims: list[str]
+    warnings: list[str]
+    reasons: list[str]
+    regenerations: int
+    regenerations_left: int | None
+    drafts_left_this_month: int | None
+    created_at: datetime

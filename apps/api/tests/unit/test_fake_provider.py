@@ -32,10 +32,9 @@ async def test_fake_provider_has_a_fixture_per_task(task: str) -> None:
     assert result.text
 
 
-async def test_fake_provider_plain_text_output() -> None:
-    request = _request("summarise_style").model_copy(update={"json_output": False})
-    result = await FakeProvider().complete(request)
-    assert result.text.startswith("Starts with")
+async def test_fake_provider_style_summary_is_json() -> None:
+    result = await FakeProvider().complete(_request("summarise_style"))
+    assert json.loads(result.text)["summary"].startswith("Starts with")
 
 
 async def test_fake_transcribe_uses_language_hint() -> None:
@@ -52,10 +51,10 @@ async def test_fake_provider_missing_fixture_raises(tmp_path: Path) -> None:
 
 def test_ai_mode_fake_builds_fake_providers() -> None:
     providers = build_providers(Settings(ai_mode="fake"))
-    assert set(providers.llm) == {"fake"}
-    assert set(providers.stt) == {"fake"}
+    assert providers.llm.name == "fake"
+    assert providers.stt.name == "fake"
 
 
-def test_ai_mode_live_fails_fast_until_live_providers_exist() -> None:
+def test_ai_mode_live_needs_a_groq_key() -> None:
     with pytest.raises(LiveProvidersUnavailableError):
-        build_providers(Settings(ai_mode="live"))
+        build_providers(Settings(ai_mode="live", groq_api_key=None))

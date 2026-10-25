@@ -48,6 +48,15 @@ class Settings(BaseSettings):
     model_stt_fallback: str = ""
     ai_timeout_llm_seconds: float = 20
     ai_timeout_stt_seconds: float = 60
+    # Cost estimates for ai_calls (INR). LLM: per 1M tokens [input, output]; STT: per audio hour.
+    ai_price_inr_per_mtok: dict[str, tuple[float, float]] = {
+        "openai/gpt-oss-20b": (6.6, 26.4),
+        "openai/gpt-oss-120b": (13.2, 52.8),
+    }
+    ai_price_inr_per_audio_hour: dict[str, float] = {
+        "whisper-large-v3-turbo": 3.5,
+        "whisper-large-v3": 9.8,
+    }
 
     # WhatsApp Cloud API
     wa_graph_version: str = ""

@@ -457,6 +457,224 @@
         "title": "ContactUpdate",
         "type": "object"
       },
+      "DraftCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "stage": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Stage",
+            "type": "string"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "enum": [
+                  "shorter",
+                  "warmer",
+                  "formal",
+                  "hinglish"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          }
+        },
+        "required": [
+          "stage"
+        ],
+        "title": "DraftCreate",
+        "type": "object"
+      },
+      "DraftEdit": {
+        "additionalProperties": false,
+        "properties": {
+          "final_text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Final Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "final_text"
+        ],
+        "title": "DraftEdit",
+        "type": "object"
+      },
+      "DraftOut": {
+        "properties": {
+          "contact_id": {
+            "format": "uuid",
+            "title": "Contact Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "drafts_left_this_month": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drafts Left This Month"
+          },
+          "final_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Text"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "regenerations": {
+            "title": "Regenerations",
+            "type": "integer"
+          },
+          "regenerations_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regenerations Left"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stage_label": {
+            "title": "Stage Label",
+            "type": "string"
+          },
+          "step": {
+            "title": "Step",
+            "type": "integer"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "enum": [
+                  "shorter",
+                  "warmer",
+                  "formal",
+                  "hinglish"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          },
+          "total_steps": {
+            "title": "Total Steps",
+            "type": "integer"
+          },
+          "unsupported_claims": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unsupported Claims",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "word_count": {
+            "title": "Word Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "contact_id",
+          "stage",
+          "stage_label",
+          "step",
+          "total_steps",
+          "tone",
+          "language",
+          "text",
+          "final_text",
+          "word_count",
+          "unsupported_claims",
+          "warnings",
+          "reasons",
+          "regenerations",
+          "regenerations_left",
+          "drafts_left_this_month",
+          "created_at"
+        ],
+        "title": "DraftOut",
+        "type": "object"
+      },
+      "DraftRegenerate": {
+        "additionalProperties": false,
+        "properties": {
+          "tone": {
+            "anyOf": [
+              {
+                "enum": [
+                  "shorter",
+                  "warmer",
+                  "formal",
+                  "hinglish"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None = Another version",
+            "title": "Tone"
+          }
+        },
+        "title": "DraftRegenerate",
+        "type": "object"
+      },
       "ErrorCode": {
         "enum": [
           "VALIDATION_ERROR",
@@ -473,6 +691,11 @@
           "CONSENT_REQUIRED",
           "CONTACT_EXISTS",
           "IMPORT_FILE_INVALID",
+          "NO_ACTIVE_GOAL",
+          "FREE_LIMIT_REACHED",
+          "FREE_REGEN_LIMIT_REACHED",
+          "FAIR_USE_REACHED",
+          "AI_UNAVAILABLE",
           "INTERNAL_ERROR"
         ],
         "title": "ErrorCode",
@@ -1388,6 +1611,53 @@
         },
         "title": "ProfileUpdate",
         "type": "object"
+      },
+      "StyleOut": {
+        "properties": {
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Samples",
+            "type": "array"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "samples",
+          "summary"
+        ],
+        "title": "StyleOut",
+        "type": "object"
+      },
+      "StyleSamplesUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 0,
+            "title": "Samples",
+            "type": "array"
+          }
+        },
+        "required": [
+          "samples"
+        ],
+        "title": "StyleSamplesUpdate",
+        "type": "object"
       }
     }
   },
@@ -1681,6 +1951,69 @@
         ]
       }
     },
+    "/v1/contacts/{contact_id}/draft": {
+      "post": {
+        "operationId": "create_draft_v1_contacts__contact_id__draft_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Create Draft",
+        "tags": [
+          "drafts"
+        ]
+      }
+    },
     "/v1/contacts/{contact_id}/memories": {
       "post": {
         "operationId": "add_memory_v1_contacts__contact_id__memories_post",
@@ -1741,6 +2074,183 @@
         "summary": "Add Memory",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/v1/drafts/{draft_id}": {
+      "get": {
+        "operationId": "get_draft_v1_drafts__draft_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Draft",
+        "tags": [
+          "drafts"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_draft_v1_drafts__draft_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Edit Draft",
+        "tags": [
+          "drafts"
+        ]
+      }
+    },
+    "/v1/drafts/{draft_id}/regenerate": {
+      "post": {
+        "operationId": "regenerate_draft_v1_drafts__draft_id__regenerate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRegenerate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Regenerate Draft",
+        "tags": [
+          "drafts"
         ]
       }
     },
@@ -2434,6 +2944,98 @@
         "summary": "Update Consents",
         "tags": [
           "privacy"
+        ]
+      }
+    },
+    "/v1/style": {
+      "get": {
+        "operationId": "get_style_v1_style_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Style",
+        "tags": [
+          "drafts"
+        ]
+      }
+    },
+    "/v1/style/samples": {
+      "put": {
+        "operationId": "put_style_samples_v1_style_samples_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StyleSamplesUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Put Style Samples",
+        "tags": [
+          "drafts"
         ]
       }
     }
