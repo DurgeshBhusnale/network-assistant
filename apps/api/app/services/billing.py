@@ -1,7 +1,7 @@
 """Plan lookup and usage counts feeding billing/limits.py."""
 
 import uuid
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.billing.limits import Limits, Plan
 from app.core.config import Settings
 from app.domain.models import Draft, Entitlement
+
+CLOCK_SKEW = timedelta(minutes=2)
 
 
 def limits_from(settings: Settings) -> Limits:
@@ -27,7 +29,8 @@ async def active_entitlement(
         select(Entitlement)
         .where(
             Entitlement.user_id == user_id,
-            Entitlement.starts_at <= now,
+            # Tolerate small clock differences between app servers and the database.
+            Entitlement.starts_at <= now + CLOCK_SKEW,
             Entitlement.ends_at > now,
         )
         .order_by(Entitlement.ends_at.desc())

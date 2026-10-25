@@ -4,9 +4,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 6 — WhatsApp assistant (Sprints 0–5 done)
+- **Current sprint:** Sprint 7 — Billing and notifications (Sprints 0–6 done)
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-5/capture` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-6/whatsapp` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -19,7 +19,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 3 AI drafting | Done (tests deferred; evals runner deferred) | | Live Groq smoke: 17 calls ₹0.25, rules + fact check + free caps verified |
 | 4 Engine and daily loop | Done (tests deferred) | | Live smoke of the full loop passed (ranking → draft → send → reply → referred → thank → progress) |
 | 5 Capture | Done (tests deferred; Hinglish STT check pending real voice notes) | | Live smoke: extraction, possible-match, follow-up date, audio deleted + audit |
-| 6 WhatsApp assistant | Not started | | |
+| 6 WhatsApp assistant | Done in dry-run (tests deferred) | | Needs Meta credentials + approved templates to go live |
 | 7 Billing and notifications | Not started | | |
 | 8 Privacy, analytics, hardening | Not started | | |
 
@@ -65,6 +65,26 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 6:
+
+- **Rule 4 over the tech spec:** messages from numbers that aren't linked get **no reply** (the spec suggested one sign-up reply). The only outbound path is `WhatsAppClient`, whose guard looks up `profiles.wa_phone_e164` itself and refuses users without a verified number, not opted in, or opted out (except the single STOP confirmation).
+- Without `WA_ACCESS_TOKEN`/`WA_PHONE_NUMBER_ID`/`WA_GRAPH_VERSION` the client runs **dry**: guard + `wa_messages` metadata (`status='dry_run'`), nothing sent.
+- Linking: `POST /v1/whatsapp/link-code` (needs the `whatsapp` consent) → 6-char code (no 0/O/1/I), 15 min, single use → `wa.me/<our number>?text=START CODE`. Webhook `START CODE` sets the number + opt-in with the service role (server-managed columns, ADR-0007); a number linked elsewhere is moved. `GET /v1/whatsapp/status` (masked number), `DELETE /v1/whatsapp/link`.
+- Webhook `/v1/webhooks/whatsapp`: GET verify (constant-time token compare); POST verifies `X-Hub-Signature-256` (HMAC-SHA256, constant time) → dedupes by `wa_message_id` (unique) → records metadata only → enqueues `handle_whatsapp` with `keep_result=0` so message text never lingers in Redis → 200. Status callbacks update `wa_messages.status`. Inbound rows get the user id once the sender is resolved.
+- Commands: exact keywords only (START/STOP/HELP/TODAY, case-insensitive, trimmed); anything else is a note → capture pipeline (`wa_text`); voice notes are downloaded from Meta, transcribed in memory (never stored), then the same pipeline (`wa_audio`, needs voice consent); shared contacts import via the picker path (needs contacts consent). Capture replies offer Save (only when nobody needs a merge decision) / Edit in app (`/capture?id=…`).
+- Daily brief (cron every 15 min, `WA_BRIEFS_ENABLED`): paid + opted in + not opted out, at local nudge time, once per local day, template `daily_brief_v1` with quick replies `show_drafts` / `snooze_today`. Show drafts sends each draft as its own message (generating missing ones within plan limits); Snooze today snoozes today's list.
+- Entitlement checks tolerate 2 min of clock skew between app servers and the DB (found in the smoke: laptop 1.2 s behind Supabase).
+
+WhatsApp templates to submit to Meta (category **Utility**, language English):
+
+| Name | Body | Buttons |
+|---|---|---|
+| `daily_brief_v1` | `Good morning {{1}}. Today's people to reach out to:` / `1. {{2}}` / `2. {{3}}` / `3. {{4}}` / `Tap Show drafts to get your messages ready.` | Quick reply: `Show drafts`, `Snooze today` |
+| `sprint_reminder_v1` | `Your Career Sprint has {{1}} days left. Referrals so far: {{2}}.` | URL: `Open app` → `<APP_BASE_URL>/today` |
+| `capture_ready_v1` | `Saved your note. I found {{1}} people for you to check.` | URL: `Review in app` → `<APP_BASE_URL>/today` |
+
+Sample values for review: {{1}} Rohan; {{2}} Ananya Kulkarni — Target company; {{3}} Vikram Joshi — Birthday today; {{4}} Priya Nair — Met at eChai.
 
 Sprint 5:
 
@@ -200,6 +220,8 @@ Sprint 0 build:
 
 ## Open issues / questions for the human
 
+- **WhatsApp go-live:** Meta Business verification, a WhatsApp Cloud API app + number, a permanent system-user token, and the 3 templates above approved. Then set `WA_GRAPH_VERSION`, `WA_PHONE_NUMBER_ID`, `WA_BUSINESS_ACCOUNT_ID`, `WA_ACCESS_TOKEN`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_DISPLAY_NUMBER` and point the webhook to `<API_BASE_URL>/v1/webhooks/whatsapp` (needs a public HTTPS API, i.e. a deployed staging API or a tunnel).
+
 - **Supabase Auth setup (needed to sign in):** Authentication → URL Configuration: Site URL `http://localhost:3000`, Redirect URLs `http://localhost:3000/auth/callback` (+ production later). Providers → Google: enable with a Google Cloud OAuth client (redirect URI shown on that page). Email templates → Magic Link: add `{{ .Token }}` so the email shows the 6-digit code (the link also works).
 
 - GitHub repo URL needed to add the remote, push `main` + `sprint-0/foundations` and open the Sprint 0 PR (CI's first run).
@@ -220,6 +242,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 6 built: WhatsApp client with recipient guard + dry run, linking, signed webhook with dedupe, commands, notes/voice/contacts capture, show drafts/snooze, daily brief; Settings WhatsApp card. Live smoke (dry run) passed incl. STOP/START, unlinked-sender silence, free vs paid brief.
 
 - 25 Oct 2026 — Sprint 5 built: voice/text capture with signed upload, transcription, audio deletion + audit, extraction, confirm cards, dated follow-ups, sweeps. Live smoke against Groq + Supabase Storage passed.
 

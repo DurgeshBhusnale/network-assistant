@@ -67,6 +67,8 @@ class Settings(BaseSettings):
     wa_verify_token: SecretStr | None = None
     wa_display_number: str = ""
     wa_briefs_enabled: bool = False
+    wa_template_language: str = "en"
+    wa_link_code_minutes: int = 15
 
     # Payments and limits
     razorpay_key_id: str = ""

@@ -1752,6 +1752,29 @@
         "title": "InteractionOut",
         "type": "object"
       },
+      "LinkCodeOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "expires_in_minutes": {
+            "title": "Expires In Minutes",
+            "type": "integer"
+          },
+          "wa_url": {
+            "title": "Wa Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "wa_url",
+          "expires_in_minutes"
+        ],
+        "title": "LinkCodeOut",
+        "type": "object"
+      },
       "MemoryCreate": {
         "additionalProperties": false,
         "properties": {
@@ -2867,6 +2890,41 @@
           "storage_path"
         ],
         "title": "UploadUrlOut",
+        "type": "object"
+      },
+      "WhatsAppStatus": {
+        "properties": {
+          "linked": {
+            "title": "Linked",
+            "type": "boolean"
+          },
+          "number_configured": {
+            "title": "Number Configured",
+            "type": "boolean"
+          },
+          "opted_out": {
+            "title": "Opted Out",
+            "type": "boolean"
+          },
+          "phone_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Hint"
+          }
+        },
+        "required": [
+          "linked",
+          "phone_hint",
+          "opted_out",
+          "number_configured"
+        ],
+        "title": "WhatsAppStatus",
         "type": "object"
       }
     }
@@ -4913,6 +4971,231 @@
         "summary": "Get Today",
         "tags": [
           "daily loop"
+        ]
+      }
+    },
+    "/v1/webhooks/whatsapp": {
+      "get": {
+        "operationId": "verify_webhook_v1_webhooks_whatsapp_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "hub.mode",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Hub.Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "hub.verify_token",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Hub.Verify Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "hub.challenge",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Hub.Challenge",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Verify Webhook",
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "description": "Verify the signature, dedupe by message id, record metadata, hand off to the worker.\nReplies 200 fast; never stores message bodies.",
+        "operationId": "receive_webhook_v1_webhooks_whatsapp_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Receive Webhook",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/v1/whatsapp/link": {
+      "delete": {
+        "operationId": "unlink_v1_whatsapp_link_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Unlink",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/v1/whatsapp/link-code": {
+      "post": {
+        "operationId": "link_code_v1_whatsapp_link_code_post",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkCodeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Link Code",
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/v1/whatsapp/status": {
+      "get": {
+        "operationId": "whatsapp_status_v1_whatsapp_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsAppStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Whatsapp Status",
+        "tags": [
+          "whatsapp"
         ]
       }
     }

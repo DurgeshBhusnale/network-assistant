@@ -37,6 +37,10 @@ function readContactParam(): string | null {
   return new URLSearchParams(window.location.search).get("contact");
 }
 
+function readCaptureParam(): string | null {
+  return new URLSearchParams(window.location.search).get("id");
+}
+
 function formatTime(ms: number): string {
   const s = Math.floor(ms / 1000);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -262,7 +266,10 @@ export default function CapturePage() {
   const person = usePerson(contactId ?? "");
   const upload = useUploadAudio();
   const create = useCreateCapture();
-  const [captureId, setCaptureId] = useState<string | null>(null);
+  const linkedCapture = useSyncExternalStore(noopSubscribe, readCaptureParam, () => null);
+  const [ownCaptureId, setCaptureId] = useState<string | null>(null);
+  const [cleared, setCleared] = useState(false);
+  const captureId = ownCaptureId ?? (cleared ? null : linkedCapture);
   const capture = useCapture(captureId);
   const [error, setError] = useState<string | null>(null);
   const contactName = contactId && person.data ? person.data.full_name : null;
@@ -318,7 +325,14 @@ export default function CapturePage() {
         </p>
       )}
       {capture.data && status === "ready" && (
-        <Results key={capture.data.id} capture={capture.data} onReset={() => setCaptureId(null)} />
+        <Results
+          key={capture.data.id}
+          capture={capture.data}
+          onReset={() => {
+            setCaptureId(null);
+            setCleared(true);
+          }}
+        />
       )}
       <p className="text-caption text-muted">{t.privacy}</p>
       <p className="text-caption text-muted">{t.tip}</p>

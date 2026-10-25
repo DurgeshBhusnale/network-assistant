@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type ReactNode } from "react";
 
+import { WhatsAppCard } from "@/components/settings/WhatsAppCard";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -140,6 +141,8 @@ function SettingsForm({ profile }: { profile: Profile }) {
           </p>
         )}
       </Card>
+
+      <WhatsAppCard />
 
       <Link
         href="/settings/style"

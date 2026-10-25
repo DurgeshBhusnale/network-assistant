@@ -11,6 +11,7 @@ from app.api.v1 import (
     me,
     packs,
     privacy,
+    whatsapp,
 )
 
 router = APIRouter(prefix="/v1")
@@ -24,3 +25,4 @@ router.include_router(imports.router)
 router.include_router(drafts.router)
 router.include_router(loop.router)
 router.include_router(captures.router)
+router.include_router(whatsapp.router)

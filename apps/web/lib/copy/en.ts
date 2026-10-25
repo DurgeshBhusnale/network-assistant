@@ -421,6 +421,17 @@ export const copy = {
     account: "Account",
     signedInAs: (email: string) => `Signed in as ${email}`,
     signOut: "Sign out",
+    whatsappTitle: "WhatsApp assistant",
+    whatsappBody:
+      "Send notes and voice notes to our number after you meet people. Paid plans also get a morning brief. We only ever message you.",
+    whatsappLink: "Link WhatsApp",
+    whatsappLinked: (hint: string) => `Linked to ${hint}`,
+    whatsappOptedOut: "You sent STOP. Send START to our number to turn it back on.",
+    whatsappUnlink: "Unlink",
+    whatsappCodeHint: (minutes: number) =>
+      `WhatsApp opens with a code. Just tap send. The code works for ${minutes} minutes.`,
+    whatsappNotSetUp: "The WhatsApp assistant isn't available yet.",
+    whatsappConsent: "Allow WhatsApp messages in your privacy choices first.",
     writingStyle: "Writing style",
     writingStyleBody: "Messages you've sent, so drafts sound like you.",
   },

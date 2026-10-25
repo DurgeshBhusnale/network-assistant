@@ -8,6 +8,8 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 
+from app.channels.whatsapp.handler import handle_inbound, send_daily_briefs
+from app.channels.whatsapp.inbound import Inbound, SharedContact
 from app.core.db import service_session
 from app.core.storage import Storage
 from app.domain.models import Goal, Profile
@@ -97,3 +99,14 @@ async def sweep_captures(ctx: dict[str, Any]) -> None:
     audio = await sweep_audio(ctx["engine"], Storage(ctx["settings"]), now)
     texts = await sweep_transcripts(ctx["engine"], now)
     logger.info("capture_sweep_done", extra={"audio_deleted": audio, "texts_cleared": texts})
+
+
+async def handle_whatsapp(ctx: dict[str, Any], message: dict[str, Any]) -> None:
+    contacts = [SharedContact(**c) for c in message.get("contacts", [])]
+    inbound = Inbound(**{**message, "contacts": contacts})
+    await handle_inbound(ctx["engine"], ctx.get("ai_router"), ctx["wa"], ctx["settings"], inbound)
+
+
+async def send_briefs(ctx: dict[str, Any]) -> None:
+    sent = await send_daily_briefs(ctx["engine"], ctx["wa"], ctx["settings"])
+    logger.info("wa_briefs_done", extra={"sent": sent})

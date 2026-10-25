@@ -51,6 +51,9 @@ class Profile(Base):
     privacy_notice_version: Mapped[str | None] = mapped_column(Text)
     privacy_notice_ack_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     wa_phone_e164: Mapped[str | None] = mapped_column(Text)
+    wa_opt_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    wa_opt_out_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    wa_last_inbound_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
 
 
@@ -313,3 +316,27 @@ class AuditLog(Base):
     user_ref: Mapped[str] = mapped_column(Text)
     action: Mapped[str] = mapped_column(Text)
     meta: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+
+
+class WaLinkCode(Base):
+    __tablename__ = "wa_link_codes"
+
+    code: Mapped[str] = mapped_column(Text, primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class WaMessage(Base):
+    """Metadata only. Message bodies are never stored (CLAUDE.md rule 7)."""
+
+    __tablename__ = "wa_messages"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID | None] = mapped_column()
+    direction: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(Text)
+    template_name: Mapped[str | None] = mapped_column(Text)
+    wa_message_id: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
