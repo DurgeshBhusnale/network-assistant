@@ -4,9 +4,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 5 — Capture (Sprints 0–4 done)
+- **Current sprint:** Sprint 6 — WhatsApp assistant (Sprints 0–5 done)
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-4/engine-loop` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-5/capture` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -18,7 +18,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 2 People | Done (tests deferred) | | Live API smoke passed incl. 1,000-row import in 7.5 s |
 | 3 AI drafting | Done (tests deferred; evals runner deferred) | | Live Groq smoke: 17 calls ₹0.25, rules + fact check + free caps verified |
 | 4 Engine and daily loop | Done (tests deferred) | | Live smoke of the full loop passed (ranking → draft → send → reply → referred → thank → progress) |
-| 5 Capture | Not started | | |
+| 5 Capture | Done (tests deferred; Hinglish STT check pending real voice notes) | | Live smoke: extraction, possible-match, follow-up date, audio deleted + audit |
 | 6 WhatsApp assistant | Not started | | |
 | 7 Billing and notifications | Not started | | |
 | 8 Privacy, analytics, hardening | Not started | | |
@@ -65,6 +65,17 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 5:
+
+- Migration `20261025020000_captures_bucket.sql`: private `captures` bucket (16 MB, audio types). Only the service role touches it: `POST /captures/upload-url` signs a one-time upload URL for `{user_id}/{uuid}.{ext}`; the browser PUTs the audio; the API rejects storage paths outside the user's folder.
+- Voice consent required for upload URLs and audio captures (403); text capture needs none. Voice memories from a Person page pass `contact_id`; everything attaches to that person.
+- Worker `process_capture`: download → Groq Whisper (turbo → large-v3) → delete audio immediately + `audit_log` row → `extract_people.v1` (capture time and weekday in the user's timezone resolve "Monday") → candidates with possible matches (rapidfuzz token-set ≥ 85, company agreement ±) → `ready`. Never auto-merges. If no queue is available the API processes inline.
+- Follow-up dates are kept only if on/after the capture day and within a year. Confirm writes contacts (new or merged; fills blank company/title only), memories ("Met at …", facts, "You promised: …"), a `met` interaction at the capture time, and a forced suggestion on the follow-up date (pack `follow_up` stage, else `reconnect`; free plan: that week's list).
+- Confirm and discard clear `captures.transcript` and candidate text (`extracted` keeps only counts). Hourly cron `sweep_captures`: deletes audio still stored after 1 h, clears unconfirmed capture text after 24 h.
+- `ai_calls` logs transcription with `audio_seconds` and cost (`ai_price_inr_per_audio_hour`).
+- Web: Capture screen (recorder with live level bars + timer + 5-min cap, Type instead, uploading/processing states, confirm cards: Save / Yes merge / New person / Edit / Skip, Save to your people, Discard this note), voice memory from Person page. The unused placeholder page and its copy were removed.
+- Pending: the 20-note Hinglish/Hindi voice test (needs the founder's recordings) to decide whether Whisper is good enough or Sarvam should be proposed (ADR-0010).
 
 Sprint 4:
 
@@ -209,6 +220,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 5 built: voice/text capture with signed upload, transcription, audio deletion + audit, extraction, confirm cards, dated follow-ups, sweeps. Live smoke against Groq + Supabase Storage passed.
 
 - 25 Oct 2026 — Sprint 4 built: relevance, ranking, stage machine, Today, send flow with cap, interactions, reply check-ins, progress, nightly ranking + LLM labelling jobs; UI for Today/Draft send/Replies/Progress. Live smoke found and fixed: company-cap grouping, suggestion-draft body, app-scoped settings, free-plan thank-you date.
 

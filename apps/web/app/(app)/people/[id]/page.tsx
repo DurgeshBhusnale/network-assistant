@@ -190,7 +190,10 @@ function PersonView({ person }: { person: Person }) {
             <path d="M12 5v14M5 12h14" />
           </svg>
         </ActionTile>
-        <ActionTile label={t.voiceMemory} disabled hint={t.voiceSoon}>
+        <ActionTile
+          label={t.voiceMemory}
+          onClick={() => router.push(`/capture?contact=${person.id}`)}
+        >
           <MicIcon size={20} />
         </ActionTile>
       </div>
