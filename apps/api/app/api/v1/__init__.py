@@ -1,6 +1,10 @@
 from fastapi import APIRouter
 
-from app.api.v1 import health
+from app.api.v1 import goals, health, me, packs, privacy
 
 router = APIRouter(prefix="/v1")
 router.include_router(health.router)
+router.include_router(me.router)
+router.include_router(packs.router)
+router.include_router(goals.router)
+router.include_router(privacy.router)

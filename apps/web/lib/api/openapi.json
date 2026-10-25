@@ -1,6 +1,108 @@
 {
   "components": {
     "schemas": {
+      "ConsentState": {
+        "properties": {
+          "granted": {
+            "title": "Granted",
+            "type": "boolean"
+          },
+          "granted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Granted At"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "granted",
+          "version",
+          "granted_at"
+        ],
+        "title": "ConsentState",
+        "type": "object"
+      },
+      "ConsentsOut": {
+        "properties": {
+          "consents": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ConsentState"
+            },
+            "propertyNames": {
+              "enum": [
+                "contacts",
+                "voice",
+                "whatsapp",
+                "analytics"
+              ]
+            },
+            "title": "Consents",
+            "type": "object"
+          },
+          "notice_accepted": {
+            "title": "Notice Accepted",
+            "type": "boolean"
+          },
+          "notice_version": {
+            "title": "Notice Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "notice_version",
+          "notice_accepted",
+          "consents"
+        ],
+        "title": "ConsentsOut",
+        "type": "object"
+      },
+      "ConsentsUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "accept_notice": {
+            "title": "Accept Notice",
+            "type": "boolean"
+          },
+          "consents": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "propertyNames": {
+              "enum": [
+                "contacts",
+                "voice",
+                "whatsapp",
+                "analytics"
+              ]
+            },
+            "title": "Consents",
+            "type": "object"
+          }
+        },
+        "required": [
+          "accept_notice",
+          "consents"
+        ],
+        "title": "ConsentsUpdate",
+        "type": "object"
+      },
       "ErrorCode": {
         "enum": [
           "VALIDATION_ERROR",
@@ -11,6 +113,9 @@
           "CONFLICT",
           "RATE_LIMITED",
           "HTTP_ERROR",
+          "PRIVACY_NOTICE_REQUIRED",
+          "PACK_NOT_AVAILABLE",
+          "GOAL_ALREADY_ACTIVE",
           "INTERNAL_ERROR"
         ],
         "title": "ErrorCode",
@@ -43,6 +148,133 @@
           "error"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "GoalCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "pack_id",
+          "params"
+        ],
+        "title": "GoalCreate",
+        "type": "object"
+      },
+      "GoalOut": {
+        "properties": {
+          "day_number": {
+            "description": "1-based day of the goal in the user's timezone",
+            "title": "Day Number",
+            "type": "integer"
+          },
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "ends_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends On"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "starts_on": {
+            "format": "date",
+            "title": "Starts On",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "paused",
+              "done"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "pack_id",
+          "params",
+          "status",
+          "starts_on",
+          "ends_on",
+          "day_number",
+          "days_left"
+        ],
+        "title": "GoalOut",
+        "type": "object"
+      },
+      "GoalUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Params"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "active",
+                  "paused",
+                  "done"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "GoalUpdate",
         "type": "object"
       },
       "HealthResponse": {
@@ -79,6 +311,255 @@
         ],
         "title": "HealthResponse",
         "type": "object"
+      },
+      "PackOut": {
+        "properties": {
+          "copy_text": {
+            "additionalProperties": true,
+            "description": "Pack UI copy (labels, descriptions)",
+            "title": "Copy Text",
+            "type": "object"
+          },
+          "duration_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Days"
+          },
+          "goal_schema": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Schema"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "picker_label": {
+            "title": "Picker Label",
+            "type": "string"
+          },
+          "sort_order": {
+            "title": "Sort Order",
+            "type": "integer"
+          },
+          "stages": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Stages",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "coming_soon",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tagline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tagline"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "sort_order",
+          "picker_label",
+          "tagline",
+          "duration_days",
+          "goal_schema",
+          "stages",
+          "copy_text"
+        ],
+        "title": "PackOut",
+        "type": "object"
+      },
+      "ProfileOut": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "language": {
+            "enum": [
+              "en",
+              "hinglish",
+              "hi",
+              "mr"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "nudge_time": {
+            "description": "HH:MM in the user's timezone",
+            "title": "Nudge Time",
+            "type": "string"
+          },
+          "onboarding_step": {
+            "enum": [
+              "goal",
+              "import",
+              "style",
+              "done"
+            ],
+            "title": "Onboarding Step",
+            "type": "string"
+          },
+          "privacy_notice_accepted": {
+            "title": "Privacy Notice Accepted",
+            "type": "boolean"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "whatsapp_linked": {
+            "title": "Whatsapp Linked",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_id",
+          "email",
+          "display_name",
+          "language",
+          "timezone",
+          "nudge_time",
+          "onboarding_step",
+          "privacy_notice_accepted",
+          "whatsapp_linked"
+        ],
+        "title": "ProfileOut",
+        "type": "object"
+      },
+      "ProfileUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "enum": [
+                  "en",
+                  "hinglish",
+                  "hi",
+                  "mr"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "nudge_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nudge Time"
+          },
+          "onboarding_step": {
+            "anyOf": [
+              {
+                "enum": [
+                  "goal",
+                  "import",
+                  "style",
+                  "done"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Onboarding Step"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "ProfileUpdate",
+        "type": "object"
       }
     }
   },
@@ -88,6 +569,169 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/goals": {
+      "post": {
+        "operationId": "create_goal_v1_goals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Create Goal",
+        "tags": [
+          "goals"
+        ]
+      }
+    },
+    "/v1/goals/active": {
+      "get": {
+        "operationId": "get_active_goal_v1_goals_active_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/GoalOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Active Goal V1 Goals Active Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Active Goal",
+        "tags": [
+          "goals"
+        ]
+      }
+    },
+    "/v1/goals/{goal_id}": {
+      "patch": {
+        "operationId": "update_goal_v1_goals__goal_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "goal_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Goal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Update Goal",
+        "tags": [
+          "goals"
+        ]
+      }
+    },
     "/v1/health": {
       "get": {
         "operationId": "health_v1_health_get",
@@ -136,6 +780,231 @@
         "summary": "Health",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "get_me_v1_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Me",
+        "tags": [
+          "profile"
+        ]
+      },
+      "patch": {
+        "operationId": "update_me_v1_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Update Me",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/v1/packs": {
+      "get": {
+        "operationId": "list_packs_v1_packs_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PackOut"
+                  },
+                  "title": "Response List Packs V1 Packs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "List Packs",
+        "tags": [
+          "packs"
+        ]
+      }
+    },
+    "/v1/privacy/consents": {
+      "get": {
+        "operationId": "get_consents_v1_privacy_consents_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Consents",
+        "tags": [
+          "privacy"
+        ]
+      },
+      "put": {
+        "operationId": "update_consents_v1_privacy_consents_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Update Consents",
+        "tags": [
+          "privacy"
         ]
       }
     }

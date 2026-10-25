@@ -74,6 +74,10 @@ class Settings(BaseSettings):
     pro_enabled: bool = False
     price_test_enabled: bool = False
 
+    # Privacy (bump when the notice or consent texts change; users are asked again)
+    privacy_notice_version: str = "2026-10-25"
+    consent_version: str = "2026-10-25"
+
     # Notifications
     vapid_public_key: str = ""
     vapid_private_key: SecretStr | None = None
