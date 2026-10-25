@@ -4,16 +4,17 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 0 — Foundations (done locally; awaiting CI run + phone check before tag `sprint-0`)
-- **Branch:** `sprint-0/foundations`
+- **Current sprint:** Sprint 2 — People (Sprints 0–1 done)
+- **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
+- **Branch:** `sprint-1/accounts-goal` (pushed: `main`, `sprint-0/foundations`)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
 
 | Sprint | Status | Tag | Notes |
 |---|---|---|---|
-| 0 Foundations | Done locally | | CI + phone check pending |
-| 1 Accounts and goal setup | Not started | | |
+| 0 Foundations | Done | | Phone check passed (founder) |
+| 1 Accounts and goal setup | Done (tests deferred) | | Live API smoke passed; needs Google/email auth config in Supabase |
 | 2 People | Not started | | |
 | 3 AI drafting | Not started | | |
 | 4 Engine and daily loop | Not started | | |
@@ -64,6 +65,18 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 1:
+
+- Auth: Supabase access tokens verified in the API via the project JWKS (ES256), HS256 secret as fallback; 401 envelope for missing/invalid/expired tokens.
+- `user_session()` runs each request as `authenticated` with the JWT claims (RLS); `service_session()` for server-only tables (events).
+- Profile row created on the first authenticated request (insert … on conflict do nothing), no DB trigger.
+- New migration `20261025010000_privacy_notice_ack.sql`: `profiles.privacy_notice_version/_ack_at` (user-editable via API). Goal creation requires the current notice version (403 `PRIVACY_NOTICE_REQUIRED`).
+- Consents: append-only rows; withdrawing sets `withdrawn_at`. Boxes start unticked (DPDP opt-in). `signup` analytics event fires at first notice acceptance; all events need analytics consent.
+- Goal params validated with jsonschema against the pack's `goal_schema` (defaults applied, strings trimmed, empty chips dropped, `uri` format checked); `starts_on` = user's local date, `ends_on` = + pack `duration_days`; second active goal → 409 `GOAL_ALREADY_ACTIVE`.
+- Web: supabase-js (PKCE, session persisted) for sign-in only; API client adds the bearer token; route gates: signed out → `/sign-in`; notice not accepted → consents; then resume `onboarding_step`. Steps 2–3 are "Skip for now" placeholders until Sprints 2–3. Referral stepper bounds read from the pack schema.
+- `next.config.ts` loads the repo-root `.env` (`@next/env`).
+- CI E2E job runs on manual dispatch only while testing is deferred.
 
 Kickoff review, approved by the founder on 25 Oct 2026:
 
@@ -139,6 +152,8 @@ Sprint 0 build:
 
 ## Open issues / questions for the human
 
+- **Supabase Auth setup (needed to sign in):** Authentication → URL Configuration: Site URL `http://localhost:3000`, Redirect URLs `http://localhost:3000/auth/callback` (+ production later). Providers → Google: enable with a Google Cloud OAuth client (redirect URI shown on that page). Email templates → Magic Link: add `{{ .Token }}` so the email shows the 6-digit code (the link also works).
+
 - GitHub repo URL needed to add the remote, push `main` + `sprint-0/foundations` and open the Sprint 0 PR (CI's first run).
 - **Before beta:** create staging/production Supabase projects in **ap-south-1 (Mumbai)**; the Seoul dev project is for dev only (ADR-0009).
 - Turn the Data API off in the dev project dashboard (ADR-0007); the anon revoke already blocks reads.
@@ -157,6 +172,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Pushed to GitHub. Sprint 1 built: auth, RLS sessions, /me, /packs, /goals, /privacy/consents; sign-in (Google + email code), consents, goal, settings screens; onboarding resume. Checks, unit tests, build and live API smoke pass. Testing deferred by founder.
 
 - 25 Oct 2026 — Fixed Docker (WSL service was never registered; reinstalled WSL 2.6.3 from Microsoft's signed MSI). Accepted Seoul dev project. Pushed migration + seed. Warmed the DB pool at API startup (cold TLS connect to Seoul took 3 s and tripped the 2 s health timeout). All checks, unit, integration (20) and E2E (8) green; `pnpm dev` health ok/ok/ok. Removed the unused Supabase MCP config (different Supabase account).
 - 25 Oct 2026 — Switched to Windows + cloud Supabase dev + Groq only (ADR-0009, ADR-0010); found the dev project is in Seoul; Docker backend not available.
