@@ -27,6 +27,7 @@ class ProfileOut(BaseModel):
     onboarding_step: OnboardingStep
     privacy_notice_accepted: bool
     whatsapp_linked: bool
+    email_digest: bool
 
 
 class ProfileUpdate(_In):
@@ -35,6 +36,7 @@ class ProfileUpdate(_In):
     timezone: str | None = None
     nudge_time: time | None = None
     onboarding_step: OnboardingStep | None = None
+    email_digest: bool | None = None
 
     @field_validator("display_name")
     @classmethod
@@ -485,3 +487,64 @@ class CaptureResult(BaseModel):
     memories: int
     follow_ups: int
     contact_ids: list[uuid.UUID]
+
+
+# --- Billing and notifications (Sprint 7) --------------------------------------------------
+
+ProductCode = Literal["sprint", "pro_monthly", "pro_yearly"]
+
+
+class PlanOption(BaseModel):
+    product: ProductCode
+    price_paise: int
+    days: int
+    enabled: bool
+
+
+class PlansOut(BaseModel):
+    products: list[PlanOption]
+    checkout_key_id: str | None
+    dev_checkout: bool = Field(description="Local only: payments are simulated (no Razorpay keys)")
+
+
+class EntitlementOut(BaseModel):
+    plan: Literal["free", "sprint", "pro"]
+    ends_at: datetime | None
+    days_left: int | None
+    drafts_used: int | None
+    fair_use_drafts: int | None
+    free_drafts_left: int | None
+
+
+class OrderIn(_In):
+    product: ProductCode
+
+
+class OrderOut(BaseModel):
+    payment_id: uuid.UUID
+    order_id: str
+    amount_paise: int
+    currency: str
+    key_id: str | None
+    product: ProductCode
+    dev_checkout: bool
+
+
+class CheckoutResultIn(_In):
+    razorpay_order_id: str = Field(max_length=100)
+    razorpay_payment_id: str = Field(max_length=100)
+    razorpay_signature: str = Field(max_length=200)
+
+
+class PaymentStatusOut(BaseModel):
+    status: Literal["created", "paid", "failed", "refunded"]
+    entitlement: EntitlementOut
+
+
+class PushSubscriptionIn(_In):
+    endpoint: str = Field(min_length=10, max_length=1000)
+    keys: dict[str, str]
+
+
+class PushConfigOut(BaseModel):
+    public_key: str | None

@@ -13,6 +13,7 @@ dependencies = [
     "pydantic-settings>=2.16.1",
     "pyjwt[crypto]>=2.15.1",
     "python-multipart>=0.0.32",
+    "pywebpush>=2.5.0",
     "rapidfuzz>=3.14.6",
     "redis>=5.3.1",
     "sentry-sdk[fastapi]>=2.73.0",
@@ -53,7 +54,7 @@ plugins = ["pydantic.mypy"]
 files = ["app"]
 
 [[tool.mypy.overrides]]
-module = ["arq.*", "asyncpg.*", "vobject.*"]
+module = ["arq.*", "asyncpg.*", "vobject.*", "pywebpush.*", "py_vapid.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

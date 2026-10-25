@@ -4,6 +4,115 @@
  */
 
 export interface paths {
+    "/v1/billing/checkout-result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Checkout Result
+         * @description UX only: confirms the Checkout signature so the app can show "Payment processing".
+         *     Never grants an entitlement; the webhook does (FR-PAY-4).
+         */
+        post: operations["checkout_result_v1_billing_checkout_result_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/dev/complete/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dev Complete
+         * @description Local development only (no Razorpay keys): runs the same grant path the webhook uses.
+         */
+        post: operations["dev_complete_v1_billing_dev_complete__order_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/entitlement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Entitlement */
+        get: operations["entitlement_v1_billing_entitlement_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Order */
+        post: operations["create_order_v1_billing_orders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Order Status */
+        get: operations["order_status_v1_billing_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plans */
+        get: operations["plans_v1_billing_plans_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captures": {
         parameters: {
             query?: never;
@@ -210,6 +319,26 @@ export interface paths {
          *     per draft (FR-SEND-5). Nothing is recorded as sent until the user confirms.
          */
         post: operations["send_draft_v1_drafts__draft_id__send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/email/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Email Unsubscribe
+         * @description One-click unsubscribe from the weekly email (signed link; no sign-in needed).
+         */
+        get: operations["email_unsubscribe_v1_email_unsubscribe_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -456,6 +585,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/push/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Push Config */
+        get: operations["push_config_v1_push_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/push/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Subscribe */
+        post: operations["subscribe_v1_push_subscribe_post"];
+        /** Unsubscribe Push */
+        delete: operations["unsubscribe_push_v1_push_subscribe_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/replies/pending": {
         parameters: {
             query?: never;
@@ -569,6 +733,23 @@ export interface paths {
         get: operations["get_today_v1_today_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/webhooks/razorpay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Razorpay Webhook */
+        post: operations["razorpay_webhook_v1_webhooks_razorpay_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -779,6 +960,15 @@ export interface components {
             /** Merged */
             merged: number;
         };
+        /** CheckoutResultIn */
+        CheckoutResultIn: {
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Razorpay Signature */
+            razorpay_signature: string;
+        };
         /** CompanyProgress */
         CompanyProgress: {
             /** Company */
@@ -960,11 +1150,29 @@ export interface components {
              */
             tone?: ("shorter" | "warmer" | "formal" | "hinglish") | null;
         };
+        /** EntitlementOut */
+        EntitlementOut: {
+            /** Days Left */
+            days_left: number | null;
+            /** Drafts Used */
+            drafts_used: number | null;
+            /** Ends At */
+            ends_at: string | null;
+            /** Fair Use Drafts */
+            fair_use_drafts: number | null;
+            /** Free Drafts Left */
+            free_drafts_left: number | null;
+            /**
+             * Plan
+             * @enum {string}
+             */
+            plan: "free" | "sprint" | "pro";
+        };
         /**
          * ErrorCode
          * @enum {string}
          */
-        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "SEND_CAP_REACHED" | "NO_PHONE" | "CAPTURE_NOT_READY" | "STORAGE_UNAVAILABLE" | "INTERNAL_ERROR";
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "RATE_LIMITED" | "HTTP_ERROR" | "PRIVACY_NOTICE_REQUIRED" | "PACK_NOT_AVAILABLE" | "GOAL_ALREADY_ACTIVE" | "CONSENT_REQUIRED" | "CONTACT_EXISTS" | "IMPORT_FILE_INVALID" | "NO_ACTIVE_GOAL" | "FREE_LIMIT_REACHED" | "FREE_REGEN_LIMIT_REACHED" | "FAIR_USE_REACHED" | "AI_UNAVAILABLE" | "SEND_CAP_REACHED" | "NO_PHONE" | "CAPTURE_NOT_READY" | "STORAGE_UNAVAILABLE" | "PAYMENTS_UNAVAILABLE" | "PRODUCT_UNAVAILABLE" | "INTERNAL_ERROR";
         /** ErrorDetail */
         ErrorDetail: {
             code: components["schemas"]["ErrorCode"];
@@ -1236,6 +1444,37 @@ export interface components {
             /** Stage Label */
             stage_label: string | null;
         };
+        /** OrderIn */
+        OrderIn: {
+            /**
+             * Product
+             * @enum {string}
+             */
+            product: "sprint" | "pro_monthly" | "pro_yearly";
+        };
+        /** OrderOut */
+        OrderOut: {
+            /** Amount Paise */
+            amount_paise: number;
+            /** Currency */
+            currency: string;
+            /** Dev Checkout */
+            dev_checkout: boolean;
+            /** Key Id */
+            key_id: string | null;
+            /** Order Id */
+            order_id: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /**
+             * Product
+             * @enum {string}
+             */
+            product: "sprint" | "pro_monthly" | "pro_yearly";
+        };
         /** OutcomeOption */
         OutcomeOption: {
             /** Id */
@@ -1277,6 +1516,15 @@ export interface components {
             status: "active" | "coming_soon" | "retired";
             /** Tagline */
             tagline: string | null;
+        };
+        /** PaymentStatusOut */
+        PaymentStatusOut: {
+            entitlement: components["schemas"]["EntitlementOut"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "created" | "paid" | "failed" | "refunded";
         };
         /** PendingReply */
         PendingReply: {
@@ -1346,12 +1594,40 @@ export interface components {
             /** Contacts */
             contacts: components["schemas"]["PickerContact"][];
         };
+        /** PlanOption */
+        PlanOption: {
+            /** Days */
+            days: number;
+            /** Enabled */
+            enabled: boolean;
+            /** Price Paise */
+            price_paise: number;
+            /**
+             * Product
+             * @enum {string}
+             */
+            product: "sprint" | "pro_monthly" | "pro_yearly";
+        };
+        /** PlansOut */
+        PlansOut: {
+            /** Checkout Key Id */
+            checkout_key_id: string | null;
+            /**
+             * Dev Checkout
+             * @description Local only: payments are simulated (no Razorpay keys)
+             */
+            dev_checkout: boolean;
+            /** Products */
+            products: components["schemas"]["PlanOption"][];
+        };
         /** ProfileOut */
         ProfileOut: {
             /** Display Name */
             display_name: string | null;
             /** Email */
             email: string | null;
+            /** Email Digest */
+            email_digest: boolean;
             /**
              * Language
              * @enum {string}
@@ -1383,6 +1659,8 @@ export interface components {
         ProfileUpdate: {
             /** Display Name */
             display_name?: string | null;
+            /** Email Digest */
+            email_digest?: boolean | null;
             /** Language */
             language?: ("en" | "hinglish" | "hi" | "mr") | null;
             /** Nudge Time */
@@ -1403,6 +1681,20 @@ export interface components {
             headline: string | null;
             /** Warm Replies This Week */
             warm_replies_this_week: number;
+        };
+        /** PushConfigOut */
+        PushConfigOut: {
+            /** Public Key */
+            public_key: string | null;
+        };
+        /** PushSubscriptionIn */
+        PushSubscriptionIn: {
+            /** Endpoint */
+            endpoint: string;
+            /** Keys */
+            keys: {
+                [key: string]: string;
+            };
         };
         /** ReasonOut */
         ReasonOut: {
@@ -1574,6 +1866,246 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    checkout_result_v1_billing_checkout_result_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutResultIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentStatusOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dev_complete_v1_billing_dev_complete__order_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentStatusOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    entitlement_v1_billing_entitlement_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntitlementOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_order_v1_billing_orders_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    order_status_v1_billing_orders__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentStatusOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    plans_v1_billing_plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlansOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_capture_v1_captures_post: {
         parameters: {
             query?: never;
@@ -2245,6 +2777,47 @@ export interface operations {
             };
         };
     };
+    email_unsubscribe_v1_email_unsubscribe_get: {
+        parameters: {
+            query: {
+                u: string;
+                t: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_goal_v1_goals_post: {
         parameters: {
             query?: never;
@@ -2896,6 +3469,124 @@ export interface operations {
             };
         };
     };
+    push_config_v1_push_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushConfigOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    subscribe_v1_push_subscribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unsubscribe_push_v1_push_subscribe_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     replies_pending_v1_replies_pending_get: {
         parameters: {
             query?: never;
@@ -3154,6 +3845,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TodayOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    razorpay_webhook_v1_webhooks_razorpay_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unprocessable Entity */

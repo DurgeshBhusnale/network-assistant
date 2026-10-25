@@ -54,6 +54,7 @@ class Profile(Base):
     wa_opt_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     wa_opt_out_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     wa_last_inbound_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    email_digest: Mapped[bool] = mapped_column(Boolean, server_default="true")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
 
 
@@ -239,6 +240,7 @@ class Entitlement(Base):
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     drafts_used: Mapped[int] = mapped_column(Integer, server_default="0")
+    source_payment_id: Mapped[uuid.UUID | None] = mapped_column()
 
 
 SUGGESTION_STATUS = _pg_enum(
@@ -340,3 +342,30 @@ class WaMessage(Base):
     wa_message_id: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID | None] = mapped_column()
+    provider: Mapped[str] = mapped_column(Text, server_default="razorpay")
+    product: Mapped[str] = mapped_column(
+        _pg_enum("product_code", "sprint", "pro_monthly", "pro_yearly")
+    )
+    amount_paise: Mapped[int] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(Text, server_default="INR")
+    status: Mapped[str] = mapped_column(Text, server_default="created")
+    provider_order_id: Mapped[str | None] = mapped_column(Text)
+    provider_payment_id: Mapped[str | None] = mapped_column(Text)
+    raw_event_id: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")
+
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default="gen_random_uuid()")
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    endpoint: Mapped[str] = mapped_column(Text)
+    keys: Mapped[dict[str, Any]] = mapped_column(JSONB)

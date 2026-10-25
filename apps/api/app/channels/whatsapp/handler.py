@@ -169,7 +169,7 @@ async def handle_inbound(
         await wa.send_text(user_id, HELP)
 
 
-async def _today_list(
+async def today_list(
     engine: AsyncEngine, user_id: uuid.UUID, timezone: str
 ) -> list[tuple[Suggestion, Contact]]:
     now = _now()
@@ -202,7 +202,7 @@ def _line(s: Suggestion, c: Contact) -> str:
 
 
 async def _send_today(engine: AsyncEngine, wa: WhatsAppClient, user_id: uuid.UUID, tz: str) -> None:
-    items = await _today_list(engine, user_id, tz)
+    items = await today_list(engine, user_id, tz)
     if not items:
         await wa.send_text(
             user_id, "No one to contact right now. Send me a note after you meet someone."
@@ -227,7 +227,7 @@ async def _button(
 ) -> None:
     if button_id == "snooze_today":
         tomorrow = _now().astimezone(ZoneInfo(timezone)).date() + timedelta(days=1)
-        ids = [s.id for s, _ in await _today_list(engine, user_id, timezone)]
+        ids = [s.id for s, _ in await today_list(engine, user_id, timezone)]
         async with service_session(engine) as session:
             await session.execute(
                 update(Suggestion)
@@ -252,7 +252,7 @@ async def _show_drafts(
     timezone: str,
 ) -> None:
     """FR-WA-5: each draft as its own message, so the user can forward or copy it."""
-    items = (await _today_list(engine, user_id, timezone))[:3]
+    items = (await today_list(engine, user_id, timezone))[:3]
     if not items:
         await wa.send_text(user_id, "No drafts for today.")
         return
@@ -503,7 +503,7 @@ async def send_daily_briefs(engine: AsyncEngine, wa: WhatsAppClient, settings: S
             )
         if already is not None:
             continue
-        items = await _today_list(engine, p.user_id, p.timezone)
+        items = await today_list(engine, p.user_id, p.timezone)
         if not items:
             continue
         params = brief_params(

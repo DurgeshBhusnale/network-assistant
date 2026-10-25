@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    billing,
     captures,
     contacts,
     drafts,
@@ -9,6 +10,7 @@ from app.api.v1 import (
     imports,
     loop,
     me,
+    notifications,
     packs,
     privacy,
     whatsapp,
@@ -26,3 +28,5 @@ router.include_router(drafts.router)
 router.include_router(loop.router)
 router.include_router(captures.router)
 router.include_router(whatsapp.router)
+router.include_router(billing.router)
+router.include_router(notifications.router)

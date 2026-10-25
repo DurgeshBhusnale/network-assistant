@@ -84,6 +84,8 @@ class Settings(BaseSettings):
     daily_send_cap: int = Field(default=20, gt=0)
     pro_enabled: bool = False
     price_test_enabled: bool = False
+    pro_monthly_days: int = 30
+    pro_yearly_days: int = 365
 
     # Privacy (bump when the notice or consent texts change; users are asked again)
     privacy_notice_version: str = "2026-10-25"
@@ -95,6 +97,9 @@ class Settings(BaseSettings):
     vapid_subject: str = ""
     resend_api_key: SecretStr | None = None
     email_from: str = ""
+    unsubscribe_secret: SecretStr | None = None  # signs one-click unsubscribe links
+    digest_weekday: int = Field(default=0, ge=0, le=6)  # Monday
+    digest_hour: int = Field(default=9, ge=0, le=23)
 
     @field_validator("database_url")
     @classmethod

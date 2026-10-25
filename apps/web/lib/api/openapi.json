@@ -464,6 +464,33 @@
         "title": "CaptureResult",
         "type": "object"
       },
+      "CheckoutResultIn": {
+        "additionalProperties": false,
+        "properties": {
+          "razorpay_order_id": {
+            "maxLength": 100,
+            "title": "Razorpay Order Id",
+            "type": "string"
+          },
+          "razorpay_payment_id": {
+            "maxLength": 100,
+            "title": "Razorpay Payment Id",
+            "type": "string"
+          },
+          "razorpay_signature": {
+            "maxLength": 200,
+            "title": "Razorpay Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "razorpay_order_id",
+          "razorpay_payment_id",
+          "razorpay_signature"
+        ],
+        "title": "CheckoutResultIn",
+        "type": "object"
+      },
       "CompanyProgress": {
         "properties": {
           "company": {
@@ -1169,6 +1196,85 @@
         "title": "DraftRegenerate",
         "type": "object"
       },
+      "EntitlementOut": {
+        "properties": {
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "drafts_used": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drafts Used"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "fair_use_drafts": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fair Use Drafts"
+          },
+          "free_drafts_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Drafts Left"
+          },
+          "plan": {
+            "enum": [
+              "free",
+              "sprint",
+              "pro"
+            ],
+            "title": "Plan",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan",
+          "ends_at",
+          "days_left",
+          "drafts_used",
+          "fair_use_drafts",
+          "free_drafts_left"
+        ],
+        "title": "EntitlementOut",
+        "type": "object"
+      },
       "ErrorCode": {
         "enum": [
           "VALIDATION_ERROR",
@@ -1194,6 +1300,8 @@
           "NO_PHONE",
           "CAPTURE_NOT_READY",
           "STORAGE_UNAVAILABLE",
+          "PAYMENTS_UNAVAILABLE",
+          "PRODUCT_UNAVAILABLE",
           "INTERNAL_ERROR"
         ],
         "title": "ErrorCode",
@@ -1864,6 +1972,81 @@
         "title": "NextStep",
         "type": "object"
       },
+      "OrderIn": {
+        "additionalProperties": false,
+        "properties": {
+          "product": {
+            "enum": [
+              "sprint",
+              "pro_monthly",
+              "pro_yearly"
+            ],
+            "title": "Product",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product"
+        ],
+        "title": "OrderIn",
+        "type": "object"
+      },
+      "OrderOut": {
+        "properties": {
+          "amount_paise": {
+            "title": "Amount Paise",
+            "type": "integer"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "dev_checkout": {
+            "title": "Dev Checkout",
+            "type": "boolean"
+          },
+          "key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Id"
+          },
+          "order_id": {
+            "title": "Order Id",
+            "type": "string"
+          },
+          "payment_id": {
+            "format": "uuid",
+            "title": "Payment Id",
+            "type": "string"
+          },
+          "product": {
+            "enum": [
+              "sprint",
+              "pro_monthly",
+              "pro_yearly"
+            ],
+            "title": "Product",
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_id",
+          "order_id",
+          "amount_paise",
+          "currency",
+          "key_id",
+          "product",
+          "dev_checkout"
+        ],
+        "title": "OrderOut",
+        "type": "object"
+      },
       "OutcomeOption": {
         "properties": {
           "id": {
@@ -1971,6 +2154,29 @@
           "copy_text"
         ],
         "title": "PackOut",
+        "type": "object"
+      },
+      "PaymentStatusOut": {
+        "properties": {
+          "entitlement": {
+            "$ref": "#/components/schemas/EntitlementOut"
+          },
+          "status": {
+            "enum": [
+              "created",
+              "paid",
+              "failed",
+              "refunded"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "entitlement"
+        ],
+        "title": "PaymentStatusOut",
         "type": "object"
       },
       "PendingReply": {
@@ -2247,6 +2453,73 @@
         "title": "PickerImport",
         "type": "object"
       },
+      "PlanOption": {
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "price_paise": {
+            "title": "Price Paise",
+            "type": "integer"
+          },
+          "product": {
+            "enum": [
+              "sprint",
+              "pro_monthly",
+              "pro_yearly"
+            ],
+            "title": "Product",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product",
+          "price_paise",
+          "days",
+          "enabled"
+        ],
+        "title": "PlanOption",
+        "type": "object"
+      },
+      "PlansOut": {
+        "properties": {
+          "checkout_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkout Key Id"
+          },
+          "dev_checkout": {
+            "description": "Local only: payments are simulated (no Razorpay keys)",
+            "title": "Dev Checkout",
+            "type": "boolean"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/PlanOption"
+            },
+            "title": "Products",
+            "type": "array"
+          }
+        },
+        "required": [
+          "products",
+          "checkout_key_id",
+          "dev_checkout"
+        ],
+        "title": "PlansOut",
+        "type": "object"
+      },
       "ProfileOut": {
         "properties": {
           "display_name": {
@@ -2270,6 +2543,10 @@
               }
             ],
             "title": "Email"
+          },
+          "email_digest": {
+            "title": "Email Digest",
+            "type": "boolean"
           },
           "language": {
             "enum": [
@@ -2323,7 +2600,8 @@
           "nudge_time",
           "onboarding_step",
           "privacy_notice_accepted",
-          "whatsapp_linked"
+          "whatsapp_linked",
+          "email_digest"
         ],
         "title": "ProfileOut",
         "type": "object"
@@ -2343,6 +2621,17 @@
               }
             ],
             "title": "Display Name"
+          },
+          "email_digest": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Digest"
           },
           "language": {
             "anyOf": [
@@ -2455,6 +2744,50 @@
           "by_company"
         ],
         "title": "ProgressOut",
+        "type": "object"
+      },
+      "PushConfigOut": {
+        "properties": {
+          "public_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Key"
+          }
+        },
+        "required": [
+          "public_key"
+        ],
+        "title": "PushConfigOut",
+        "type": "object"
+      },
+      "PushSubscriptionIn": {
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "keys": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Keys",
+            "type": "object"
+          }
+        },
+        "required": [
+          "endpoint",
+          "keys"
+        ],
+        "title": "PushSubscriptionIn",
         "type": "object"
       },
       "ReasonOut": {
@@ -2935,6 +3268,296 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/billing/checkout-result": {
+      "post": {
+        "description": "UX only: confirms the Checkout signature so the app can show \"Payment processing\".\nNever grants an entitlement; the webhook does (FR-PAY-4).",
+        "operationId": "checkout_result_v1_billing_checkout_result_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutResultIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Checkout Result",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/billing/dev/complete/{order_id}": {
+      "post": {
+        "description": "Local development only (no Razorpay keys): runs the same grant path the webhook uses.",
+        "operationId": "dev_complete_v1_billing_dev_complete__order_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Dev Complete",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/billing/entitlement": {
+      "get": {
+        "operationId": "entitlement_v1_billing_entitlement_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitlementOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Entitlement",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/billing/orders": {
+      "post": {
+        "operationId": "create_order_v1_billing_orders_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Create Order",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/billing/orders/{order_id}": {
+      "get": {
+        "operationId": "order_status_v1_billing_orders__order_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Order Status",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/billing/plans": {
+      "get": {
+        "operationId": "plans_v1_billing_plans_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlansOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Plans",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/v1/captures": {
       "post": {
         "operationId": "create_capture_v1_captures_post",
@@ -3850,6 +4473,70 @@
         ]
       }
     },
+    "/v1/email/unsubscribe": {
+      "get": {
+        "description": "One-click unsubscribe from the weekly email (signed link; no sign-in needed).",
+        "operationId": "email_unsubscribe_v1_email_unsubscribe_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "u",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "U",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "t",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "title": "T",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Email Unsubscribe",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/v1/goals": {
       "post": {
         "operationId": "create_goal_v1_goals_post",
@@ -4635,6 +5322,133 @@
         ]
       }
     },
+    "/v1/push/config": {
+      "get": {
+        "operationId": "push_config_v1_push_config_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushConfigOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Push Config",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/push/subscribe": {
+      "delete": {
+        "operationId": "unsubscribe_push_v1_push_subscribe_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Unsubscribe Push",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "post": {
+        "operationId": "subscribe_v1_push_subscribe_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Subscribe",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/v1/replies/pending": {
       "get": {
         "operationId": "replies_pending_v1_replies_pending_get",
@@ -4971,6 +5785,45 @@
         "summary": "Get Today",
         "tags": [
           "daily loop"
+        ]
+      }
+    },
+    "/v1/webhooks/razorpay": {
+      "post": {
+        "operationId": "razorpay_webhook_v1_webhooks_razorpay_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Razorpay Webhook",
+        "tags": [
+          "billing"
         ]
       }
     },

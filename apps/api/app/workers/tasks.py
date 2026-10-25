@@ -17,6 +17,7 @@ from app.services import billing, ranking
 from app.services.captures import process_capture as process_capture_svc
 from app.services.captures import sweep_audio, sweep_transcripts
 from app.services.loop import active_goal_and_pack
+from app.services.notifications import notify_due
 from app.services.relevance import label_contacts
 
 logger = logging.getLogger(__name__)
@@ -110,3 +111,8 @@ async def handle_whatsapp(ctx: dict[str, Any], message: dict[str, Any]) -> None:
 async def send_briefs(ctx: dict[str, Any]) -> None:
     sent = await send_daily_briefs(ctx["engine"], ctx["wa"], ctx["settings"])
     logger.info("wa_briefs_done", extra={"sent": sent})
+
+
+async def notify(ctx: dict[str, Any]) -> None:
+    counts = await notify_due(ctx["engine"], ctx["redis"], ctx["settings"], datetime.now(UTC))
+    logger.info("notify_done", extra=counts)

@@ -31,4 +31,5 @@ def profile_out(profile: Profile, user: AuthUser, settings: Settings) -> Profile
         onboarding_step=profile.onboarding_step,
         privacy_notice_accepted=profile.privacy_notice_version == settings.privacy_notice_version,
         whatsapp_linked=profile.wa_phone_e164 is not None,
+        email_digest=profile.email_digest,
     )
