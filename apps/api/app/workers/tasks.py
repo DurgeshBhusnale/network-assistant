@@ -18,6 +18,7 @@ from app.services.captures import process_capture as process_capture_svc
 from app.services.captures import sweep_audio, sweep_transcripts
 from app.services.loop import active_goal_and_pack
 from app.services.notifications import notify_due
+from app.services.privacy import apply_retention
 from app.services.relevance import label_contacts
 
 logger = logging.getLogger(__name__)
@@ -116,3 +117,9 @@ async def send_briefs(ctx: dict[str, Any]) -> None:
 async def notify(ctx: dict[str, Any]) -> None:
     counts = await notify_due(ctx["engine"], ctx["redis"], ctx["settings"], datetime.now(UTC))
     logger.info("notify_done", extra=counts)
+
+
+async def retention(ctx: dict[str, Any]) -> None:
+    """Nightly: purge soft-deleted contacts, old draft text, WhatsApp metadata, analytics."""
+    counts = await apply_retention(ctx["engine"], datetime.now(UTC))
+    logger.info("retention_done", extra=counts)

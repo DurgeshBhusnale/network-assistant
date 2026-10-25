@@ -65,7 +65,11 @@ async def get_current_user(request: Request) -> AuthUser:
     if scheme.lower() != "bearer" or not token:
         raise _unauthenticated()
     claims = await decode_token(token, settings)
-    return AuthUser(id=uuid.UUID(claims["sub"]), email=claims.get("email"), claims=claims)
+    user = AuthUser(id=uuid.UUID(claims["sub"]), email=claims.get("email"), claims=claims)
+    from app.core.ratelimit import general_limit  # local import: ratelimit depends on this module
+
+    await general_limit(request, user)
+    return user
 
 
 CurrentUser = Annotated[AuthUser, Depends(get_current_user)]

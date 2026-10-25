@@ -2,6 +2,7 @@
 
 The coding agent updates this file at the end of every session. Newest entries at the top of each section.
 
+
 ## Current status
 
 - **Current sprint:** Sprint 8 — Privacy, analytics, hardening (Sprints 0–7 done)

@@ -214,6 +214,10 @@ async def razorpay_webhook(
                     "payment_succeeded",
                     {"product": payment.product, "price": payment.amount_paise},
                 )
+                if payment.product != "sprint":
+                    await track(
+                        engine, payment.user_id, "pro_upgraded", {"product": payment.product}
+                    )
     elif name in ("refund.processed", "payment.refunded") and payment_id:
         await payments.refund(engine, payment_id=payment_id, now=now)
     else:

@@ -4,7 +4,7 @@ import uuid
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +16,7 @@ from app.core.auth import CurrentUser
 from app.core.clock import local_today
 from app.core.db import Engine, user_session
 from app.core.errors import AppError, ErrorCode
+from app.core.ratelimit import limit
 from app.domain.models import Contact, Draft, Interaction, Suggestion
 from app.domain.schemas import (
     DraftOut,
@@ -121,7 +122,12 @@ async def dismiss(
             gc.dismissed_at = clock.now()
 
 
-@router.post("/suggestions/{suggestion_id}/draft", response_model=DraftOut, status_code=201)
+@router.post(
+    "/suggestions/{suggestion_id}/draft",
+    response_model=DraftOut,
+    status_code=201,
+    dependencies=[Depends(limit("drafts", 20, 60))],
+)
 async def draft_for_suggestion(
     suggestion_id: uuid.UUID,
     body: SuggestionDraftIn,
@@ -158,7 +164,11 @@ async def draft_for_suggestion(
     return result
 
 
-@router.post("/drafts/{draft_id}/send", response_model=SendOut)
+@router.post(
+    "/drafts/{draft_id}/send",
+    response_model=SendOut,
+    dependencies=[Depends(limit("send", 30, 60))],
+)
 async def send_draft(
     draft_id: uuid.UUID,
     body: SendIn,
@@ -253,7 +263,25 @@ async def log_interaction(
         elif body.type == "replied":
             if gc is not None:
                 loop.apply_replied(gc)
-            events.append(("reply_logged", {}))
+            last_sent = await session.scalar(
+                select(Interaction)
+                .where(
+                    Interaction.user_id == user.id,
+                    Interaction.contact_id == contact.id,
+                    Interaction.type == "sent",
+                )
+                .order_by(Interaction.occurred_at.desc())
+                .limit(1)
+            )
+            events.append(
+                (
+                    "reply_logged",
+                    {
+                        "days_to_reply": (now - last_sent.occurred_at).days if last_sent else None,
+                        "stage": last_sent.stage if last_sent else None,
+                    },
+                )
+            )
         elif body.type == "outcome":
             if pack is None or goal is None or gc is None:
                 raise AppError(ErrorCode.NO_ACTIVE_GOAL, "Set a goal first.", 409)

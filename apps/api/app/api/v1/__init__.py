@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    admin,
     billing,
     captures,
     contacts,
@@ -30,3 +31,4 @@ router.include_router(captures.router)
 router.include_router(whatsapp.router)
 router.include_router(billing.router)
 router.include_router(notifications.router)
+router.include_router(admin.router)

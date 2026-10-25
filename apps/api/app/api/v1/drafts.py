@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
@@ -17,6 +17,7 @@ from app.core.clock import Clock
 from app.core.config import Settings
 from app.core.db import Engine, user_session
 from app.core.errors import AppError, ErrorCode
+from app.core.ratelimit import limit
 from app.domain.models import Draft, StyleProfile
 from app.domain.schemas import (
     DraftCreate,
@@ -85,7 +86,12 @@ async def put_style_samples(
         return StyleOut(samples=body.samples, summary=summary)
 
 
-@router.post("/contacts/{contact_id}/draft", response_model=DraftOut, status_code=201)
+@router.post(
+    "/contacts/{contact_id}/draft",
+    response_model=DraftOut,
+    status_code=201,
+    dependencies=[Depends(limit("drafts", 20, 60))],
+)
 async def create_draft(
     contact_id: uuid.UUID,
     body: DraftCreate,
@@ -200,7 +206,11 @@ async def get_draft(
         )
 
 
-@router.post("/drafts/{draft_id}/regenerate", response_model=DraftOut)
+@router.post(
+    "/drafts/{draft_id}/regenerate",
+    response_model=DraftOut,
+    dependencies=[Depends(limit("drafts", 20, 60))],
+)
 async def regenerate_draft(
     draft_id: uuid.UUID,
     body: DraftRegenerate,

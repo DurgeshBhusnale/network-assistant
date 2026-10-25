@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from app.core.config import Settings
 from app.core.db import service_session
 from app.domain.models import Profile, WaMessage
+from app.services.consents import has_consent
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,9 @@ class WhatsAppClient:
     async def _recipient(self, user_id: uuid.UUID, *, allow_opted_out: bool) -> str:
         async with service_session(self._engine) as session:
             profile = await session.scalar(select(Profile).where(Profile.user_id == user_id))
+            consented = await has_consent(session, user_id, "whatsapp")
+        if not consented and not allow_opted_out:
+            raise RecipientNotAllowedError("user withdrew WhatsApp consent")
         if profile is None or not profile.wa_phone_e164 or profile.wa_opt_in_at is None:
             raise RecipientNotAllowedError("user has no verified WhatsApp number")
         if profile.wa_opt_out_at is not None and not allow_opted_out:

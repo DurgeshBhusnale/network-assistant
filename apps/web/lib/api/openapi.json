@@ -1,6 +1,63 @@
 {
   "components": {
     "schemas": {
+      "AdminMetrics": {
+        "properties": {
+          "activation_pct": {
+            "title": "Activation Pct",
+            "type": "number"
+          },
+          "active_users_7d": {
+            "title": "Active Users 7D",
+            "type": "integer"
+          },
+          "ai_cost_30d_inr": {
+            "title": "Ai Cost 30D Inr",
+            "type": "number"
+          },
+          "ai_cost_per_active_user_30d_inr": {
+            "title": "Ai Cost Per Active User 30D Inr",
+            "type": "number"
+          },
+          "ai_failures_30d": {
+            "title": "Ai Failures 30D",
+            "type": "integer"
+          },
+          "conversion_pct": {
+            "title": "Conversion Pct",
+            "type": "number"
+          },
+          "funnel": {
+            "$ref": "#/components/schemas/FunnelOut"
+          },
+          "wa_messages_out_30d": {
+            "title": "Wa Messages Out 30D",
+            "type": "integer"
+          },
+          "warm_replies_7d": {
+            "title": "Warm Replies 7D",
+            "type": "integer"
+          },
+          "warm_replies_per_active_user": {
+            "title": "Warm Replies Per Active User",
+            "type": "number"
+          }
+        },
+        "required": [
+          "funnel",
+          "conversion_pct",
+          "activation_pct",
+          "warm_replies_7d",
+          "active_users_7d",
+          "warm_replies_per_active_user",
+          "ai_cost_30d_inr",
+          "ai_cost_per_active_user_30d_inr",
+          "ai_failures_30d",
+          "wa_messages_out_30d"
+        ],
+        "title": "AdminMetrics",
+        "type": "object"
+      },
       "Body_import_file_v1_imports_file_post": {
         "properties": {
           "file": {
@@ -955,6 +1012,19 @@
         "title": "ContactUpdate",
         "type": "object"
       },
+      "DeleteAccountIn": {
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm"
+        ],
+        "title": "DeleteAccountIn",
+        "type": "object"
+      },
       "DraftCreate": {
         "additionalProperties": false,
         "properties": {
@@ -1334,6 +1404,44 @@
           "error"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "FunnelOut": {
+        "properties": {
+          "accepted_notice": {
+            "title": "Accepted Notice",
+            "type": "integer"
+          },
+          "activated": {
+            "title": "Activated",
+            "type": "integer"
+          },
+          "imported_contacts": {
+            "title": "Imported Contacts",
+            "type": "integer"
+          },
+          "paid": {
+            "title": "Paid",
+            "type": "integer"
+          },
+          "set_goal": {
+            "title": "Set Goal",
+            "type": "integer"
+          },
+          "signups": {
+            "title": "Signups",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "signups",
+          "accepted_notice",
+          "set_goal",
+          "imported_contacts",
+          "activated",
+          "paid"
+        ],
+        "title": "FunnelOut",
         "type": "object"
       },
       "FunnelStep": {
@@ -3268,6 +3376,47 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/admin/metrics": {
+      "get": {
+        "operationId": "metrics_v1_admin_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMetrics"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Metrics",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/billing/checkout-result": {
       "post": {
         "description": "UX only: confirms the Checkout signature so the app can show \"Payment processing\".\nNever grants an entitlement; the webhook does (FR-PAY-4).",
@@ -5276,6 +5425,91 @@
           }
         },
         "summary": "Update Consents",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/v1/privacy/delete-account": {
+      "post": {
+        "description": "FR-PRIV-3: typed confirmation, then everything goes (payments kept anonymised for tax).",
+        "operationId": "delete_account_v1_privacy_delete_account_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Delete Account",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/v1/privacy/export": {
+      "post": {
+        "description": "FR-PRIV-2: a zip of everything we hold about you, streamed directly (no stored copy).",
+        "operationId": "export_data_v1_privacy_export_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Export Data",
         "tags": [
           "privacy"
         ]

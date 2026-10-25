@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +13,7 @@ from app.core.auth import CurrentUser
 from app.core.clock import local_today
 from app.core.db import Engine, user_session
 from app.core.errors import AppError, ErrorCode
+from app.core.ratelimit import limit
 from app.core.storage import Storage, StorageError
 from app.domain.models import Capture
 from app.domain.schemas import (
@@ -68,7 +69,12 @@ async def upload_url(
     return UploadUrlOut(upload_url=url, storage_path=path)
 
 
-@router.post("", response_model=CaptureOut, status_code=201)
+@router.post(
+    "",
+    response_model=CaptureOut,
+    status_code=201,
+    dependencies=[Depends(limit("captures", 30, 3600))],
+)
 async def create_capture(
     body: CaptureCreate,
     request: Request,

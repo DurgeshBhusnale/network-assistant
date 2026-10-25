@@ -26,6 +26,7 @@ def test_worker_settings_register_tasks_and_cron() -> None:
         "cron:app.workers.tasks.sweep_captures",
         "cron:app.workers.tasks.send_briefs",
         "cron:app.workers.tasks.notify",
+        "cron:app.workers.tasks.retention",
     ]
 
 

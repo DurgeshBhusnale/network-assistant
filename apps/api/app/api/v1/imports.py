@@ -3,7 +3,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +13,7 @@ from app.core.auth import CurrentUser
 from app.core.clock import local_today
 from app.core.db import Engine, user_session
 from app.core.errors import AppError, ErrorCode
+from app.core.ratelimit import limit
 from app.domain.models import ImportJob
 from app.domain.schemas import ImportOut, PickerImport
 from app.imports.models import ImportSource, ParseResult
@@ -50,13 +51,23 @@ async def _stage(
         return import_out(job)
 
 
-@router.post("/picker", response_model=ImportOut, status_code=201)
+@router.post(
+    "/picker",
+    response_model=ImportOut,
+    status_code=201,
+    dependencies=[Depends(limit("imports", 5, 3600))],
+)
 async def import_picker(body: PickerImport, user: CurrentUser, engine: Engine) -> ImportOut:
     parsed = parse_picker([c.model_dump() for c in body.contacts])
     return await _stage(engine, user, "picker", parsed)
 
 
-@router.post("/file", response_model=ImportOut, status_code=201)
+@router.post(
+    "/file",
+    response_model=ImportOut,
+    status_code=201,
+    dependencies=[Depends(limit("imports", 5, 3600))],
+)
 async def import_file(
     file: Annotated[UploadFile, File(description=".vcf or LinkedIn Connections.csv")],
     user: CurrentUser,

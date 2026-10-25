@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/v1/admin/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Metrics */
+        get: operations["metrics_v1_admin_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/billing/checkout-result": {
         parameters: {
             query?: never;
@@ -568,6 +585,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/privacy/delete-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Account
+         * @description FR-PRIV-3: typed confirmation, then everything goes (payments kept anonymised for tax).
+         */
+        post: operations["delete_account_v1_privacy_delete_account_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/privacy/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export Data
+         * @description FR-PRIV-2: a zip of everything we hold about you, streamed directly (no stored copy).
+         */
+        post: operations["export_data_v1_privacy_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/progress": {
         parameters: {
             query?: never;
@@ -833,6 +890,28 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminMetrics */
+        AdminMetrics: {
+            /** Activation Pct */
+            activation_pct: number;
+            /** Active Users 7D */
+            active_users_7d: number;
+            /** Ai Cost 30D Inr */
+            ai_cost_30d_inr: number;
+            /** Ai Cost Per Active User 30D Inr */
+            ai_cost_per_active_user_30d_inr: number;
+            /** Ai Failures 30D */
+            ai_failures_30d: number;
+            /** Conversion Pct */
+            conversion_pct: number;
+            funnel: components["schemas"]["FunnelOut"];
+            /** Wa Messages Out 30D */
+            wa_messages_out_30d: number;
+            /** Warm Replies 7D */
+            warm_replies_7d: number;
+            /** Warm Replies Per Active User */
+            warm_replies_per_active_user: number;
+        };
         /** Body_import_file_v1_imports_file_post */
         Body_import_file_v1_imports_file_post: {
             /**
@@ -1078,6 +1157,11 @@ export interface components {
             /** Title */
             title?: string | null;
         };
+        /** DeleteAccountIn */
+        DeleteAccountIn: {
+            /** Confirm */
+            confirm: string;
+        };
         /** DraftCreate */
         DraftCreate: {
             /** Stage */
@@ -1182,6 +1266,21 @@ export interface components {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
+        };
+        /** FunnelOut */
+        FunnelOut: {
+            /** Accepted Notice */
+            accepted_notice: number;
+            /** Activated */
+            activated: number;
+            /** Imported Contacts */
+            imported_contacts: number;
+            /** Paid */
+            paid: number;
+            /** Set Goal */
+            set_goal: number;
+            /** Signups */
+            signups: number;
         };
         /** FunnelStep */
         FunnelStep: {
@@ -1866,6 +1965,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    metrics_v1_admin_metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMetrics"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     checkout_result_v1_billing_checkout_result_post: {
         parameters: {
             query?: never;
@@ -3410,6 +3547,84 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ConsentsOut"];
                 };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_account_v1_privacy_delete_account_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    export_data_v1_privacy_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unprocessable Entity */
             422: {

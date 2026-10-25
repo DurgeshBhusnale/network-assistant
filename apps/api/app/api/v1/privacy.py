@@ -3,7 +3,8 @@
 import typing
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Response
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,8 +14,10 @@ from app.core.auth import AuthUser, CurrentUser
 from app.core.config import Settings
 from app.core.db import Engine, user_session
 from app.core.errors import AppError, ErrorCode
+from app.core.ratelimit import limit
 from app.domain.models import Consent
 from app.domain.schemas import ConsentKind, ConsentsOut, ConsentState, ConsentsUpdate
+from app.services import privacy
 from app.services.profiles import ensure_profile
 
 router = APIRouter(prefix="/privacy", tags=["privacy"])
@@ -90,3 +93,33 @@ async def update_consents(
     if first_acceptance:
         await track(engine, user.id, "signup", {})
     return result
+
+
+class DeleteAccountIn(BaseModel):
+    confirm: str
+
+
+@router.post("/export", response_class=Response, dependencies=[Depends(limit("export", 3, 3600))])
+async def export_data(user: CurrentUser, engine: Engine, clock: ClockDep) -> Response:
+    """FR-PRIV-2: a zip of everything we hold about you, streamed directly (no stored copy)."""
+    data = await privacy.export_zip(engine, user.id)
+    name = f"my-data-{clock.now():%Y%m%d}.zip"
+    return Response(
+        content=data,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{name}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@router.post("/delete-account", status_code=202, dependencies=[Depends(limit("delete", 3, 3600))])
+async def delete_account(
+    body: DeleteAccountIn, user: CurrentUser, engine: Engine, settings: SettingsDep
+) -> Response:
+    """FR-PRIV-3: typed confirmation, then everything goes (payments kept anonymised for tax)."""
+    if body.confirm.strip().upper() != "DELETE":
+        raise AppError(ErrorCode.VALIDATION_ERROR, "Type DELETE to confirm.", 422)
+    await privacy.delete_account(engine, settings, user.id)
+    return Response(status_code=202)

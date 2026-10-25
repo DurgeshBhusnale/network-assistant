@@ -40,6 +40,7 @@ class WorkerSettings:
         cron("app.workers.tasks.sweep_captures", minute={5}, run_at_startup=False),
         cron("app.workers.tasks.send_briefs", minute={0, 15, 30, 45}, run_at_startup=False),
         cron("app.workers.tasks.notify", minute={0, 15, 30, 45}, run_at_startup=False),
+        cron("app.workers.tasks.retention", hour={21}, minute={30}, run_at_startup=False),
     ]
     on_startup = startup
     on_shutdown = shutdown

@@ -6,7 +6,7 @@ import secrets
 from datetime import timedelta
 from urllib.parse import quote
 
-from fastapi import APIRouter, Query, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import update
 from sqlalchemy.dialects.postgresql import insert
@@ -16,6 +16,7 @@ from app.channels.whatsapp.inbound import parse_webhook, signature_valid
 from app.core.auth import CurrentUser
 from app.core.db import Engine, service_session, user_session
 from app.core.errors import AppError, ErrorCode
+from app.core.ratelimit import limit
 from app.domain.models import Profile, WaLinkCode, WaMessage
 from app.services.consents import require_consent
 from app.services.profiles import ensure_profile
@@ -40,7 +41,12 @@ class WhatsAppStatus(BaseModel):
     number_configured: bool
 
 
-@router.post("/whatsapp/link-code", response_model=LinkCodeOut, status_code=201)
+@router.post(
+    "/whatsapp/link-code",
+    response_model=LinkCodeOut,
+    status_code=201,
+    dependencies=[Depends(limit("link_code", 5, 3600))],
+)
 async def link_code(
     user: CurrentUser, engine: Engine, settings: SettingsDep, clock: ClockDep
 ) -> LinkCodeOut:
