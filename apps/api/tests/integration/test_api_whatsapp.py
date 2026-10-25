@@ -110,7 +110,10 @@ def bot(api_app: FastAPI, queue: FakeQueue, anon: httpx.AsyncClient) -> Bot:
 async def _link(u: User, bot: Bot, phone: str) -> None:
     link = ok(await u.post("/v1/whatsapp/link-code"), 201)
     assert link["wa_url"].startswith("https://wa.me/919800000000?text=")
-    assert await bot.hook(message(f"link-{u.id.hex[:6]}", phone, f"start {link['code'].lower()}")) == 200
+    assert (
+        await bot.hook(message(f"link-{u.id.hex[:6]}", phone, f"start {link['code'].lower()}"))
+        == 200
+    )
     await bot.run_jobs()
 
 
@@ -154,7 +157,9 @@ async def test_linking_commands_stop_start_and_the_recipient_guard(
     assert status["phone_hint"].endswith(phone[-4:])
     assert await bot.outbound(u.id) == ["text"]  # the "you're linked" confirmation
 
-    await bot.hook(message(f"note-{u.id.hex[:6]}", phone, "Met Kavya Rao, SDE at Zoho, at a meetup"))
+    await bot.hook(
+        message(f"note-{u.id.hex[:6]}", phone, "Met Kavya Rao, SDE at Zoho, at a meetup")
+    )
     await bot.run_jobs()
     async with api_engine.connect() as conn:
         # Rule 7: the message log has nowhere to put a body or a phone number.
@@ -195,7 +200,11 @@ async def test_linking_commands_stop_start_and_the_recipient_guard(
     assert ok(await u.get("/v1/whatsapp/status"))["opted_out"] is False
 
     # Withdrawing WhatsApp consent also closes the guard.
-    ok(await u.put("/v1/privacy/consents", {"accept_notice": True, "consents": {"whatsapp": False}}))
+    ok(
+        await u.put(
+            "/v1/privacy/consents", {"accept_notice": True, "consents": {"whatsapp": False}}
+        )
+    )
     with pytest.raises(RecipientNotAllowedError):
         await bot.wa.send_text(u.id, "should never go out")
 

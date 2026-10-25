@@ -4,6 +4,7 @@ The user sends, never the app: /send only builds a wa.me link or copy text, coun
 daily cap once per draft; nothing is "sent" until the user marks it.
 """
 
+import asyncio
 from typing import Any
 
 from sqlalchemy import text
@@ -39,7 +40,12 @@ async def test_draft_edit_send_and_mark_sent(users: MakeUser) -> None:
     assert again["sends_left_today"] == 19
     assert ok(await u.get(f"/v1/drafts/{draft['id']}"))["sent_at"] is None  # not sent yet
 
-    body = {"contact_id": person["id"], "type": "sent", "draft_id": draft["id"], "channel": "whatsapp"}
+    body = {
+        "contact_id": person["id"],
+        "type": "sent",
+        "draft_id": draft["id"],
+        "channel": "whatsapp",
+    }
     ok(await u.post("/v1/interactions", body), 201)
     assert ok(await u.get(f"/v1/drafts/{draft['id']}"))["sent_at"] is not None
     dup = await u.post("/v1/interactions", body)
@@ -94,12 +100,21 @@ async def test_free_plan_limits(users: MakeUser) -> None:
 
     first = drafts[0]["id"]
     left = [
-        ok(await u.post(f"/v1/drafts/{first}/regenerate", {"tone": "shorter"}))["regenerations_left"]
+        ok(await u.post(f"/v1/drafts/{first}/regenerate", {"tone": "shorter"}))[
+            "regenerations_left"
+        ]
         for _ in range(3)
     ]
     assert left == [2, 1, 0]
     more = await u.post(f"/v1/drafts/{first}/regenerate", {"tone": "warmer"})
     assert more.status_code == 402 and error_code(more) == "FREE_REGEN_LIMIT_REACHED"
+
+    # R5: upgrading unlocks drafting straight away.
+    order = ok(await u.post("/v1/billing/orders", {"product": "sprint"}), 201)
+    ok(await u.post(f"/v1/billing/dev/complete/{order['order_id']}"))
+    unlocked = ok(await u.post(f"/v1/contacts/{person['id']}/draft", {"stage": "warm_up"}), 201)
+    assert unlocked["drafts_left_this_month"] is None
+    ok(await u.post(f"/v1/drafts/{first}/regenerate", {"tone": "warmer"}))
 
 
 async def test_draft_needs_a_goal_and_a_known_stage(users: MakeUser) -> None:
@@ -116,7 +131,11 @@ async def test_draft_needs_a_goal_and_a_known_stage(users: MakeUser) -> None:
 async def test_today_list_snooze_dismiss_and_draft(users: MakeUser) -> None:
     u = await users()
     await u.onboard()
-    for name, company in [("Priya Nair", "Zoho"), ("Arjun Mehta", "Razorpay"), ("Ravi Kumar", "TCS")]:
+    for name, company in [
+        ("Priya Nair", "Zoho"),
+        ("Arjun Mehta", "Razorpay"),
+        ("Ravi Kumar", "TCS"),
+    ]:
         await u.contact(name, company=company, phone=None)
     today = ok(await u.get("/v1/today"))
     assert today["goal"]["day_number"] == 1
@@ -141,12 +160,21 @@ async def test_reply_outcome_thanks_and_progress(users: MakeUser) -> None:
     await u.onboard()
     person, draft = await _person_with_draft(u, phone="+919876543210")
     pid = person["id"]
-    ok(await u.post("/v1/interactions", {"contact_id": pid, "type": "sent", "draft_id": draft["id"]}), 201)
+    ok(
+        await u.post(
+            "/v1/interactions", {"contact_id": pid, "type": "sent", "draft_id": draft["id"]}
+        ),
+        201,
+    )
     ok(await u.post("/v1/interactions", {"contact_id": pid, "type": "replied"}), 201)
-    bad = await u.post("/v1/interactions", {"contact_id": pid, "type": "outcome", "outcome": "hired!"})
+    bad = await u.post(
+        "/v1/interactions", {"contact_id": pid, "type": "outcome", "outcome": "hired!"}
+    )
     assert bad.status_code == 422
     won = ok(
-        await u.post("/v1/interactions", {"contact_id": pid, "type": "outcome", "outcome": "referred"}),
+        await u.post(
+            "/v1/interactions", {"contact_id": pid, "type": "outcome", "outcome": "referred"}
+        ),
         201,
     )
     assert won["thank_suggestion"] is True
@@ -156,6 +184,27 @@ async def test_reply_outcome_thanks_and_progress(users: MakeUser) -> None:
     assert funnel["referred"] == 1
     thank = [i for i in ok(await u.get("/v1/today"))["items"] if i["contact"]["id"] == pid]
     assert [i["stage"] for i in thank] == ["thank"]
+
+
+async def test_reply_check_in_window(users: MakeUser, api_engine: AsyncEngine) -> None:
+    """R3: people messaged 2-5 days ago come back as 'Did they reply?'."""
+    u = await users()
+    await u.onboard()
+    person, draft = await _person_with_draft(u, phone="+919876543210")
+    sent = {"contact_id": person["id"], "type": "sent", "draft_id": draft["id"]}
+    ok(await u.post("/v1/interactions", sent), 201)
+    assert ok(await u.get("/v1/replies/pending"))["items"] == []  # too soon
+    async with api_engine.begin() as conn:
+        await conn.execute(
+            text(
+                "update interactions set occurred_at = now() - interval '3 days' "
+                "where user_id = :u and type = 'sent'"
+            ),
+            {"u": u.id},
+        )
+    pending = ok(await u.get("/v1/replies/pending"))
+    assert [(i["contact"]["id"], i["days_ago"]) for i in pending["items"]] == [(person["id"], 3)]
+    assert "referred" in {o["id"] for o in pending["outcomes"]}
 
 
 async def test_drafts_and_suggestions_are_invisible_to_other_users(users: MakeUser) -> None:
@@ -179,3 +228,19 @@ async def test_drafts_and_suggestions_are_invisible_to_other_users(users: MakeUs
     assert ok(await b.get("/v1/today"))["items"] == []
     assert ok(await b.get("/v1/replies/pending"))["items"] == []
     assert ok(await a.get(f"/v1/drafts/{did}"))["final_text"] is None
+
+
+async def test_concurrent_edits_of_one_draft_both_finish(users: MakeUser) -> None:
+    """The draft screen saves on blur and again just before sending: two PATCHes at once."""
+    u = await users()
+    await u.onboard()
+    _, draft = await _person_with_draft(u, phone="+919876543210")
+    url = f"/v1/drafts/{draft['id']}"
+    first, second = await asyncio.wait_for(
+        asyncio.gather(
+            u.patch(url, {"final_text": "Hi Priya, version one"}),
+            u.patch(url, {"final_text": "Hi Priya, version two"}),
+        ),
+        timeout=30,
+    )
+    assert (first.status_code, second.status_code) == (200, 200)

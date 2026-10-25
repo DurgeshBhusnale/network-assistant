@@ -1,0 +1,23 @@
+{
+  "entity": "event",
+  "account_id": "acc_TestAccount01",
+  "event": "payment.captured",
+  "contains": ["payment"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "{{payment_id}}",
+        "entity": "payment",
+        "amount": {{amount}},
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "{{order_id}}",
+        "method": "upi",
+        "vpa": "user@okaxis",
+        "captured": true,
+        "created_at": 1792900000
+      }
+    }
+  },
+  "created_at": 1792900001
+}

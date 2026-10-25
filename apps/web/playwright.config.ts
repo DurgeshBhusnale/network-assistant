@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-import { API_PORT, AUTH_FILE, BASE_URL, PORT } from "./e2e/env";
+import { API_PORT, AUTH_FILE, BASE_URL, FRESH_AUTH_FILE, PORT } from "./e2e/env";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -12,6 +12,7 @@ export default defineConfig({
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   // The dev database is in Seoul (~125 ms per round trip), so API-backed screens take 1-3 s.
   expect: { timeout: 15_000 },
+  timeout: 90_000,
   globalSetup: "./e2e/global-setup.ts",
   globalTeardown: "./e2e/global-teardown.ts",
   use: {
@@ -28,6 +29,11 @@ export default defineConfig({
       name: "signed-in",
       testMatch: /\.app\.spec\.ts$/,
       use: { ...devices["Pixel 7"], storageState: AUTH_FILE },
+    },
+    {
+      name: "onboarding",
+      testMatch: /\.onboarding\.spec\.ts$/,
+      use: { ...devices["Pixel 7"], storageState: FRESH_AUTH_FILE },
     },
   ],
   webServer: [

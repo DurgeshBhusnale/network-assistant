@@ -1,13 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { AUTH_FILE, BASE_URL, USER_FILE, env } from "./env";
+import { AUTH_FILE, BASE_URL, FRESH_AUTH_FILE, USER_FILE, env } from "./env";
 
-/**
- * Creates a throwaway, fully onboarded user in the dev project and saves its Supabase session
- * as Playwright storage state. global-teardown deletes the user (cascade removes every row).
- */
-export default async function globalSetup() {
+type Session = { access_token: string };
+
+/** A throwaway confirmed user in the dev project, signed in with a password grant. */
+async function createUser(): Promise<{ id: string; session: Session }> {
   const url = env("NEXT_PUBLIC_SUPABASE_URL");
   const anon = env("NEXT_PUBLIC_SUPABASE_ANON_KEY");
   const service = env("SUPABASE_SERVICE_ROLE_KEY");
@@ -25,8 +24,6 @@ export default async function globalSetup() {
   });
   if (!created.ok) throw new Error(`create user failed: ${created.status}`);
   const { id } = (await created.json()) as { id: string };
-  await mkdir(path.dirname(USER_FILE), { recursive: true });
-  await writeFile(USER_FILE, id);
 
   const tokenRes = await fetch(`${url}/auth/v1/token?grant_type=password`, {
     method: "POST",
@@ -34,14 +31,41 @@ export default async function globalSetup() {
     body: JSON.stringify({ email, password }),
   });
   if (!tokenRes.ok) throw new Error(`sign in failed: ${tokenRes.status}`);
-  const session = (await tokenRes.json()) as { access_token: string };
+  return { id, session: (await tokenRes.json()) as Session };
+}
 
-  // Onboard through the real API (via the web proxy, like the app).
+/** supabase-js keeps the session in localStorage under sb-<project ref>-auth-token. */
+async function saveStorageState(file: string, session: Session) {
+  const ref = new URL(env("NEXT_PUBLIC_SUPABASE_URL")).hostname.split(".")[0];
+  await writeFile(
+    file,
+    JSON.stringify({
+      cookies: [],
+      origins: [
+        {
+          origin: BASE_URL,
+          localStorage: [{ name: `sb-${ref}-auth-token`, value: JSON.stringify(session) }],
+        },
+      ],
+    }),
+  );
+}
+
+/**
+ * Two throwaway users: one fully onboarded through the real API (most specs), one fresh from
+ * sign-in (the onboarding spec). global-teardown deletes both; cascade removes every row.
+ */
+export default async function globalSetup() {
+  await mkdir(path.dirname(USER_FILE), { recursive: true });
+  const ready = await createUser();
+  const fresh = await createUser();
+  await writeFile(USER_FILE, [ready.id, fresh.id].join("\n"));
+
   const api = async (method: string, route: string, body: unknown) => {
     const res = await fetch(`${BASE_URL}/api${route}`, {
       method,
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${ready.session.access_token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
@@ -59,18 +83,6 @@ export default async function globalSetup() {
   });
   await api("PATCH", "/v1/me", { onboarding_step: "done" });
 
-  // supabase-js keeps the session in localStorage under sb-<project ref>-auth-token.
-  const ref = new URL(url).hostname.split(".")[0];
-  await writeFile(
-    AUTH_FILE,
-    JSON.stringify({
-      cookies: [],
-      origins: [
-        {
-          origin: BASE_URL,
-          localStorage: [{ name: `sb-${ref}-auth-token`, value: JSON.stringify(session) }],
-        },
-      ],
-    }),
-  );
+  await saveStorageState(AUTH_FILE, ready.session);
+  await saveStorageState(FRESH_AUTH_FILE, fresh.session);
 }

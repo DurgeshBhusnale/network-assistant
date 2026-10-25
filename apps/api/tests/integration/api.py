@@ -69,7 +69,11 @@ class User:
 
     async def onboard(self, companies: tuple[str, ...] = ("Zoho", "Razorpay")) -> dict[str, Any]:
         """Notice accepted, every consent granted, an active Career Sprint goal, onboarding done."""
-        ok(await self.put("/v1/privacy/consents", {"accept_notice": True, "consents": ALL_CONSENTS}))
+        ok(
+            await self.put(
+                "/v1/privacy/consents", {"accept_notice": True, "consents": ALL_CONSENTS}
+            )
+        )
         goal: dict[str, Any] = ok(
             await self.post(
                 "/v1/goals",
@@ -84,7 +88,9 @@ class User:
         return goal
 
     async def contact(self, name: str, **fields: Any) -> dict[str, Any]:
-        created: dict[str, Any] = ok(await self.post("/v1/contacts", {"full_name": name, **fields}), 201)
+        created: dict[str, Any] = ok(
+            await self.post("/v1/contacts", {"full_name": name, **fields}), 201
+        )
         return created
 
 
