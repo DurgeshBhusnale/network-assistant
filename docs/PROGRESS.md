@@ -5,12 +5,47 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** core build done (Sprints 0–8). Next: the deferred full test pass, then go-live credentials and the Mumbai staging/prod projects.
-- **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-8/hardening` (all sprint branches pushed; each builds on the previous)
+- **Current sprint:** core build (Sprints 0–8) and the full test pass done. Next: go-live credentials, Mumbai staging/prod projects, real-phone checks.
+- **Mode:** the build-fast phase (founder, 25 Oct 2026) ended with the full test pass on branch `sprint-9/test-pass`. Before that: build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
+- **Branch:** `sprint-9/test-pass` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
-## Sprint checklist
+## Test pass (26 Oct 2026, branch `sprint-9/test-pass`)
+
+| Suite | Result | Notes |
+|---|---|---|
+| `pnpm check` | ✅ | |
+| API unit (`pnpm test:api`) | ✅ 466 | 252 endpoint contracts (every route: 401 for none/garbage/wrong-scheme/forged tokens, 422 envelope for bad ids and bodies, explicit public allowlist); table-driven ranking, stages, fatigue, selection, plan limits, send links, draft rules, relevance, goal params, capture candidates, normalisers, parsers, dedupe |
+| Web unit (`pnpm --filter web test`) | ✅ 39 | + onboarding gate, device fallbacks, opt-in consent form |
+| API integration (`pnpm test:int`) | ✅ 61 | Real app against the dev project, throwaway users (test-only HS256 tokens) deleted afterwards; ~15 min locally because every query crosses to Seoul |
+| E2E (`pnpm e2e`, Pixel 7) | ✅ 16 | Starts the API (fake AI) and a production build; creates two throwaway users (onboarded + fresh) and deletes them |
+
+Regression suite (Appendix A):
+
+| # | Covered by |
+|---|---|
+| R1 | E2E `journey.onboarding`: consents (nothing pre-ticked) → goal → LinkedIn CSV → Today lists the Zoho people. Sign-up itself (email code / Google) stays a manual check |
+| R2 | E2E `flows.app`: tone change → edit → Send on WhatsApp opens exactly `wa.me/<number>?text=<edited text>` → "Yes, sent" |
+| R3 | Integration: check-in window (2–5 days), referred → thank-you suggestion, progress funnel |
+| R4 | Integration: text capture → worker step → confirm with a follow-up date → on Today |
+| R5 | Integration: free limits → purchase → unlocked; signed webhook grants once, refund ends it |
+| R6 | Integration: every user-owned table populated through the API, then as another user (RLS session) 0 rows visible and 0 updatable; plus 404 isolation probes on every resource endpoint |
+| R7 | Integration: WhatsApp and Razorpay signatures valid / wrong / missing / forged; verify handshake |
+| R8 | Integration: STOP blocks the guard and replies; START restores; consent withdrawal blocks; unknown/unlinked users blocked; strangers get nothing |
+| R9 | Integration: delete account leaves no row with the user id in any table, no auth user, payment kept without user, hashed audit, old token 401 |
+| R10 | Integration: root log capture across the core flows contains no phone, email, note, capture text or contact name from those inputs; unit test for access-log query stripping |
+
+Bugs found and fixed in the test pass:
+
+- Web build never received `NEXT_PUBLIC_SUPABASE_*` (`@next/env` caches the first load; `loadEnvConfig` of the root `.env` needed `forceReload`). Every production-build page threw, including the offline page; the CSP also had no Supabase origin.
+- Just-issued Supabase tokens were rejected on `iat` when Supabase's clock ran ~1 s ahead: 30 s JWT leeway.
+- Name casing turned "E2E", "IBM", "A.K." into "E2e", "Ibm", "A.k.": only caps-lock names and all-lower words are title-cased now.
+- DB pool (5 + 10 per process) exceeded the dev session pooler's ~15-client cap and hung under parallel load: `DB_POOL_SIZE`/`DB_MAX_OVERFLOW` (5/5) and a 10 s checkout timeout.
+- uvicorn access logs carried query strings (people-search names, unsubscribe tokens): stripped.
+- Onboarding gate redirected on a stale cached profile right after consents were saved, bouncing the user back to consents: it now waits for fresh data.
+- `pnpm fmt` stopped before formatting when lint had a non-fixable error: formats first.
+- `/capture` had no `<h1>` (visually hidden one added).
+
 
 | Sprint | Status | Tag | Notes |
 |---|---|---|---|
@@ -22,7 +57,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 5 Capture | Done (tests deferred; Hinglish STT check pending real voice notes) | | Live smoke: extraction, possible-match, follow-up date, audio deleted + audit |
 | 6 WhatsApp assistant | Done in dry-run (tests deferred) | | Needs Meta credentials + approved templates to go live |
 | 7 Billing and notifications | Done with dev checkout (tests deferred) | | Needs Razorpay keys, VAPID keys, Resend key to go live |
-| 8 Privacy, analytics, hardening | Done except S8-6 and perf/a11y audits (tests deferred) | | Live smoke: export, delete, consent-aware guard, admin 403, retention, rate limits, goal pause/resume/end |
+| 8 Privacy, analytics, hardening | Done except S8-6 and perf/a11y audits | | Live smoke: export, delete, consent-aware guard, admin 403, retention, rate limits, goal pause/resume/end |
 
 ## Current sprint stories
 
@@ -243,6 +278,12 @@ Sprint 0 build:
 
 ## Open issues / questions for the human
 
+- **CI:** the integration and E2E jobs now run against the CLI Supabase stack with its keys exported; E2E is back on PRs (founder rule: while under 5 minutes). Not yet run on GitHub: check the first PR run.
+- **Dev DB latency:** ~125 ms per round trip to Seoul (`/v1/today` ~2–3 s, `/v1/me` ~1 s, mostly round trips). Fine once API + DB are both in Mumbai; E2E timeouts are raised for now.
+- The draft screen saves edits twice when Send is tapped straight after typing (blur + before-send). Harmless; could dedupe later.
+- The fake extraction fixture's follow-up date (2026-10-26) will be in the past from tomorrow; nothing asserts on it.
+- Dev DB holds 8 user-less payments and 8 user-less `wa_messages` rows from the Sprint 6–8 smoke runs (expected shapes: anonymised payments, unlinked senders). Left in place.
+
 - **Payments go-live:** Razorpay account (KYC) → test keys first: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`; webhook URL `<API_BASE_URL>/v1/webhooks/razorpay` with events `payment.captured`, `order.paid`, `refund.processed`.
 - **Push/email:** run `uv run python -m app.vapid` and put the keys in `.env` (+ `VAPID_SUBJECT=mailto:you@…`); Resend account + verified sending domain → `RESEND_API_KEY`, `EMAIL_FROM`; set `UNSUBSCRIBE_SECRET` to a random string.
 
@@ -274,6 +315,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 26 Oct 2026 — Full test pass: endpoint contracts for every route, table-driven engine/limits/import tests, integration suites against the dev project (isolation, send cap, free limits, webhooks, WhatsApp guard, export/delete, retention, RLS on every table, PII-free logs), E2E for the signed-in app, onboarding and send flows. Fixed 8 bugs (see Test pass). CI integration/E2E jobs updated for the local stack.
 
 - 25 Oct 2026 — Sprint 8 built: export zip, delete account, consent-aware WhatsApp guard, retention job, admin metrics, rate limits; Settings Privacy & data, Your goal (edit/pause/resume/end), admin page, privacy/terms pages, CSP + HSTS. Live smokes passed. S8-6 and perf/a11y audits deferred.
 

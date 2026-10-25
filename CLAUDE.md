@@ -57,7 +57,7 @@ pnpm check       # lint + format check + typecheck (web + api)
 pnpm fmt         # auto-fix lint and formatting (web + api)
 pnpm test        # unit tests (web + api)
 pnpm test:int    # API integration tests (dev Supabase + Redis; every test rolls back)
-pnpm e2e         # Playwright (Pixel 7 emulation) against a production build
+pnpm e2e         # Playwright (Pixel 7) vs a production build + the API (fake AI); throwaway users, deleted after
 pnpm gen-api     # regenerate TS client from FastAPI OpenAPI (commit the result)
 pnpm db:push     # apply NEW migrations + seed to the dev project (ask the human first)
 pnpm db:seed     # regenerate seed.sql from packs/*.json and apply it (idempotent)
