@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type ReactNode } from "react";
 
@@ -139,6 +140,14 @@ function SettingsForm({ profile }: { profile: Profile }) {
           </p>
         )}
       </Card>
+
+      <Link
+        href="/settings/style"
+        className="flex min-h-tap flex-col gap-0.5 rounded-card border border-line bg-surface p-card text-ink no-underline"
+      >
+        <span className="text-body font-semibold">{t.writingStyle}</span>
+        <span className="text-small text-muted">{t.writingStyleBody}</span>
+      </Link>
 
       <Card>
         <h2 className="m-0 font-display text-h2 font-semibold">{t.account}</h2>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { StagePicker } from "@/components/drafts/StagePicker";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -81,6 +82,7 @@ function PersonView({ person }: { person: Person }) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [stageOpen, setStageOpen] = useState(false);
   const meta = [person.title, person.company, person.city].filter(Boolean).join(" · ");
 
   async function saveNote() {
@@ -160,7 +162,7 @@ function PersonView({ person }: { person: Person }) {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <ActionTile label={t.draft} disabled hint={t.draftSoon}>
+        <ActionTile label={t.draft} onClick={() => setStageOpen(true)}>
           <svg
             width="20"
             height="20"
@@ -257,6 +259,8 @@ function PersonView({ person }: { person: Person }) {
           ))}
         </ol>
       </Card>
+
+      <StagePicker contactId={person.id} open={stageOpen} onClose={() => setStageOpen(false)} />
 
       <Sheet open={noteOpen} title={t.addNote} onClose={() => setNoteOpen(false)}>
         <label htmlFor="note-text" className="text-small font-semibold">

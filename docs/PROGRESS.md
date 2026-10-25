@@ -4,9 +4,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 3 — AI drafting (Sprints 0–2 done)
+- **Current sprint:** Sprint 4 — Engine and daily loop (Sprints 0–3 done)
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-2/people` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-3/ai-drafting` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -16,7 +16,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 | 0 Foundations | Done | | Phone check passed (founder) |
 | 1 Accounts and goal setup | Done (tests deferred) | | Live API smoke passed; needs Google/email auth config in Supabase |
 | 2 People | Done (tests deferred) | | Live API smoke passed incl. 1,000-row import in 7.5 s |
-| 3 AI drafting | Not started | | |
+| 3 AI drafting | Done (tests deferred; evals runner deferred) | | Live Groq smoke: 17 calls ₹0.25, rules + fact check + free caps verified |
 | 4 Engine and daily loop | Not started | | |
 | 5 Capture | Not started | | |
 | 6 WhatsApp assistant | Not started | | |
@@ -65,6 +65,17 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 3:
+
+- `GroqProvider` (OpenAI-compatible chat + transcription; `reasoning_effort=low` for gpt-oss; JSON mode). `AIRouter.complete_json`: per model 1 retry on retryable errors with jitter → task fallback model (20b↔120b); Pydantic validation with one repair retry; every attempt logged to `ai_calls` with an INR estimate from `ai_price_inr_per_mtok` (config).
+- Prompts are plain `{{var}}` templates (conditionals computed in code); `render()` PII-scrubs every value. `style_summary.v1` returns JSON `{summary}` (doc 05 said plain text). Prompt texts were tuned during the live smoke before first release: strict language/script line, no gendered address words, fact-check accepts paraphrases.
+- Draft pipeline: generate → code rules (≤ 90 words, warm-up ask detector, unexpected links, Devanagari in English/Hinglish) + fact check → one regeneration with fixes → leftovers returned as `warnings`/`unsupported_claims` for the UI to highlight.
+- Drafts need an active goal (409 `NO_ACTIVE_GOAL`); stage validated against the pack before limits. AI calls happen outside DB transactions.
+- `billing/limits.py`: free = 3 new drafts per local calendar month (counted from `drafts.created_at`), 3 regenerations per draft (`drafts.regenerations`); sprint fair use via `entitlements.drafts_used` (incremented with the service role). 402 codes `FREE_LIMIT_REACHED`, `FREE_REGEN_LIMIT_REACHED`, `FAIR_USE_REACHED`.
+- Regenerations overwrite the same draft row (text, tone, model); edits go to `final_text`.
+- Web: stage chooser sheet (stages from the active goal's pack), draft screen (tone chips, Another version, check-before-sending panel, autosave on blur, Copy), writing-style step + Settings page, static Upgrade screen. Send on WhatsApp/LinkedIn come with Sprint 4.
+- Deferred to the testing phase: `evals/` runner and golden set.
 
 Sprint 2:
 
@@ -183,6 +194,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 3 built: Groq provider, AI router, draft pipeline with rules + fact check, free limits, style profile; draft screen, stage chooser, style step, upgrade screen. Live Groq smoke after two prompt fixes: correct script, no false fact-check flags.
 
 - 25 Oct 2026 — Sprint 2 built: imports (picker, vCard, LinkedIn CSV) with dedupe preview + idempotent commit, people list/search/paging, person page, add/edit/delete person, notes. Checks, build, unit tests and live smoke pass.
 
