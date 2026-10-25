@@ -373,6 +373,7 @@ export const copy = {
     noGoal: "Set a goal to see your progress.",
   },
   capture: {
+    title: "Capture",
     close: "Close",
     prompt: "Who did you meet? Say names, where, and what you talked about.",
     promptPerson: (name: string) => `What do you want to remember about ${name}?`,

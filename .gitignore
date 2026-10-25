@@ -29,6 +29,7 @@ supabase/.temp/
 # Tests and evals
 playwright-report/
 test-results/
+apps/web/e2e/.auth/
 evals/results/
 
 # OS / editors

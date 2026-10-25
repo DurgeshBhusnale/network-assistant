@@ -310,6 +310,7 @@ export default function CapturePage() {
       >
         ×
       </button>
+      <h1 className="sr-only">{t.title}</h1>
 
       {status !== "ready" && (
         <Recorder contactName={contactName} onCapture={(i) => void onCapture(i)} busy={working} />

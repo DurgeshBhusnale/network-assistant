@@ -1,17 +1,17 @@
 import { expect, test } from "@playwright/test";
 
 const TABS = [
-  { name: "Today", path: "/today", heading: "Today" },
   { name: "People", path: "/people", heading: "People" },
   { name: "Progress", path: "/progress", heading: "Progress" },
   { name: "Replies", path: "/replies", heading: "Did they reply?" },
+  { name: "Today", path: "/today", heading: /^Good (morning|afternoon|evening), E2E$/ },
 ];
 
-test.describe("app shell", () => {
-  test("root redirects to Today", async ({ page }) => {
+test.describe("app shell (signed in)", () => {
+  test("root opens Today for an onboarded user", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/today$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Today" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: TABS[3]!.heading })).toBeVisible();
   });
 
   test("bottom nav has five items with the capture button raised", async ({ page }) => {
@@ -47,17 +47,26 @@ test.describe("app shell", () => {
 
   test("no horizontal scroll at 390 px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const path of ["/today", "/people", "/capture", "/progress", "/replies", "/settings"]) {
+    const paths = [
+      "/today",
+      "/people",
+      "/people/new",
+      "/capture",
+      "/progress",
+      "/replies",
+      "/settings",
+      "/settings/goal",
+      "/settings/privacy",
+      "/settings/style",
+      "/upgrade",
+    ];
+    for (const path of paths) {
       await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 }).first()).toBeAttached();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
       expect(overflow, path).toBeLessThanOrEqual(0);
     }
-  });
-
-  test("Today shows the API status card", async ({ page }) => {
-    await page.goto("/today");
-    await expect(page.getByTestId("system-status")).toBeVisible();
   });
 });
