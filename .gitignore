@@ -39,3 +39,6 @@ evals/results/
 
 # Coverage
 coverage/
+
+# Claude Code per-user settings
+.claude/settings.local.json
