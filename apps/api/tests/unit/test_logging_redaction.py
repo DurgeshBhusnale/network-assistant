@@ -97,3 +97,27 @@ def test_log_redaction_masks_exception_text() -> None:
     assert "9876543210" not in output
     assert "a@b.io" not in output
     assert "[phone]" in json.loads(output)["exc"]
+
+
+@pytest.mark.parametrize(
+    ("path", "logged"),
+    [
+        ("/v1/contacts?q=Priya%20Nair", "/v1/contacts"),
+        ("/v1/email/unsubscribe?u=3f2b&t=secret-token", "/v1/email/unsubscribe"),
+        ("/v1/today", "/v1/today"),
+    ],
+)
+def test_access_log_drops_query_strings(path: str, logged: str) -> None:
+    """Search terms (names) and signed tokens travel in query strings: never log them."""
+    stream = io.StringIO()
+    logger = logging.getLogger("uvicorn.access")
+    handler = build_handler(stream)
+    logger.addHandler(handler)
+    level, logger.level = logger.level, logging.INFO
+    try:
+        logger.info('%s - "%s %s HTTP/%s" %d', "127.0.0.1:5000", "GET", path, "1.1", 200)
+    finally:
+        logger.removeHandler(handler)
+        logger.setLevel(level)
+    msg = json.loads(stream.getvalue())["msg"]
+    assert msg == f'127.0.0.1:5000 - "GET {logged} HTTP/1.1" 200'

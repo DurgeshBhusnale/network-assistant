@@ -22,10 +22,21 @@ def _extras(record: logging.LogRecord) -> dict[str, Any]:
     return {k: v for k, v in vars(record).items() if k not in _STANDARD_ATTRS}
 
 
+def _strip_query(record: logging.LogRecord) -> None:
+    """uvicorn's access line carries the full path: search terms (names) and signed tokens
+    travel in query strings, so only the path is kept."""
+    args = record.args
+    if record.name == "uvicorn.access" and isinstance(args, tuple) and len(args) >= 3:
+        path = args[2]
+        if isinstance(path, str) and "?" in path:
+            record.args = (*args[:2], path.split("?", 1)[0], *args[3:])
+
+
 class RedactionFilter(logging.Filter):
     """Masks phones, emails and sensitive fields in the message, its args and extras."""
 
     def filter(self, record: logging.LogRecord) -> bool:
+        _strip_query(record)
         record.msg = redact_text(record.getMessage())
         record.args = None
         for key, value in _extras(record).items():
