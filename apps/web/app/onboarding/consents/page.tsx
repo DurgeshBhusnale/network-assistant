@@ -49,7 +49,8 @@ function ConsentsForm({ initial }: { initial: Consents | undefined }) {
     setError(null);
     try {
       await update.mutateAsync({ accept_notice: true, consents: choices });
-      router.replace("/onboarding/goal");
+      // The app gate sends the user on to the next onboarding step, or home.
+      router.replace("/today");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : copy.common.genericError);
     }

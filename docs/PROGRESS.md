@@ -4,9 +4,9 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 ## Current status
 
-- **Current sprint:** Sprint 2 — People (Sprints 0–1 done)
+- **Current sprint:** Sprint 3 — AI drafting (Sprints 0–2 done)
 - **Mode (founder, 25 Oct 2026):** build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-1/accounts-goal` (pushed: `main`, `sprint-0/foundations`)
+- **Branch:** `sprint-2/people` (all sprint branches pushed; each builds on the previous)
 - **Last updated:** 25 Oct 2026
 
 ## Sprint checklist
@@ -15,7 +15,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 |---|---|---|---|
 | 0 Foundations | Done | | Phone check passed (founder) |
 | 1 Accounts and goal setup | Done (tests deferred) | | Live API smoke passed; needs Google/email auth config in Supabase |
-| 2 People | Not started | | |
+| 2 People | Done (tests deferred) | | Live API smoke passed incl. 1,000-row import in 7.5 s |
 | 3 AI drafting | Not started | | |
 | 4 Engine and daily loop | Not started | | |
 | 5 Capture | Not started | | |
@@ -65,6 +65,17 @@ The coding agent updates this file at the end of every session. Newest entries a
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 2:
+
+- `app/imports/` (pure): normalisers (E.164 via `phonenumbers`, default IN; per-word smart casing; LinkedIn → `https://www.linkedin.com/in/<slug>`; company suffix stripping), parsers (LinkedIn CSV with preamble and 4 date formats, vCard via `vobject` incl. yearless BDAY stored with year 1904, Contact Picker), dedupe (phone → email → LinkedIn, never name; union arrays, fill blanks; different company on a known contact = job change → `job_change` trigger).
+- Imports stage a preview (`imports.preview` holds candidates) and re-plan at commit against current contacts; commits are idempotent (already committed → same result). Commit runs in-request (bulk insert + executemany update; 1,000 rows in 7.5 s on the Seoul dev DB), not a worker: deviation from the sprint plan's ">200 rows in a worker"; revisit if imports get slower.
+- Imports need the `contacts` consent (403 `CONSENT_REQUIRED`); manual add doesn't (it isn't an import). Manual add/edit rejects identifier duplicates with 409 `CONTACT_EXISTS`.
+- Uploads: 5 MB cap; decoded UTF-8 (BOM-aware), UTF-16, then cp1252 for Excel-saved CSVs.
+- Delete person: hard-deletes memories, interactions, triggers, suggestions, goal_contacts, drafts; sets `contacts.deleted_at` (purge job Sprint 8).
+- People list: keyset pagination on (lower(full_name), id), 50 per page, `ilike` search on name/company (trigram index exists for later fuzzy search).
+- Person page history = interactions + a synthetic "Added from …" entry; next-step card shows the goal label until the engine (Sprint 4) fills the stage.
+- Web: shared `ImportPanel` (onboarding step 2 and People → Add people); Contact Picker wrapped in `lib/device/contactPicker.ts` with .vcf fallback; LinkedIn "Remind me later" remembered in localStorage; note sheet on `<dialog>`; Draft/Voice tiles disabled until Sprints 3/5.
 
 Sprint 1:
 
@@ -172,6 +183,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 25 Oct 2026 — Sprint 2 built: imports (picker, vCard, LinkedIn CSV) with dedupe preview + idempotent commit, people list/search/paging, person page, add/edit/delete person, notes. Checks, build, unit tests and live smoke pass.
 
 - 25 Oct 2026 — Pushed to GitHub. Sprint 1 built: auth, RLS sessions, /me, /packs, /goals, /privacy/consents; sign-in (Google + email code), consents, goal, settings screens; onboarding resume. Checks, unit tests, build and live API smoke pass. Testing deferred by founder.
 
