@@ -62,7 +62,7 @@ test.describe("app shell (signed in)", () => {
     ];
     for (const path of paths) {
       await page.goto(path);
-      await expect(page.getByRole("heading", { level: 1 }).first()).toBeAttached();
+      await expect(page.getByRole("heading", { level: 1 }).first(), path).toBeAttached();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );

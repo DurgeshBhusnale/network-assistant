@@ -6,11 +6,10 @@ from collections.abc import Awaitable, Callable
 from fastapi import Depends, Request
 
 from app.core.auth import AuthUser, get_current_user
+from app.core.config import Settings, get_settings
 from app.core.errors import AppError, ErrorCode
 
 logger = logging.getLogger(__name__)
-
-GENERAL_PER_MINUTE = 60
 
 
 async def hit(request: Request, key: str, limit: int, window_seconds: int) -> bool:
@@ -43,5 +42,6 @@ def limit(name: str, per: int, window_seconds: int) -> Callable[..., Awaitable[N
 
 
 async def general_limit(request: Request, user: AuthUser) -> None:
-    if not await hit(request, f"rl:all:{user.id}", GENERAL_PER_MINUTE, 60):
+    settings: Settings = getattr(request.app.state, "settings", None) or get_settings()
+    if not await hit(request, f"rl:all:{user.id}", settings.rate_limit_general_per_minute, 60):
         raise _too_many()

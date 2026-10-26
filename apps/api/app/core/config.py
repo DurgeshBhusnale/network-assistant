@@ -87,6 +87,9 @@ class Settings(BaseSettings):
     free_drafts_per_month: int = Field(default=3, ge=0)
     free_regenerations_per_draft: int = Field(default=3, ge=0)
     daily_send_cap: int = Field(default=20, gt=0)
+    # Tech spec §6: 60 requests/min/user overall. Raised only for E2E, where one test user
+    # stands in for many fast sessions.
+    rate_limit_general_per_minute: int = Field(default=60, gt=0)
     pro_enabled: bool = False
     price_test_enabled: bool = False
     pro_monthly_days: int = 30

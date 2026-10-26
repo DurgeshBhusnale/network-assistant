@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { env } from "./env";
+
 test.describe("signed out", () => {
   test("app routes send you to sign in", async ({ page }) => {
     await page.goto("/today");
@@ -23,7 +25,10 @@ test.describe("signed out", () => {
     const res = await request.get("/sign-in");
     const h = res.headers();
     expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
-    expect(h["content-security-policy"]).toMatch(/connect-src 'self' https:\/\/\w+\.supabase\.co/);
+    // Whichever Supabase the build points at: the cloud project locally, the CLI stack in CI.
+    expect(h["content-security-policy"]).toContain(
+      `connect-src 'self' ${env("NEXT_PUBLIC_SUPABASE_URL")}`,
+    );
     expect(h["strict-transport-security"]).toContain("max-age=");
     expect(h["x-frame-options"]).toBe("DENY");
   });

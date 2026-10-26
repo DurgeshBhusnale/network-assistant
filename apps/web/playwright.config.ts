@@ -41,7 +41,8 @@ export default defineConfig({
       // API against the dev project, with fake AI so E2E never spends Groq credits.
       command: `uv run uvicorn --factory app.main:create_app --port ${API_PORT}`,
       cwd: "../api",
-      env: { AI_MODE: "fake" },
+      // One shared test user makes many quick page loads; the product limit (60/min) would 429.
+      env: { AI_MODE: "fake", RATE_LIMIT_GENERAL_PER_MINUTE: "1000" },
       url: `http://localhost:${API_PORT}/v1/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
