@@ -21,6 +21,8 @@ Surfaces: a mobile-first installable **PWA** (Android Chrome first) + our offici
 | `docs/06-PRIVACY-CHECKLIST.md` | Privacy/DPDP requirements |
 | `docs/schema-draft.sql` | Initial DB schema |
 | `docs/adr/` | Decisions. To change a decision, add a new ADR; never silently diverge |
+| `docs/DEV-SETUP.md` | Developer machine setup (Windows) and phone testing |
+| `docs/GO-LIVE-CREDENTIALS.md` | Step-by-step: Meta WhatsApp, Razorpay, VAPID, Resend, unsubscribe secret, Supabase sign-in |
 | `docs/PROGRESS.md` | Current sprint, done/next, open issues. **Update it at the end of every session** |
 
 If docs conflict: PRD principles > ADRs > tech spec > sprint plan > design guide. If something is ambiguous or missing, **ask the human** before inventing product behaviour. Small technical choices: decide, then note them in `PROGRESS.md`.
@@ -35,32 +37,38 @@ If docs conflict: PRD principles > ADRs > tech spec > sprint plan > design guide
 6. **Goal packs are config.** No `if pack == "career_sprint"` branches in engine code; read behaviour from `packs.config`.
 7. **Store the minimum.** Delete audio after transcription. Never store WhatsApp message bodies. Never log phones, emails, message text or transcripts.
 8. **Honest drafts.** Drafts may only state facts present in the user's data; warm-up drafts contain no ask. Enforced by code + fact check.
-9. **Approved AI providers only:** Groq, Anthropic, Sarvam, OpenAI (STT fallback). No DeepSeek first-party API. All AI calls go through `app/ai/router.py`. Never send phone numbers or emails to AI providers.
+9. **Approved AI providers only:** Groq, Anthropic, Sarvam, OpenAI (STT fallback); **v1 uses Groq only** (ADR-0010). No DeepSeek first-party API. All AI calls go through `app/ai/router.py`. Never send phone numbers or emails to AI providers.
 
 ## Stack (details: tech spec §2)
 
 - Web: Next.js (App Router) + TypeScript strict + Tailwind (tokens from `design/tokens.css`) + TanStack Query + generated OpenAPI client. Package manager: **pnpm**.
 - API + workers: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 async + asyncpg, arq (Redis). Package manager: **uv**.
-- DB/Auth/Storage: Supabase (Postgres + pgvector + RLS), migrations in `supabase/migrations`.
-- AI: Groq (gpt-oss-20B/120B, Whisper Turbo), Claude (Sonnet 5.5 / Haiku 5.5), Sarvam (Indian-language STT). Model IDs only from env.
+- DB/Auth/Storage: Supabase (Postgres + pgvector + RLS), migrations in `supabase/migrations`. Dev uses the cloud dev project (ADR-0009).
+- AI: Groq only in v1 (gpt-oss-20B/120B, Whisper Large v3 Turbo / v3), ADR-0010. Model IDs only from env.
 - Messaging: Meta WhatsApp Cloud API (direct). Payments: Razorpay. Push: VAPID web push. Email: Resend.
 
 ## Commands
 
-(Create these in Sprint 0; keep this list accurate.)
+Windows (PowerShell) or Linux; setup in `docs/DEV-SETUP.md`. Keep this list accurate.
 
 ```bash
-make setup      # install deps (pnpm, uv), start supabase local, apply migrations + seed
-make dev        # web :3000, api :8000, worker, redis (docker), supabase
-make check      # lint + format check + typecheck (web + api)
-make test       # unit tests (web + api)
-make test-int   # API integration tests (needs supabase + redis running)
-make e2e        # Playwright (mobile emulation)
-make gen-api    # regenerate TS client from FastAPI OpenAPI
-make db-reset   # reset local DB, re-run migrations + seed
+pnpm bootstrap   # install deps (pnpm, uv), start Redis (docker)
+pnpm dev         # web :3000, api :8000, worker (uses the cloud dev Supabase from .env)
+pnpm check       # lint + format check + typecheck (web + api)
+pnpm fmt         # auto-fix lint and formatting (web + api)
+pnpm test        # unit tests (web + api)
+pnpm test:int    # API integration tests (dev Supabase + Redis; every test rolls back)
+pnpm e2e         # Playwright (Pixel 7) vs a production build + the API (fake AI); throwaway users, deleted after
+pnpm gen-api     # regenerate TS client from FastAPI OpenAPI (commit the result)
+pnpm db:push     # apply NEW migrations + seed to the dev project (ask the human first)
+pnpm db:seed     # regenerate seed.sql from packs/*.json and apply it (idempotent)
 ```
 
-Run `make check && make test` before saying a task is done. Run `make test-int` when you touched the API, DB or workers.
+The dev database is the cloud Supabase project (ADR-0009). Never reset it, never run destructive SQL on it, and ask before `pnpm db:push`. CI uses its own throwaway Supabase stack.
+
+Generated files (CI fails if stale): `supabase/seed.sql` (from `packs/*.json`), `apps/web/lib/api/openapi.json` + `schema.d.ts` (from FastAPI).
+
+Run `pnpm check && pnpm test` before saying a task is done. Run `pnpm test:int` when you touched the API, DB or workers.
 
 ## Code conventions
 

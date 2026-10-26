@@ -1,0 +1,30 @@
+{
+  "entity": "event",
+  "account_id": "acc_TestAccount01",
+  "event": "order.paid",
+  "contains": ["payment", "order"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "{{payment_id}}",
+        "entity": "payment",
+        "amount": {{amount}},
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "{{order_id}}",
+        "method": "upi"
+      }
+    },
+    "order": {
+      "entity": {
+        "id": "{{order_id}}",
+        "entity": "order",
+        "amount": {{amount}},
+        "amount_paid": {{amount}},
+        "currency": "INR",
+        "status": "paid"
+      }
+    }
+  },
+  "created_at": 1792900002
+}

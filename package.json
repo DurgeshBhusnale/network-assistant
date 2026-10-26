@@ -1,0 +1,28 @@
+{
+  "name": "networking-assistant",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "bootstrap": "pnpm install && cd apps/api && uv sync && cd ../.. && docker compose up -d redis",
+    "dev": "docker compose up -d redis && concurrently --kill-others-on-fail --names web,api,worker --prefix-colors blue,green,yellow \"pnpm --filter web dev\" \"pnpm run dev:api\" \"pnpm run dev:worker\"",
+    "dev:api": "cd apps/api && uv run uvicorn --factory app.main:create_app --reload --host 0.0.0.0 --port 8000",
+    "dev:worker": "cd apps/api && uv run arq app.workers.settings.WorkerSettings --watch app",
+    "check": "pnpm run check:api && pnpm run check:web",
+    "check:api": "cd apps/api && uv run ruff check . && uv run ruff format --check . && uv run mypy",
+    "check:web": "pnpm --filter web lint && pnpm --filter web format:check && pnpm --filter web typecheck",
+    "fmt": "cd apps/api && uv run ruff format . && uv run ruff check --fix . && uv run ruff format . && cd ../.. && pnpm --filter web format",
+    "test": "pnpm run test:api && pnpm --filter web test",
+    "test:api": "cd apps/api && uv run pytest -m \"not integration\"",
+    "test:int": "cd apps/api && uv run pytest -m integration",
+    "e2e": "pnpm --filter web e2e",
+    "gen-api": "cd apps/api && uv run python -m app.openapi_export && cd ../.. && pnpm --filter web gen-api",
+    "db:push": "cd apps/api && uv run python -m app.dbtasks push",
+    "db:seed": "cd apps/api && uv run python -m app.dbtasks seed"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

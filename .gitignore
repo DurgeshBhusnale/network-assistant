@@ -29,6 +29,7 @@ supabase/.temp/
 # Tests and evals
 playwright-report/
 test-results/
+apps/web/e2e/.auth/
 evals/results/
 
 # OS / editors
@@ -36,3 +37,9 @@ evals/results/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Coverage
+coverage/
+
+# Claude Code per-user settings
+.claude/settings.local.json

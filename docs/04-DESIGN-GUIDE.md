@@ -25,6 +25,11 @@ The visual direction is provisional ("refine later"). Build components on tokens
 | Success | #1C7A4D on #E3F4EA | "Warm up"/"Follow up" badges, done checks |
 | Send | #1F7A4A | "Send on WhatsApp" button only |
 | Danger | #B4321F | Count badges, destructive actions |
+| On dark, soft | `--color-on-dark-soft` #E4E7EC | Live transcript text on the recorder panel |
+| Waveform idle | `--color-waveform-idle` #4A505C | Unplayed waveform bars on the recorder panel |
+| Neutral dot | `--color-dot-neutral` #9AA1AD | Neutral history-timeline dots (Person) |
+
+Tokens map into Tailwind v4 with `@theme inline` in `apps/web/app/globals.css`, which imports `design/tokens.css`. The WhatsApp conversation design uses WhatsApp-like colours that aren't app tokens (it isn't an app screen).
 
 Typography: display **Bricolage Grotesque** (600/700) for screen titles, names on Person, prices, big numbers; UI **Instrument Sans** (400/500/600) for everything else. Scale in `tokens.css`. Load via `next/font/google`.
 

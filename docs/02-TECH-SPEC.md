@@ -20,27 +20,28 @@
     └──────────────▶ Meta WhatsApp Cloud API ──webhook──▶ │                           ▲
                          ▲                         ┌──────▼──────────┐                │
                          └─────── send ─────────── │ Workers (arq)   │ ───────────────┘
-                                                   │ ranking, media, │ ───▶ AI router ─▶ Groq / Claude / Sarvam
+                                                   │ ranking, media, │ ───▶ AI router ─▶ Groq
  Razorpay ──────────────webhook──────────────────▶ │ briefs, digests │
                                                    └─────────────────┘   Redis (queue + rate limits)
 ```
 
 - **One backend** (Python) serves both front doors (web app and WhatsApp). Heavy or slow work runs in background workers.
-- **Frontend never queries tables directly.** It uses Supabase only for authentication; all data flows through the API.
+- **Frontend never queries tables directly.** It uses Supabase only for authentication; all data flows through the API. The Supabase Data API is disabled (ADR-0007).
+- The web app calls the API on its own origin (`/api/v1/*`); Next.js rewrites forward to the API. One origin for the phone, no CORS.
 - **All AI calls go through one AI router module** (`apps/api/app/ai/`), never directly from product code.
 
 ## 2. Stack
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | Next.js (App Router), TypeScript (strict), Tailwind CSS with CSS-variable design tokens | Installable PWA (manifest + service worker), Android Chrome first |
+| Frontend | Next.js (App Router), TypeScript (strict), Tailwind CSS v4 with CSS-variable design tokens mapped via `@theme inline` | Installable PWA (manifest + hand-written service worker), Android Chrome first |
 | Frontend data | TanStack Query; generated API client from FastAPI OpenAPI (`openapi-typescript`) | No hand-written fetch types |
 | Backend API | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 (async) + asyncpg | `uv` for dependency management |
 | Workers | `arq` (Redis-backed, asyncio, cron support) | Same codebase as API (`apps/api`) |
 | Database | Supabase Postgres + pgvector, migrations via Supabase CLI (`supabase/migrations`) | Mumbai region `ap-south-1` |
 | Auth | Supabase Auth: Google OAuth + email OTP | Phone is verified via WhatsApp linking, not SMS (ADR-0005) |
 | File storage | Supabase Storage, private bucket `captures` (audio, short-lived) | Signed upload URLs |
-| AI | Groq (gpt-oss-20B, gpt-oss-120B, Whisper Large v3 Turbo), Anthropic Claude (Sonnet 5.5, Haiku 5.5 fallback), Sarvam (Indian-language STT) | Model IDs in env, never hard-coded |
+| AI | Groq only in v1 (ADR-0010): gpt-oss-20B, gpt-oss-120B, Whisper Large v3 Turbo / Large v3 | Model IDs in env, never hard-coded |
 | Messaging | Meta WhatsApp Cloud API (direct, no BSP), Web Push (VAPID), email via Resend (or SES ap-south-1) | |
 | Payments | Razorpay (Orders + Checkout + webhooks); Cashfree as alternative | UPI first |
 | Observability | Sentry (web + api), structured JSON logs with PII redaction | |
@@ -73,7 +74,7 @@ Pin exact versions in lockfiles (`pnpm-lock.yaml`, `uv.lock`). Use the latest st
 │     │  ├─ api/v1/          # routers (one file per resource)
 │     │  ├─ domain/          # models (SQLAlchemy), schemas (Pydantic)
 │     │  ├─ engine/          # packs, ranking, stages, triggers — pure, unit-testable
-│     │  ├─ ai/              # router, providers/, prompts/ (versioned), factcheck
+│     │  ├─ ai/              # router, providers/, prompts/ (versioned), factcheck, fake/fixtures/ (AI_MODE=fake)
 │     │  ├─ imports/         # vcard, linkedin_csv, picker, dedupe, normalise
 │     │  ├─ capture/         # transcription + extraction pipeline
 │     │  ├─ channels/        # whatsapp/, push/, email/
@@ -82,7 +83,7 @@ Pin exact versions in lockfiles (`pnpm-lock.yaml`, `uv.lock`). Use the latest st
 │     │  ├─ analytics/       # event tracking
 │     │  └─ workers/         # arq settings, tasks, cron
 │     └─ tests/              # unit/, integration/, fixtures/ (webhook payloads, CSV/VCF samples)
-├─ packs/                    # pack configs (career_sprint.json), loaded by seed
+├─ packs/                    # pack configs (career_sprint.json, coming_soon.json, calendar_events.json) → supabase/seed.sql via apps/api/scripts/build_seed.py
 ├─ evals/                    # draft/extraction golden sets + runner
 ├─ supabase/                 # config.toml, migrations/, seed.sql
 ├─ docker-compose.yml        # local Redis
@@ -94,36 +95,36 @@ Pin exact versions in lockfiles (`pnpm-lock.yaml`, `uv.lock`). Use the latest st
 
 | Env | Purpose | Data |
 |---|---|---|
-| local | Development | Supabase CLI local stack + docker Redis; `AI_MODE=fake` by default |
+| local | Development (Windows or Linux) | Cloud Supabase **dev** project (ADR-0009) + Redis; `AI_MODE=fake` by default. CI uses a throwaway Supabase CLI stack |
 | staging | Beta testing, webhook testing | Separate Supabase project, WhatsApp test number, Razorpay test mode |
 | production | Users | Supabase Mumbai, live keys |
 
-All config via environment variables (see `.env.example`), loaded by `app/core/config.py` (pydantic-settings). **Never commit secrets.** `AI_MODE=fake` makes every provider return deterministic fixtures so tests and local dev never call paid APIs.
+All config via environment variables (see `.env.example`), loaded by `app/core/config.py` (pydantic-settings). **Never commit secrets.** `AI_MODE=fake` makes every provider return deterministic fixtures (`app/ai/fake/fixtures/`) so tests and local dev never call paid APIs.
 
 ## 5. Data model
 
-Full DDL draft: `docs/schema-draft.sql` (convert into the first Supabase migration in Sprint 0). Summary:
+Full DDL: `supabase/migrations/20261025000000_init_schema.sql` (mirrored in `docs/schema-draft.sql`). Summary:
 
 | Table | Purpose / key fields |
 |---|---|
-| `profiles` | 1:1 with `auth.users`. display_name, language, timezone, nudge_time, plan_cache, wa_phone_e164, wa_opt_in_at, wa_opt_out_at, onboarding_step, created_at |
+| `profiles` | 1:1 with `auth.users`. User-editable: display_name, language, timezone, nudge_time, onboarding_step. Server-managed (ADR-0007): wa_phone_e164, wa_opt_in_at, wa_opt_out_at, wa_last_inbound_at, price_cohort, utm. Plan is computed from `entitlements` by `billing/limits.py` (no cached column) |
 | `packs` | id (text, e.g. `career_sprint`), name, status (`active`/`coming_soon`), config jsonb (see §7.1) |
 | `goals` | user_id, pack_id, params jsonb, status (`active`/`paused`/`done`), starts_on, ends_on |
 | `contacts` | user_id, full_name, first/last, phones text[] (E.164), emails text[], linkedin_url, company, company_norm, title, city, how_known, birthday (date), sources text[], last_interaction_at, deleted_at |
 | `memories` | contact_id, user_id, text, source (`note`/`voice`/`whatsapp`/`import`), embedding vector(384) nullable (P1), created_at |
-| `goal_contacts` | goal_id, contact_id, relevance_label, relevance, stage (`none`/`warmed`/`asked`/`replied`/`referred`/`interview`/`thanked`), last_suggested_at, last_sent_at |
-| `suggestions` | user_id, goal_id (nullable for stay-in-touch), contact_id, for_date, score, reasons jsonb, stage, status (`pending`/`opened`/`sent`/`snoozed`/`dismissed`/`expired`), snoozed_until |
-| `drafts` | suggestion_id, user_id, contact_id, stage, tone, language, provider, model, prompt_version, text, final_text, factcheck jsonb, sent_channel, sent_at |
-| `interactions` | user_id, contact_id, goal_id, type (`met`/`sent`/`replied`/`no_reply`/`referred`/`interview`/`thanked`/`note`), channel, occurred_at, meta jsonb |
+| `goal_contacts` | goal_id, contact_id, relevance_label, relevance, state (`none`/`warmed`/`asked`/`replied`/`won`), outcome (pack outcome, e.g. `referred`), last_suggested_at, last_sent_at, thanked_at, dismissed_at |
+| `suggestions` | user_id, goal_id (nullable for stay-in-touch), contact_id, for_date, score, reasons jsonb, stage (pack stage id: `warm_up`/`ask`/`follow_up`/`thank`), status (`pending`/`opened`/`sent`/`snoozed`/`dismissed`/`expired`), snoozed_until |
+| `drafts` | suggestion_id, user_id, contact_id, stage, tone, language, provider, model, prompt_version, text, final_text, regenerations, factcheck jsonb, sent_channel, send_opened_at (daily cap), sent_at |
+| `interactions` | user_id, contact_id, goal_id, type (`met`/`sent`/`replied`/`no_reply`/`note`/`outcome`), stage (for `sent`), outcome (for `outcome`), channel, occurred_at, meta jsonb |
 | `style_profiles` | user_id, samples text[] (max 10), summary text, updated_at |
 | `triggers` | user_id, contact_id, type (`birthday`/`festival`/`met_recently`/`job_change`), date |
 | `calendar_events` | date, name, kind (`festival`), active — admin-seeded (e.g., Diwali 8 Nov 2026, New Year) |
 | `imports` | user_id, source (`picker`/`vcard`/`linkedin_csv`/`manual`), status, counts jsonb, errors jsonb |
-| `captures` | user_id, source (`app_audio`/`app_text`/`wa_audio`/`wa_text`), storage_path / wa_media_id, language, transcript, extracted jsonb, status, audio_deleted_at |
+| `captures` | user_id, source (`app_audio`/`app_text`/`wa_audio`/`wa_text`), storage_path / wa_media_id, language, transcript (cleared on confirm/discard or after 24 h), extracted jsonb, status, audio_deleted_at |
 | `wa_link_codes` | user_id, code (6 chars), expires_at, used_at |
 | `wa_messages` | user_id, direction, kind (`template`/`text`/`interactive`/`audio`), template_name, wa_message_id, status, created_at — **no message bodies stored** |
 | `entitlements` | user_id, product (`sprint`/`pro`), starts_at, ends_at, drafts_used, source_payment_id |
-| `payments` | user_id, provider, product, amount_paise, currency, status, provider_order_id, provider_payment_id, raw_event_id |
+| `payments` | user_id (nullable, `on delete set null`: kept anonymised for tax), provider, product, amount_paise, currency, status, provider_order_id, provider_payment_id, raw_event_id |
 | `consents` | user_id, type (`contacts`/`voice`/`whatsapp`/`analytics`), version, granted_at, withdrawn_at |
 | `events` | user_id, name, props jsonb, occurred_at (analytics) |
 | `ai_calls` | user_id, task, provider, model, prompt_version, tokens_in, tokens_out, audio_seconds, cost_inr, latency_ms, ok, created_at |
@@ -131,12 +132,14 @@ Full DDL draft: `docs/schema-draft.sql` (convert into the first Supabase migrati
 | `audit_log` | user_id, action (`export`/`delete_account`/`audio_deleted`/`consent_change`), meta, created_at |
 
 Rules:
-- Every user-owned table has `user_id uuid not null references auth.users on delete cascade` and an index on `user_id`.
-- Soft delete only for `contacts` (`deleted_at`), purged after 30 days; everything else hard-deletes.
+- Every user-owned table has `user_id uuid not null references auth.users on delete cascade` and an index on `user_id` (exception: `payments`, see above).
+- Soft delete only for `contacts` (`deleted_at`), purged after 30 days; deleting a contact hard-deletes its memories, interactions, suggestions, goal_contacts, triggers and drafts immediately. Everything else hard-deletes.
+- Stages, states and outcomes are text validated against the pack config (ADR-0008); only generic values have DB checks.
 - Money in paise (integers). Times in `timestamptz` (UTC); dates for a user's local day are computed with their timezone.
 
 ### 5.1 Row-level security
 
+- Supabase Data API **off** (local `config.toml` and hosted dashboard); `anon` has no privileges on any table; `authenticated` can only write user-editable `profiles` columns (ADR-0007).
 - RLS **enabled on every table**. Policy pattern: `user_id = auth.uid()` for select/insert/update/delete. `packs` and `calendar_events` are read-only to authenticated users.
 - The API executes per-request queries as the user: inside a transaction it runs `set local role authenticated; select set_config('request.jwt.claims', '<claims json>', true);` so RLS applies (helper: `core/db.py::user_session(claims)`).
 - Workers and webhooks use a service connection (bypasses RLS) and **must** scope every query by `user_id` explicitly. Code review rule: no unscoped queries on user tables.
@@ -165,9 +168,9 @@ Base path `/v1`. JSON. Auth: `Authorization: Bearer <Supabase access token>`, ve
 | `POST /suggestions/{id}/snooze` · `/dismiss` | | FR-TODAY-2 |
 | `POST /suggestions/{id}/draft` | Generate draft for a Today suggestion (checks entitlement/limits) | FR-DRAFT-1 |
 | `POST /contacts/{id}/draft` | Body `{stage}`; draft from the Person page (no suggestion) | FR-PER-2 |
-| `POST /drafts/{id}/regenerate` | Body `{tone}` | FR-DRAFT-2 |
+| `POST /drafts/{id}/regenerate` | Body `{tone}`. Not a new draft for limits; free users max 3 per draft | FR-DRAFT-2 |
 | `PATCH /drafts/{id}` | Save edited `final_text` | FR-DRAFT-6 |
-| `POST /drafts/{id}/send` | Body `{channel: "whatsapp"\|"linkedin"}` → checks send cap, returns `{open_url, copy_text}`; records `sent` only after confirm | FR-SEND-* |
+| `POST /drafts/{id}/send` | Body `{channel: "whatsapp"\|"linkedin"}` → checks send cap, returns `{open_url, copy_text}`; the first call per draft sets `send_opened_at` and counts toward the daily cap; records `sent` only after confirm | FR-SEND-* |
 | `POST /interactions` | Log `sent`/`replied`/`no_reply`/`referred`/`interview` | FR-SEND-4, FR-REP-* |
 | `GET /replies/pending` | People messaged 2–5 days ago without a logged outcome | FR-REP-1 |
 | `GET /progress` | North star, funnel, by-company | FR-PROG-1 |
@@ -224,12 +227,12 @@ score = R × W × T × E × (1 − F)
 | W warmth | `clamp(0.2 + 0.15·min(n_interactions, 4) + recency, 0.2, 1.0)`; recency = 0.2 if last interaction < 90 days, 0.1 if < 365 days, else 0. `met` and `replied` count double |
 | T timing | Product of applicable boosts: birthday today 1.5, festival today 1.5, met in last 7 days 1.3, job change in last 30 days 1.2; else 1.0 |
 | E ease | 1.0 has phone; 0.8 LinkedIn URL only; 0.5 neither |
-| F fatigue | 1.0 if asked in last 30 days, or snoozed (until date), or dismissed for this goal; 0.5 if any message in last 7 days; else 0 |
+| F fatigue | 1.0 if asked in last 30 days, or snoozed (until date), or dismissed for this goal; 0.5 if any message in last 7 days; else 0. Thank-you and dated follow-up suggestions skip fatigue |
 
 Selection: sort by score desc, take up to `daily_list.default` with ≤ `max_per_company` per normalised company, skip score 0. Add dated follow-ups from captures first (they always appear on their date). Reasons: top 1–3 human-readable strings from contributing factors (e.g., "Works at Razorpay", "Birthday today", "Met 3 days ago", "Replied to you in May").
 
-**Stage machine per (goal, contact):** `none → warm_up (sent) → asked → replied → referred/interview → thanked`.
-- Suggest `warm_up` when stage is `none` and W < 0.6. Suggest `ask` when stage is `warmed` and ≥ 3 days since warm-up, or stage is `none` and W ≥ 0.6. Suggest `thank` after `referred`/`interview`. A `no_reply` after ask → fatigue 30 days, then one gentle follow-up (stage `follow_up`) allowed.
+**State machine per (goal, contact)** (ADR-0008): state `none → warmed → asked → replied → won`; `won` carries the pack outcome (`referred`/`interview`); a sent thank-you sets `thanked_at`.
+- Suggest stage `warm_up` when state is `none` and W < 0.6. Suggest `ask` when state is `warmed` and ≥ 3 days since warm-up, or state is `none` and W ≥ 0.6. Suggest `thank` when state is `won` and `thanked_at` is null. A `no_reply` after ask → fatigue 30 days, then one gentle follow-up (stage `follow_up`) allowed.
 
 Nightly job runs at 02:00 in each user's timezone (batch by timezone) and writes `suggestions` for that local date; marks yesterday's unsent suggestions `expired`. Free users: ranking runs weekly (Sunday night) and the list persists all week.
 
@@ -252,20 +255,21 @@ class AIRouter:
 ```
 
 - Every call: timeout (LLM 20 s, STT 60 s), 1 retry on 5xx/timeout with jitter, then fallback provider, structured output validated with Pydantic (one repair retry on invalid JSON), cost + latency logged to `ai_calls`.
-- `AI_MODE=fake` → `FakeProvider` returning fixtures from `tests/fixtures/ai/`.
+- `AI_MODE=fake` → `FakeProvider` returning fixtures from `app/ai/fake/fixtures/`.
+- Every prompt input passes through the PII scrubber (phones, emails; same patterns as the log redactor) before it reaches a provider. Tested.
 - Prompts are versioned files in `app/ai/prompts/<name>.v<N>.md`; `prompt_version` stored on outputs. Text of v1 prompts: `docs/05-AI-PROMPTS-AND-EVALS.md`.
 
 ### 8.2 Model routing
 
 | Task | Primary | Fallback | Notes |
 |---|---|---|---|
-| extract_people, label_relevance, factcheck, summarise_style | Groq `openai/gpt-oss-20b` | Claude Haiku 5.5 | JSON output; batch where possible |
-| draft (free, or paid warm-up/thank) | Groq `openai/gpt-oss-120b` | Claude Haiku 5.5 | |
-| draft (paid, ask stage to senior contact\*, or paid "Another version" 2nd+ time) | Claude Sonnet 5.5 | Groq gpt-oss-120b | \*title matches senior/lead/manager/director/head/VP/founder/principal |
-| transcribe (English or unknown) | Groq `whisper-large-v3-turbo` | OpenAI gpt-4o-mini-transcribe | |
-| transcribe (hi, mr, Hinglish hint) | Sarvam STT | Groq Whisper | Final routing decided by Sprint 5 test |
+| extract_people, label_relevance, factcheck, summarise_style | Groq `openai/gpt-oss-20b` (`MODEL_SMALL`) | Groq `openai/gpt-oss-120b` (`MODEL_FALLBACK_SMALL`) | JSON output; batch where possible |
+| draft (all tiers and stages) | Groq `openai/gpt-oss-120b` (`MODEL_DRAFT`) | Groq `openai/gpt-oss-20b` (`MODEL_FALLBACK_DRAFT`) | Paid vs free differs in limits, not models |
+| transcribe (all languages) | Groq `whisper-large-v3-turbo` (`MODEL_STT`) | Groq `whisper-large-v3` (`MODEL_STT_FALLBACK`) | Hindi/Marathi/Hinglish quality checked in Sprint 5 |
 
-Model IDs come from env (`MODEL_*`). Provider data rule: only Groq, Anthropic, Sarvam, OpenAI (fallback STT) receive user data; no DeepSeek first-party API; send only fields the task needs (no phone numbers or emails in prompts).
+Groq only (ADR-0010): "fallback" is a second Groq model, so a full Groq outage degrades AI features (drafts show a retry message). Adding another approved provider later is config + one provider file.
+
+Model IDs come from env (`MODEL_*`). Provider data rule: in v1 only Groq receives user data (approved list: Groq, Anthropic, Sarvam, OpenAI STT); no DeepSeek first-party API; send only fields the task needs (no phone numbers or emails in prompts).
 
 ### 8.3 Drafting pipeline
 
@@ -284,6 +288,7 @@ Model IDs come from env (`MODEL_*`). Provider data rule: only Groq, Anthropic, S
 5. Match each person: exact phone/email/LinkedIn; else rapidfuzz on name (+ company) ≥ 85 → "possible match".
 6. Save candidates to `captures.extracted`; status `ready`. **Delete audio** (Storage object) immediately after successful transcription; set `audio_deleted_at`; audit log.
 7. On confirm: create/merge contacts, add memories, `interactions(type='met')`, triggers/suggestion for follow-up date.
+8. On confirm or discard, clear `captures.transcript` (and candidate text in `extracted`). A cron sweep clears unconfirmed captures after 24 h; another deletes leftover audio older than 1 h.
 
 ## 9. WhatsApp integration
 
@@ -310,7 +315,7 @@ Keep template text factual so Meta classifies it as utility. No marketing templa
 - Products (server config): `sprint` ₹799 (79,900 paise) one-time, 60 days, fair-use 400 drafts; `pro_monthly` ₹299; `pro_yearly` ₹2,499. Prices GST-inclusive.
 - Flow: `POST /billing/orders` → Razorpay order (receipt = our payment id) → Checkout in web → client returns `razorpay_payment_id`, `razorpay_order_id`, `razorpay_signature` → API verifies HMAC-SHA256(`order_id|payment_id`, key secret) for UX only → **entitlement is granted only from the verified webhook** (`X-Razorpay-Signature` = HMAC-SHA256(raw body, webhook secret); events `payment.captured` / `order.paid`), idempotent by event id.
 - Pro (recurring) via Razorpay Subscriptions in Sprint 7 if time allows; otherwise P1 follow-up.
-- Free limits: 3 drafts / calendar month (user timezone). `billing/limits.py` is the single source of truth; every draft endpoint calls it.
+- Free limits: 3 drafts / calendar month (user timezone). Only the first generation of a draft counts; tone changes and "Another version" don't, but free users get at most 3 regenerations per draft (`FREE_REGENERATIONS_PER_DRAFT`). `billing/limits.py` is the single source of truth; every draft endpoint calls it.
 - Price test (P1): `profiles.price_cohort` assigned at signup; product price looked up by cohort.
 
 ## 11. Notifications
@@ -330,6 +335,7 @@ India's DPDP obligations on consent, notice and breach reporting apply from May 
 - Webhook signature verification (WhatsApp, Razorpay); rate limits on auth-adjacent and send endpoints.
 - Export: async job builds a zip (JSON per table + `contacts.csv`), stored 24 h behind a signed URL.
 - Delete account: async job deletes all user rows (cascade), Storage objects, push subscriptions, Supabase auth user; writes a minimal audit row (user id hash + timestamp) only.
+- Retention jobs (worker cron): purge soft-deleted contacts after 30 days, draft text after 180 days, `wa_messages` after 90 days, `events` and `ai_calls` after 13 months (Sprint 8); clear unconfirmed capture text after 24 h and leftover audio after 1 h (Sprint 5).
 - Breach runbook (`docs/06-PRIVACY-CHECKLIST.md`): report within 72 hours.
 - Open legal question: notice/basis for storing contacts' data — lawyer review before public launch.
 
@@ -359,7 +365,7 @@ Server-side `events` table via `analytics.track(user_id, name, props)`. Names (s
 | Unit | pytest, Vitest | engine (ranking, stages, triggers), imports (parsers, normalisers, dedupe), billing limits, AI output validators, UI components | CI, every PR |
 | Integration | pytest + local Supabase + Redis | API routes with RLS (user A cannot read user B), workers, webhooks with recorded fixtures and real signature checks | CI, every PR |
 | Contract | pytest | WhatsApp/Razorpay payload fixtures (inbound text, audio, button reply, status; payment.captured) | CI |
-| E2E | Playwright, Pixel 7 emulation | Onboarding, import, draft→send, capture→confirm, reply logging, upgrade (Razorpay test mode stub) | CI on main + before each sprint sign-off |
+| E2E | Playwright, Pixel 7 emulation | Onboarding, import, draft→send, capture→confirm, reply logging, upgrade (Razorpay test mode stub) | CI on every PR and main while the suite runs < 5 min (then main only); before each sprint sign-off |
 | Evals | `evals/` runner (manual / nightly) | Draft quality (factuality, length, ask rules, tone), extraction accuracy | Before changing prompts or models |
 | Manual | Real Android phone | Contact Picker, install, voice recording, wa.me opening, WhatsApp test number | Each sprint demo |
 
@@ -367,7 +373,7 @@ Coverage targets: `engine/`, `billing/`, `imports/` ≥ 90% lines; overall API �
 
 ## 16. Deployment and CI
 
-- GitHub Actions: lint + typecheck + unit + integration (services: postgres via Supabase CLI, redis) on PRs; E2E on `main`.
+- GitHub Actions: lint + typecheck + unit + integration (services: postgres via Supabase CLI, redis) + contract (generated OpenAPI client and seed in sync) + E2E on PRs and `main`.
 - Migrations: `supabase db push` in deploy pipeline; migrations are forward-only and reviewed.
 - Web: Vercel preview per PR; production on `main` tag. API/workers: container image, deploy on tag.
 - Feature flags: simple `feature_flags` env/JSON (`WA_BRIEFS_ENABLED`, `PRO_ENABLED`, `PRICE_TEST_ENABLED`).

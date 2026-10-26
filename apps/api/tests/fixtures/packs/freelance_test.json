@@ -1,0 +1,101 @@
+{
+  "id": "freelance_test",
+  "name": "Freelance (test only)",
+  "status": "active",
+  "sort_order": 99,
+  "duration_days": 90,
+  "goal_schema": {
+    "type": "object",
+    "required": [
+      "service"
+    ],
+    "properties": {
+      "service": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  },
+  "relevance": {
+    "deterministic": {
+      "company_match_threshold": 90,
+      "label": "past_client"
+    },
+    "llm_labels": [
+      "could_hire",
+      "can_introduce",
+      "not_relevant"
+    ],
+    "weights": {
+      "past_client": 1.0,
+      "could_hire": 0.7,
+      "can_introduce": 0.3,
+      "not_relevant": 0.1
+    }
+  },
+  "stages": [
+    {
+      "id": "check_in",
+      "label": "Check in",
+      "has_ask": false,
+      "step": 1,
+      "role": "reconnect"
+    },
+    {
+      "id": "pitch",
+      "label": "Pitch",
+      "has_ask": true,
+      "step": 2,
+      "role": "ask"
+    },
+    {
+      "id": "nudge",
+      "label": "Nudge",
+      "has_ask": false,
+      "step": 2,
+      "role": "follow_up",
+      "after_no_reply_days": 21
+    },
+    {
+      "id": "thank",
+      "label": "Thank",
+      "has_ask": false,
+      "step": 3,
+      "role": "thank"
+    }
+  ],
+  "outcomes": [
+    "proposal_requested",
+    "client_won"
+  ],
+  "success_metric": {
+    "outcome": "client_won",
+    "target_param": "clients_target"
+  },
+  "timing_boosts": {
+    "birthday": 1.5,
+    "festival": 1.5
+  },
+  "fatigue": {
+    "after_ask_days": 45,
+    "after_any_message_days": 7,
+    "any_message_factor": 0.5
+  },
+  "daily_list": {
+    "min": 2,
+    "max": 5,
+    "default": 3,
+    "max_per_company": 1
+  },
+  "reply_check_in": {
+    "from_days": 3,
+    "to_days": 7
+  },
+  "prompts": {
+    "relevance": "freelance_test.relevance.v1",
+    "draft": "freelance_test.draft.v1"
+  },
+  "copy": {
+    "picker_label": "Win clients"
+  }
+}

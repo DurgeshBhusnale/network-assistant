@@ -1,0 +1,146 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppShell > matches the snapshot 1`] = `
+<div>
+  <main
+    class="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col pb-[calc(var(--nav-height)+env(safe-area-inset-bottom)+16px)]"
+  >
+    <p>
+      Content
+    </p>
+  </main>
+  <nav
+    aria-label="Main"
+    class="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
+  >
+    <div
+      class="grid h-nav grid-cols-5 items-center"
+    >
+      <a
+        aria-current="page"
+        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline font-semibold text-primary"
+        href="/today"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M3 11 12 4l9 7v9H3z"
+          />
+        </svg>
+        Today
+      </a>
+      <a
+        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline text-muted"
+        href="/people"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <circle
+            cx="9"
+            cy="8"
+            r="4"
+          />
+          <path
+            d="M2 20c1-4 4-6 7-6s6 2 7 6M17 4a4 4 0 0 1 0 8M22 20c-.5-2.5-2-4.2-4-5"
+          />
+        </svg>
+        People
+      </a>
+      <a
+        aria-label="Capture by voice"
+        class="-mt-6 flex size-fab items-center justify-center justify-self-center rounded-pill bg-accent text-on-accent shadow-fab"
+        data-testid="capture-fab"
+        href="/capture"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+        >
+          <rect
+            height="11"
+            rx="3"
+            width="6"
+            x="9"
+            y="3"
+          />
+          <path
+            d="M5 11a7 7 0 0 0 14 0M12 18v3"
+          />
+        </svg>
+      </a>
+      <a
+        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline text-muted"
+        href="/progress"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M4 20V10M10 20V4M16 20v-7M22 20H2"
+          />
+        </svg>
+        Progress
+      </a>
+      <a
+        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline text-muted"
+        href="/replies"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6A8 8 0 1 1 21 12z"
+          />
+        </svg>
+        Replies
+      </a>
+    </div>
+  </nav>
+</div>
+`;

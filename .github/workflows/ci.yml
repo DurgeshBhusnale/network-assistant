@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  AI_MODE: fake
+  APP_ENV: test
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web lint
+      - run: pnpm --filter web format:check
+      - run: pnpm --filter web typecheck
+      - run: pnpm --filter web test
+      - run: pnpm --filter web build
+
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest -m "not integration"
+
+  contract:
+    name: generated files in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - working-directory: apps/api
+        run: |
+          uv sync --frozen
+          uv run python -m app.db_seed --check
+          uv run python -m app.openapi_export
+      - run: pnpm --filter web gen-api
+      - name: Fail if the OpenAPI client is stale (run `pnpm gen-api`)
+        run: git diff --exit-code -- apps/web/lib/api
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start a throwaway Supabase (applies migrations + seed; never the cloud project)
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
+      - working-directory: apps/api
+        run: uv sync --frozen
+      - name: Integration tests
+        working-directory: apps/api
+        run: |
+          eval "$(supabase status -o env | sed -n \
+            -e 's/^ANON_KEY=/export SUPABASE_ANON_KEY=/p' \
+            -e 's/^SERVICE_ROLE_KEY=/export SUPABASE_SERVICE_ROLE_KEY=/p' \
+            -e 's/^API_URL=/export SUPABASE_URL=/p')"
+          uv run pytest -m integration
+
+  e2e:
+    # Signed-in suite against a throwaway local Supabase + the real API (AI_MODE=fake).
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
+      - run: pnpm install --frozen-lockfile
+      - working-directory: apps/api
+        run: uv sync --frozen
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - name: E2E (Pixel 7)
+        run: |
+          eval "$(supabase status -o env | sed -n \
+            -e 's/^ANON_KEY=/export SUPABASE_ANON_KEY=/p' \
+            -e 's/^SERVICE_ROLE_KEY=/export SUPABASE_SERVICE_ROLE_KEY=/p' \
+            -e 's/^API_URL=/export SUPABASE_URL=/p' \
+            -e 's/^JWT_SECRET=/export SUPABASE_JWT_SECRET=/p')"
+          export NEXT_PUBLIC_SUPABASE_URL="$SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          pnpm --filter web e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7

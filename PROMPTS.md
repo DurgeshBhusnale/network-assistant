@@ -20,7 +20,7 @@ Do not write any code yet. Reply with:
 2. The product rules you must never break (from CLAUDE.md), restated briefly.
 3. Any contradictions, gaps or ambiguities you found across the docs, with a suggested resolution for each.
 4. Questions you need me to answer before Sprint 0 (keep it to what truly blocks you).
-5. A detailed plan for Sprint 0: files and folders you will create, tools and versions you will choose, Makefile targets, CI jobs, and the tests you will write. Mark anything you're unsure about.
+5. A detailed plan for Sprint 0: files and folders you will create, tools and versions you will choose, dev commands (package scripts), CI jobs, and the tests you will write. Mark anything you're unsure about.
 ```
 
 ## Prompt 1 — Sprint 0: Foundations
@@ -32,9 +32,9 @@ Requirements:
 - Monorepo layout exactly as tech spec §3. Use pnpm for web, uv for api.
 - Convert docs/schema-draft.sql into the first Supabase migration; create supabase/seed.sql that loads packs/career_sprint.json, the three coming-soon packs and the calendar events.
 - Implement every item in the Sprint 0 scope list, including the RLS-everywhere test, log redaction, FakeProvider with AI_MODE=fake, design tokens wired into Tailwind, base components, app shell with bottom nav per design/screens/Main.dc.html, PWA manifest + service worker, CI.
-- Keep CLAUDE.md "Commands" section accurate for the Makefile you create.
+- Keep CLAUDE.md "Commands" section accurate for the package scripts you create.
 - Work in small commits on branch sprint-0/foundations.
-- When done: run make check, make test and make test-int, then update docs/PROGRESS.md (stories ticked, dependencies added with reasons, decisions, anything I must test on my phone).
+- When done: run pnpm check, pnpm test and pnpm test:int, then update docs/PROGRESS.md (stories ticked, dependencies added with reasons, decisions, anything I must test on my phone).
 Stop and ask me if a requirement is unclear rather than guessing product behaviour.
 ```
 
@@ -43,7 +43,7 @@ Stop and ask me if a requirement is unclear rather than guessing product behavio
 ```
 Verify Sprint 0 against docs/03-SPRINT-PLAN.md:
 1. Go through every acceptance criterion and every listed test for this sprint. For each, show the evidence (test name and result, or the exact manual step I should do).
-2. Run make check, make test, make test-int (and make e2e if the sprint has E2E tests). Paste the summary.
+2. Run pnpm check, pnpm test, pnpm test:int (and pnpm e2e if the sprint has E2E tests). Paste the summary.
 3. Check the Global Definition of Done items.
 4. List anything incomplete, any shortcuts you took, and any deviations from the docs (each deviation needs an ADR or a PROGRESS.md note).
 5. Give me a short manual test script for my Android phone.

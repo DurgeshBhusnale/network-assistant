@@ -18,7 +18,7 @@ India's Digital Personal Data Protection (DPDP) Rules were notified on 13–14 N
 
 ## Engineering checklist
 
-- [ ] Itemised notice at signup: what data, why, which processors (Supabase, Groq, Anthropic, Sarvam, Meta WhatsApp, Razorpay, Resend, Sentry), where (India for the database), rights, grievance contact.
+- [ ] Itemised notice at signup: what data, why, which processors (Supabase, Groq, Meta WhatsApp, Razorpay, Resend, Sentry), where (India for the database), rights, grievance contact.
 - [ ] Separate consents (contacts, voice, WhatsApp, analytics), versioned, withdrawable; features check consent at call time.
 - [ ] Data minimisation in AI prompts: no phones/emails; only fields needed.
 - [ ] Database and storage in Supabase `ap-south-1`; backups enabled.
