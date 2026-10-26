@@ -111,6 +111,9 @@ async def api_app() -> AsyncIterator[FastAPI]:
             "wa_briefs_enabled": True,
             "unsubscribe_secret": SecretStr(UNSUBSCRIBE_SECRET),
             "admin_user_ids": "",
+            # Leave pooler room for a running `pnpm dev` (see Settings.db_pool_size).
+            "db_pool_size": 3,
+            "db_max_overflow": 0,
         }
     )
     app = create_app(settings)

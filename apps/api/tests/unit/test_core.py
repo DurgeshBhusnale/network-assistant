@@ -73,3 +73,21 @@ async def test_db_warmup_failure_does_not_block_startup(caplog: pytest.LogCaptur
         await engine.dispose()
 
     assert "db_warmup_failed" in caplog.messages
+
+
+def test_connection_budget_fits_the_dev_pooler() -> None:
+    """The dev session pooler allows 15 clients across `pnpm dev` (API + worker) and a test run."""
+    from app.core.db import create_engine
+
+    s = Settings(database_url="postgresql://u:p@127.0.0.1:1/postgres")
+    api = create_engine(s)
+    worker = create_engine(s, worker=True)
+    try:
+        api_max = api.pool.size() + api.pool._max_overflow  # type: ignore[attr-defined]
+        worker_max = worker.pool.size() + worker.pool._max_overflow  # type: ignore[attr-defined]
+    finally:
+        api.sync_engine.dispose()
+        worker.sync_engine.dispose()
+    test_run = 3  # E2E / integration API (DB_POOL_SIZE=3, DB_MAX_OVERFLOW=0)
+    assert (api_max, worker_max) == (6, 3)
+    assert api_max + worker_max + test_run <= 15

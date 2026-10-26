@@ -17,7 +17,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     settings = get_settings()
     setup_logging(settings.log_level)
     ctx["settings"] = settings
-    ctx["engine"] = create_engine(settings)
+    ctx["engine"] = create_engine(settings, worker=True)
     ctx["ai_router"] = build_router(settings, ctx["engine"])
     ctx["wa"] = WhatsAppClient(settings, ctx["engine"])
 

@@ -29,14 +29,14 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def create_engine(settings: Settings) -> AsyncEngine:
+def create_engine(settings: Settings, *, worker: bool = False) -> AsyncEngine:
     # No pre-ping: it costs a round trip per checkout (slow to a remote DB). Recycle instead.
     # pool_timeout: a request starved of connections fails fast instead of hanging.
     return create_async_engine(
         settings.database_url,
         pool_recycle=300,
-        pool_size=settings.db_pool_size,
-        max_overflow=settings.db_max_overflow,
+        pool_size=settings.worker_db_pool_size if worker else settings.db_pool_size,
+        max_overflow=settings.worker_db_max_overflow if worker else settings.db_max_overflow,
         pool_timeout=settings.db_pool_timeout_seconds,
     )
 
