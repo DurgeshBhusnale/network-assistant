@@ -3,10 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { BottomBar } from "@/components/ui/BottomBar";
 import { Button } from "@/components/ui/Button";
 import { ChipInput } from "@/components/ui/ChipInput";
 import { cn } from "@/components/ui/cn";
 import { FullScreenLoader } from "@/components/ui/FullScreenLoader";
+import { CheckIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/Input";
 import { ProgressSteps } from "@/components/ui/ProgressSteps";
 import { Stepper } from "@/components/ui/Stepper";
@@ -78,9 +80,9 @@ export default function GoalPage() {
   return (
     <>
       <ProgressSteps step={1} />
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{t.title}</h1>
+      <h1 className="m-0 -mt-2 title">{t.title}</h1>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-3">
         {packs.data?.map((pack) => {
           const isActive = pack.status === "active";
           const isSelected = pack.id === selected?.id;
@@ -92,21 +94,33 @@ export default function GoalPage() {
               aria-pressed={isActive ? isSelected : undefined}
               onClick={() => setPackId(pack.id)}
               className={cn(
-                "flex min-h-[72px] flex-col items-start gap-1 rounded-[12px] p-3 text-left",
+                "flex h-24 flex-col justify-between rounded-tile p-4 text-left",
                 isSelected
-                  ? "border-2 border-primary bg-primary-soft text-ink"
-                  : "border border-line bg-surface text-muted",
+                  ? "bg-selected text-ink ring-selected"
+                  : "bg-surface text-muted hairline",
                 !isActive && "cursor-not-allowed",
               )}
             >
-              <span className="text-[14px] font-semibold">{pack.picker_label}</span>
-              <span className="text-caption">{isActive ? pack.name : copy.common.comingSoon}</span>
+              <span className="flex w-full items-start justify-between gap-2">
+                <span className="text-[16px] leading-5 font-semibold">{pack.picker_label}</span>
+                {isSelected && (
+                  <span
+                    aria-hidden="true"
+                    className="flex size-[22px] shrink-0 items-center justify-center rounded-pill bg-grad text-on-primary"
+                  >
+                    <CheckIcon size={13} strokeWidth={3} />
+                  </span>
+                )}
+              </span>
+              <span className={cn("text-caption", isActive ? "text-ink-2" : "font-semibold")}>
+                {isActive ? pack.name : copy.common.comingSoon}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <Input
           label={t.roleLabel}
           placeholder={t.rolePlaceholder}
@@ -123,24 +137,22 @@ export default function GoalPage() {
           removeLabel={t.removeChip}
           hint={t.companiesHint}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Stepper
-            label={t.referralsLabel}
-            value={target ?? bounds.default}
-            min={bounds.min}
-            max={bounds.max}
-            onChange={setTarget}
-          />
-          <Input
-            label={t.whereLabel}
-            placeholder={t.wherePlaceholder}
-            value={where}
-            onChange={(e) => setWhere(e.target.value)}
-          />
-        </div>
+        <Stepper
+          label={t.referralsLabel}
+          value={target ?? bounds.default}
+          min={bounds.min}
+          max={bounds.max}
+          onChange={setTarget}
+        />
+        <Input
+          label={t.whereLabel}
+          placeholder={t.wherePlaceholder}
+          value={where}
+          onChange={(e) => setWhere(e.target.value)}
+        />
 
         {showLinks ? (
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <label htmlFor="job-links" className="text-small font-semibold">
               {t.jobLinksLabel}
             </label>
@@ -150,33 +162,35 @@ export default function GoalPage() {
               value={links}
               onChange={(e) => setLinks(e.target.value)}
               aria-describedby="job-links-hint"
-              className="rounded-button border border-line-strong bg-surface p-3 text-body"
+              className="rounded-button bg-surface p-4 text-[16px] hairline-strong focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
             />
             <p id="job-links-hint" className="text-caption text-muted">
               {t.jobLinksHint}
             </p>
           </div>
         ) : (
-          <Button variant="ghost" className="self-start px-0" onClick={() => setShowLinks(true)}>
+          <Button variant="ghost" className="self-start" onClick={() => setShowLinks(true)}>
             {t.jobLinksToggle}
           </Button>
         )}
       </div>
 
       {error && (
-        <p role="alert" className="text-small text-danger">
+        <p role="alert" className="m-0 text-small text-danger">
           {error}
         </p>
       )}
-      <Button
-        size="lg"
-        fullWidth
-        loading={create.isPending}
-        disabled={!selected || role.trim().length < 2 || companies.length === 0}
-        onClick={submit}
-      >
-        {copy.common.continue}
-      </Button>
+      <BottomBar variant="fade">
+        <Button
+          size="lg"
+          fullWidth
+          loading={create.isPending}
+          disabled={!selected || role.trim().length < 2 || companies.length === 0}
+          onClick={submit}
+        >
+          {copy.common.continue}
+        </Button>
+      </BottomBar>
     </>
   );
 }

@@ -68,8 +68,8 @@ export default function EditPersonPage() {
   const person = usePerson(id);
   return (
     <>
-      <PageHeader title={copy.contactForm.editTitle} />
-      <div className="px-screen-x pt-2">
+      <PageHeader title={copy.contactForm.editTitle} back={`/people/${id}`} showSettings={false} />
+      <div className="px-screen-x pt-5">
         {person.data ? (
           <EditForm person={person.data} />
         ) : (

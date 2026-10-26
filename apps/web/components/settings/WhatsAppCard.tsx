@@ -50,7 +50,7 @@ export function WhatsAppCard() {
   const s = status.data;
   return (
     <Card>
-      <h2 className="m-0 font-display text-h2 font-semibold">{t.whatsappTitle}</h2>
+      <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.whatsappTitle}</h2>
       <p className="text-small text-ink-2">{t.whatsappBody}</p>
       {s && !s.number_configured ? (
         <p className="text-small text-muted">{t.whatsappNotSetUp}</p>
@@ -65,7 +65,7 @@ export function WhatsAppCard() {
           </Button>
         </>
       ) : (
-        <Button variant="send" loading={link.isPending} onClick={() => void start()}>
+        <Button loading={link.isPending} onClick={() => void start()}>
           {t.whatsappLink}
         </Button>
       )}

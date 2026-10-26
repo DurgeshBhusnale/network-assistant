@@ -8,15 +8,15 @@ export type StageTone = "ask" | "nurture" | "thanks";
 
 const tones: Record<StageTone, string> = {
   ask: "bg-primary-soft text-primary",
-  nurture: "bg-success-soft text-success",
-  thanks: "bg-accent-soft text-accent-text",
+  nurture: "bg-badge-neutral text-badge-neutral-text",
+  thanks: "bg-[var(--color-info-from)] text-info-text",
 };
 
 export function StageBadge({ tone, label }: { tone: StageTone; label: string }) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 rounded-badge px-2 py-[3px] text-tiny font-semibold",
+        "inline-flex h-6 shrink-0 items-center rounded-badge px-2.5 text-label font-semibold",
         tones[tone],
       )}
     >

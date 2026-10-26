@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { BottomBar } from "@/components/ui/BottomBar";
 import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/api/client";
 import type { Draft } from "@/lib/api/hooks/drafts";
@@ -88,20 +89,26 @@ export function SendPanel({
   }
 
   if (draft.sent_at) {
-    return <p className="text-small font-semibold text-success">{t.sentDone}</p>;
+    return (
+      <BottomBar>
+        <p role="status" className="m-0 text-center text-body font-semibold text-success">
+          {t.sentDone}
+        </p>
+      </BottomBar>
+    );
   }
 
   const hasPhone = (person?.phones.length ?? 0) > 0;
   return (
-    <div className="flex flex-col gap-2">
+    <BottomBar>
       {asking && pending && (
         <div
           role="dialog"
           aria-label={t.sentQuestion(firstName)}
-          className="flex flex-col gap-2 rounded-card border border-primary bg-primary-soft p-card"
+          className="flex flex-col gap-3 rounded-card bg-tint p-4"
         >
           <span className="text-body font-semibold">{t.sentQuestion(firstName)}</span>
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <Button
               className="flex-1"
               loading={log.isPending}
@@ -109,14 +116,13 @@ export function SendPanel({
             >
               {t.yesSent}
             </Button>
-            <Button variant="secondary" onClick={() => setAsking(false)}>
+            <Button variant="secondary" className="flex-1" onClick={() => setAsking(false)}>
               {t.notYet}
             </Button>
           </div>
         </div>
       )}
       <Button
-        variant="send"
         size="lg"
         fullWidth
         disabled={!hasPhone}
@@ -125,29 +131,31 @@ export function SendPanel({
       >
         {t.whatsapp}
       </Button>
-      {!hasPhone && <p className="text-caption text-muted">{t.noPhone}</p>}
-      <Button
-        variant="secondary"
-        fullWidth
-        loading={send.isPending && send.variables === "linkedin"}
-        onClick={() => void open("linkedin")}
-      >
-        {t.linkedin}
-      </Button>
-      <Button
-        variant="ghost"
-        fullWidth
-        loading={log.isPending && !asking}
-        onClick={() => void confirm(pending ?? "other")}
-      >
-        {t.markSent}
-      </Button>
-      <p className="text-caption text-muted">{t.trust}</p>
+      <div className="flex gap-3">
+        <Button
+          variant="secondary"
+          className="flex-1 px-3"
+          loading={send.isPending && send.variables === "linkedin"}
+          onClick={() => void open("linkedin")}
+        >
+          {t.linkedin}
+        </Button>
+        <Button
+          variant="secondary"
+          className="flex-1 px-3"
+          loading={log.isPending && !asking}
+          onClick={() => void confirm(pending ?? "other")}
+        >
+          {t.markSent}
+        </Button>
+      </div>
+      {!hasPhone && <p className="m-0 text-center text-caption text-ink-2">{t.noPhone}</p>}
+      <p className="m-0 text-center text-caption leading-[18px] text-muted">{t.trust}</p>
       {note && (
-        <p role="status" className="text-small text-ink-2">
+        <p role="status" className="m-0 text-center text-small text-ink-2">
           {note}
         </p>
       )}
-    </div>
+    </BottomBar>
   );
 }

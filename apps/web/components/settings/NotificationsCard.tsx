@@ -69,7 +69,7 @@ export function NotificationsCard({ profile }: { profile: Profile }) {
 
   return (
     <Card>
-      <h2 className="m-0 font-display text-h2 font-semibold">{t.notificationsTitle}</h2>
+      <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.notificationsTitle}</h2>
       {supported ? (
         <CheckboxRow
           label={t.pushLabel}

@@ -7,9 +7,10 @@ import { useState } from "react";
 import { StagePicker } from "@/components/drafts/StagePicker";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { cn } from "@/components/ui/cn";
-import { MicIcon } from "@/components/ui/icons";
+import { IconButton } from "@/components/ui/IconButton";
+import { BackIcon, ChatIcon, CloseIcon, EditIcon, MicIcon, MoreIcon } from "@/components/ui/icons";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Sheet } from "@/components/ui/Sheet";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -23,12 +24,18 @@ import {
 import { copy } from "@/lib/copy/en";
 
 const t = copy.person;
-const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" });
+const dateFmt = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 
 function historyLabel(item: HistoryItem): string {
   switch (item.kind) {
     case "added":
-      return t.history.added((item.sources ?? []).map((s) => t.sources[s]).join(", ") || "import");
+      return t.history.added(
+        (item.sources ?? []).map((s) => t.sources[s]).join(", ") || "from an import",
+      );
     case "sent":
       return t.history.sent(item.channel ?? null);
     case "outcome":
@@ -43,33 +50,40 @@ function historyLabel(item: HistoryItem): string {
   }
 }
 
-function ActionTile({
+const DOT: Record<string, string> = {
+  replied: "bg-grad-to",
+  outcome: "bg-grad-to",
+  sent: "bg-grad-from",
+  met: "bg-grad-from",
+};
+
+function QuickAction({
   label,
   onClick,
-  disabled,
-  hint,
+  primary = false,
   children,
 }: {
   label: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  hint?: string;
+  onClick: () => void;
+  primary?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      title={hint}
-      className={cn(
-        "flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-card border border-line bg-surface px-2 text-small font-semibold",
-        disabled ? "cursor-not-allowed text-muted" : "text-primary",
-      )}
+      className="flex w-24 flex-col items-center gap-2.5 bg-transparent text-caption font-semibold text-ink"
     >
-      {children}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-14 items-center justify-center rounded-pill",
+          primary ? "bg-grad text-on-primary shadow-cta" : "bg-surface text-ink hairline-strong",
+        )}
+      >
+        {children}
+      </span>
       {label}
-      {hint && <span className="sr-only">{hint}</span>}
     </button>
   );
 }
@@ -99,53 +113,31 @@ function PersonView({ person }: { person: Person }) {
   }
 
   return (
-    <div className="flex flex-col gap-gap-cards px-screen-x pt-4">
+    <div className="flex flex-col gap-8 px-screen-x pt-6">
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          aria-label={t.back}
-          onClick={() => router.back()}
-          className="inline-flex size-tap items-center justify-center rounded-pill border border-line bg-surface"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
+        <IconButton label={t.back} onClick={() => router.back()}>
+          <BackIcon />
+        </IconButton>
         <div className="relative">
-          <button
-            type="button"
-            aria-label={t.moreOptions}
+          <IconButton
+            label={t.moreOptions}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
-            className="inline-flex size-tap items-center justify-center rounded-pill border border-line bg-surface"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <circle cx="5" cy="12" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="19" cy="12" r="2" />
-            </svg>
-          </button>
+            <MoreIcon />
+          </IconButton>
           {menuOpen && (
-            <div className="absolute right-0 z-10 mt-1 flex w-48 flex-col rounded-card border border-line bg-surface p-1 shadow-fab">
+            <div className="absolute right-0 z-10 mt-2 flex w-52 flex-col rounded-button bg-surface p-1.5 shadow-panel">
               <Link
                 href={`/people/${person.id}/edit`}
-                className="flex min-h-tap items-center rounded-button px-3 text-body text-ink no-underline"
+                className="flex min-h-tap items-center rounded-[12px] px-3 text-body text-ink no-underline hover:bg-surface-2 hover:text-ink"
               >
                 {t.edit}
               </Link>
               <button
                 type="button"
                 onClick={remove}
-                className="flex min-h-tap items-center rounded-button px-3 text-left text-body text-danger"
+                className="flex min-h-tap items-center rounded-[12px] px-3 text-left text-body text-danger hover:bg-danger-soft"
               >
                 {t.delete}
               </button>
@@ -154,73 +146,57 @@ function PersonView({ person }: { person: Person }) {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-1 text-center">
-        <Avatar name={person.full_name} size="lg" />
-        <h1 className="m-0 mt-2 font-display text-[24px] font-bold">{person.full_name}</h1>
-        {meta && <p className="text-small text-ink-2">{meta}</p>}
-        {person.how_known && <p className="text-small text-muted">{person.how_known}</p>}
+      <div className="-mt-2 flex flex-col items-center text-center">
+        <Avatar name={person.full_name} size="hero" />
+        <h1 className="m-0 mt-5 title">{person.full_name}</h1>
+        {meta && <p className="m-0 mt-1 text-body leading-[22px] text-muted">{meta}</p>}
+        {person.how_known && (
+          <span className="mt-4 inline-flex min-h-8 items-center rounded-pill bg-surface px-3.5 text-caption text-ink-2 hairline">
+            {person.how_known}
+          </span>
+        )}
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
-        <ActionTile label={t.draft} onClick={() => setStageOpen(true)}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <path d="M4 20h4L19 9l-4-4L4 16v4z" />
-          </svg>
-        </ActionTile>
-        <ActionTile label={t.addNote} onClick={() => setNoteOpen(true)}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </ActionTile>
-        <ActionTile
+      <div className="flex justify-between px-2">
+        <QuickAction primary label={t.draft} onClick={() => setStageOpen(true)}>
+          <ChatIcon size={24} />
+        </QuickAction>
+        <QuickAction label={t.addNote} onClick={() => setNoteOpen(true)}>
+          <EditIcon size={24} />
+        </QuickAction>
+        <QuickAction
           label={t.voiceMemory}
           onClick={() => router.push(`/capture?contact=${person.id}`)}
         >
-          <MicIcon size={20} />
-        </ActionTile>
+          <MicIcon size={24} />
+        </QuickAction>
       </div>
 
       {person.next_step && (
-        <div className="flex flex-col gap-1 rounded-card bg-accent-soft p-card text-accent-text">
-          <span className="text-caption font-semibold tracking-[0.06em] uppercase">
+        <section className="flex flex-col gap-2 rounded-card bg-tint p-card">
+          <SectionLabel as="span" tone="accent">
             {t.nextStep}
-          </span>
-          <span className="text-body font-semibold">
+          </SectionLabel>
+          <span className="text-[18px] leading-6 font-semibold tracking-[-0.01em]">
             {person.next_step.stage_label ?? t.nextStepPending}
           </span>
-          <span className="text-small">{person.next_step.goal_label}</span>
-        </div>
+          <span className="text-small leading-[21px] text-ink-2">
+            {person.next_step.goal_label}
+          </span>
+        </section>
       )}
 
-      <Card>
-        <h2 className="m-0 font-display text-h2 font-semibold">{t.rememberTitle}</h2>
+      <section className="flex flex-col">
+        <SectionLabel className="mb-1">{t.rememberTitle}</SectionLabel>
         {person.memories.length === 0 ? (
-          <p className="text-small text-muted">{t.rememberEmpty}</p>
+          <p className="m-0 py-4 text-body text-muted">{t.rememberEmpty}</p>
         ) : (
-          <ul className="m-0 flex list-none flex-col gap-3 p-0">
+          <ul className="m-0 flex list-none flex-col p-0">
             {person.memories.map((m) => (
-              <li key={m.id} className="flex items-start justify-between gap-2">
-                <span className="flex flex-col">
-                  <span className="text-body">{m.text}</span>
-                  <span className="text-caption text-muted">
+              <li key={m.id} className="flex items-start gap-2 border-b border-line py-4">
+                <span className="flex flex-1 flex-col">
+                  <span className="text-body leading-[22px]">{m.text}</span>
+                  <span className="mt-1 text-caption text-muted">
                     {t.memorySource[m.source]} · {dateFmt.format(new Date(m.created_at))}
                   </span>
                 </span>
@@ -228,40 +204,42 @@ function PersonView({ person }: { person: Person }) {
                   type="button"
                   aria-label={t.deleteNote}
                   onClick={() => deleteMemory.mutate(m.id)}
-                  className="inline-flex size-tap shrink-0 items-center justify-center text-muted"
+                  className="-mt-2 -mr-2 inline-flex size-tap shrink-0 items-center justify-center text-muted hover:text-danger"
                 >
-                  ×
+                  <CloseIcon size={18} />
                 </button>
               </li>
             ))}
           </ul>
         )}
-      </Card>
+      </section>
 
-      <Card>
-        <h2 className="m-0 font-display text-h2 font-semibold">{t.historyTitle}</h2>
-        <ol className="m-0 flex list-none flex-col gap-3 p-0">
+      <section className="flex flex-col">
+        <SectionLabel className="mb-4">{t.historyTitle}</SectionLabel>
+        <ol className="m-0 flex list-none flex-col p-0">
           {person.history.map((h, i) => (
-            <li key={`${h.kind}-${h.occurred_at}-${i}`} className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "size-2 shrink-0 rounded-pill",
-                  h.kind === "replied" || h.kind === "outcome"
-                    ? "bg-success"
-                    : h.kind === "sent"
-                      ? "bg-primary"
-                      : "bg-dot-neutral",
+            <li key={`${h.kind}-${h.occurred_at}-${i}`} className="flex min-h-[60px] gap-4">
+              <span aria-hidden="true" className="flex w-3 flex-col items-center">
+                <span
+                  className={cn(
+                    "mt-[5px] size-2.5 shrink-0 rounded-pill",
+                    DOT[h.kind] ?? "bg-line-accent",
+                  )}
+                />
+                {i < person.history.length - 1 && (
+                  <span className="mt-1 w-[1.5px] flex-1 bg-line-soft" />
                 )}
-              />
-              <span className="flex-1 text-body">{historyLabel(h)}</span>
-              <span className="text-caption text-muted">
-                {dateFmt.format(new Date(h.occurred_at))}
+              </span>
+              <span className="flex flex-col pb-4">
+                <span className="text-body leading-[22px] font-semibold">{historyLabel(h)}</span>
+                <span className="text-caption leading-[18px] text-muted">
+                  {dateFmt.format(new Date(h.occurred_at))}
+                </span>
               </span>
             </li>
           ))}
         </ol>
-      </Card>
+      </section>
 
       <StagePicker contactId={person.id} open={stageOpen} onClose={() => setStageOpen(false)} />
 
@@ -276,10 +254,10 @@ function PersonView({ person }: { person: Person }) {
           value={note}
           placeholder={t.notePlaceholder}
           onChange={(e) => setNote(e.target.value)}
-          className="rounded-button border border-line-strong bg-surface p-3 text-body"
+          className="rounded-button bg-surface p-4 text-[16px] hairline-strong placeholder:text-muted focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
         />
         {addMemory.error && (
-          <p role="alert" className="text-small text-danger">
+          <p role="alert" className="m-0 text-small text-danger">
             {addMemory.error instanceof ApiError
               ? addMemory.error.message
               : copy.common.genericError}
@@ -313,7 +291,7 @@ export default function PersonPage() {
   if (!person.data) {
     return (
       <div className="flex flex-col gap-2 px-screen-x pt-6">
-        <p className="text-body">{t.notFound}</p>
+        <h1 className="m-0 title">{t.notFound}</h1>
         <Link href="/people" className="font-semibold">
           {copy.people.title}
         </Link>

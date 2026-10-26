@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ImportPanel } from "@/components/people/ImportPanel";
+import { BottomBar } from "@/components/ui/BottomBar";
 import { Button } from "@/components/ui/Button";
 import { ProgressSteps } from "@/components/ui/ProgressSteps";
 import { useUpdateMe } from "@/lib/api/hooks/account";
@@ -22,13 +23,22 @@ export default function ImportStepPage() {
   return (
     <>
       <ProgressSteps step={2} />
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">
-        {copy.importFlow.title}
-      </h1>
+      <div className="-mt-1">
+        <h1 className="m-0 title">{copy.importFlow.title}</h1>
+        <p className="m-0 mt-2 text-body leading-[22px] text-muted">{copy.importFlow.subtitle}</p>
+      </div>
       <ImportPanel onAdded={(n) => setCount((c) => c + n)} />
-      <Button size="lg" fullWidth loading={update.isPending} onClick={next}>
-        {count > 0 ? copy.importFlow.continueWith(count) : copy.common.skipForNow}
-      </Button>
+      <BottomBar variant="fade">
+        <Button
+          size="lg"
+          variant={count > 0 ? "primary" : "secondary"}
+          fullWidth
+          loading={update.isPending}
+          onClick={next}
+        >
+          {count > 0 ? copy.importFlow.continueWith(count) : copy.common.skipForNow}
+        </Button>
+      </BottomBar>
     </>
   );
 }

@@ -31,16 +31,23 @@ function TabLink({ tab, pathname, badge }: { tab: Tab; pathname: string; badge?:
       href={tab.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline",
-        active ? "font-semibold text-primary" : "text-muted",
+        "relative flex min-h-[52px] flex-col items-center justify-start gap-[3px] text-tiny font-semibold tracking-[0.01em] no-underline hover:text-primary",
+        active ? "text-primary" : "text-muted",
       )}
     >
-      <tab.Icon />
+      <span
+        className={cn(
+          "flex h-[30px] w-14 items-center justify-center rounded-pill",
+          active && "bg-primary-soft",
+        )}
+      >
+        <tab.Icon />
+      </span>
       {tab.label}
       {badge !== undefined && badge > 0 && (
         <span
           aria-label={copy.nav.repliesBadge(badge)}
-          className="absolute -top-1 right-[18px] flex h-[18px] min-w-[18px] items-center justify-center rounded-pill bg-danger px-1 text-[11px] font-semibold text-on-primary"
+          className="absolute -top-0.5 left-[calc(50%+6px)] flex h-[18px] min-w-[18px] items-center justify-center rounded-pill bg-ink px-[5px] text-[11px] font-bold text-on-primary shadow-[0_0_0_2px_var(--color-surface)]"
         >
           {badge}
         </span>
@@ -56,9 +63,9 @@ export function BottomNav({ repliesCount = 0 }: { repliesCount?: number }) {
   return (
     <nav
       aria-label={copy.nav.label}
-      className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
-      <div className="grid h-nav grid-cols-5 items-center">
+      <div className="grid grid-cols-5 items-start px-2 pt-2.5 pb-3">
         {leftTabs.map((tab) => (
           <TabLink key={tab.href} tab={tab} pathname={pathname} />
         ))}
@@ -67,7 +74,7 @@ export function BottomNav({ repliesCount = 0 }: { repliesCount?: number }) {
           aria-label={copy.nav.capture}
           aria-current={captureActive ? "page" : undefined}
           data-testid="capture-fab"
-          className="-mt-6 flex size-fab items-center justify-center justify-self-center rounded-pill bg-accent text-on-accent shadow-fab"
+          className="-mt-[26px] flex size-fab items-center justify-center justify-self-center rounded-pill bg-grad text-on-primary shadow-fab hover:text-on-primary"
         >
           <MicIcon size={24} />
         </Link>

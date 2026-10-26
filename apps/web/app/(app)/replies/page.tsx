@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/shell/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ChatIcon } from "@/components/ui/icons";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { ApiError } from "@/lib/api/client";
+import { usePacks, useActiveGoal } from "@/lib/api/hooks/account";
 import { useCreateDraft } from "@/lib/api/hooks/drafts";
 import {
   useLogInteraction,
@@ -16,7 +18,6 @@ import {
   type PendingReply,
   type Replies,
 } from "@/lib/api/hooks/loop";
-import { usePacks, useActiveGoal } from "@/lib/api/hooks/account";
 import { copy } from "@/lib/copy/en";
 
 const t = copy.replies;
@@ -36,15 +37,21 @@ function ThankCard({ logged, thankStage }: { logged: Logged; thankStage: string 
     }
   }
   return (
-    <Card className="border-accent">
-      <span className="text-body font-semibold">
-        {t.outcomeTitle(logged.name, logged.outcomeLabel)}
-      </span>
-      <p className="text-small text-ink-2">{t.thankBody}</p>
-      <Button variant="accent" loading={create.isPending} onClick={() => void draftThanks()}>
+    <section className="flex flex-col gap-4 rounded-card bg-info p-card">
+      <div className="flex items-center gap-3.5">
+        <Avatar name={logged.name} />
+        <div className="flex min-w-0 flex-col">
+          <SectionLabel as="span" tone="info">
+            {logged.outcomeLabel}
+          </SectionLabel>
+          <span className="text-[16px] leading-[22px] font-semibold">{logged.name}</span>
+        </div>
+      </div>
+      <p className="m-0 text-small text-ink-2">{t.thankBody}</p>
+      <Button loading={create.isPending} onClick={() => void draftThanks()}>
         {t.draftThanks}
       </Button>
-    </Card>
+    </section>
   );
 }
 
@@ -59,7 +66,7 @@ function ReplyCard({
 }) {
   const log = useLogInteraction();
   const c = item.contact;
-  const primaryOutcome = outcomes[0];
+  const [primary, ...more] = item.stage_has_ask ? outcomes : [];
 
   async function mark(type: "replied" | "no_reply" | "outcome", outcomeId?: string) {
     await log.mutateAsync({ contact_id: c.id, type, outcome: outcomeId ?? null });
@@ -71,41 +78,60 @@ function ReplyCard({
 
   return (
     <Card>
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3.5">
         <Avatar name={c.full_name} />
         <span className="flex min-w-0 flex-col">
-          <span className="truncate text-body font-semibold">{c.full_name}</span>
-          <span className="truncate text-small text-muted">
-            {t.meta(item.stage_label ?? null, c.company ?? null, item.days_ago)}
+          <span className="truncate text-lead leading-[22px] font-semibold">{c.full_name}</span>
+          <span className="truncate text-small leading-5 text-muted">
+            {t.meta(c.company ?? null, item.days_ago)}
           </span>
         </span>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" disabled={log.isPending} onClick={() => void mark("replied")}>
+      <div className="flex gap-2">
+        <Button
+          variant="secondary"
+          className="flex-1 px-2 text-small"
+          disabled={log.isPending}
+          onClick={() => void mark("replied")}
+        >
           {t.replied}
         </Button>
-        <Button variant="secondary" disabled={log.isPending} onClick={() => void mark("no_reply")}>
+        <Button
+          variant="secondary"
+          className="flex-1 px-2 text-small"
+          disabled={log.isPending}
+          onClick={() => void mark("no_reply")}
+        >
           {t.notYet}
         </Button>
-        {item.stage_has_ask && primaryOutcome ? (
-          outcomes.map((o) => (
+        {primary && (
+          <Button
+            variant="tonal"
+            className="flex-[1.2] px-2 text-small"
+            disabled={log.isPending}
+            onClick={() => void mark("outcome", primary.id)}
+          >
+            {primary.label}
+          </Button>
+        )}
+      </div>
+      {more.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {more.map((o) => (
             <Button
               key={o.id}
-              variant={o.id === primaryOutcome.id ? "accent" : "secondary"}
+              variant="ghost"
+              className="min-h-tap text-small"
               disabled={log.isPending}
               onClick={() => void mark("outcome", o.id)}
             >
               {o.label}
             </Button>
-          ))
-        ) : (
-          <Button variant="ghost" disabled={log.isPending} onClick={() => void mark("no_reply")}>
-            {t.snooze}
-          </Button>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
       {log.error && (
-        <p role="alert" className="text-small text-danger">
+        <p role="alert" className="m-0 text-small text-danger">
           {log.error instanceof ApiError ? log.error.message : copy.common.genericError}
         </p>
       )}
@@ -124,36 +150,36 @@ export default function RepliesPage() {
       (s) => s.role === "thank",
     )?.id ?? null;
   const items = replies.data?.items ?? [];
+  const empty = replies.data && items.length === 0 && logged.length === 0;
 
   return (
-    <>
-      <PageHeader title={t.title} />
-      <div className="flex flex-col gap-gap-cards px-screen-x pt-2">
-        {items.length > 0 && <p className="text-body text-ink-2">{t.intro(items.length)}</p>}
-        {logged.map((l) => (
-          <ThankCard key={l.contactId} logged={l} thankStage={thankStage} />
-        ))}
-        {replies.isPending && (
-          <p role="status" className="text-small text-muted">
-            {copy.common.loading}…
-          </p>
-        )}
-        {replies.data && items.length === 0 && logged.length === 0 && (
-          <EmptyState title={t.title} body={t.empty} />
-        )}
-        {items.map((item) => (
-          <ReplyCard
-            key={item.contact.id}
-            item={item}
-            outcomes={replies.data?.outcomes ?? []}
-            onOutcome={(l) => setLogged((all) => [l, ...all])}
-          />
-        ))}
-        <div className="flex flex-col gap-1 rounded-card border border-dashed border-line-strong p-card">
-          <span className="text-small font-semibold">{t.whyTitle}</span>
-          <span className="text-small text-muted">{t.whyBody}</span>
-        </div>
-      </div>
-    </>
+    <div className="flex flex-1 flex-col gap-5 px-screen-x pt-6">
+      <header>
+        <h1 className="m-0 title-lg">{t.title}</h1>
+        {!empty && <p className="m-0 mt-2 text-body leading-[23px] text-muted">{t.intro}</p>}
+      </header>
+      {logged.map((l) => (
+        <ThankCard key={l.contactId} logged={l} thankStage={thankStage} />
+      ))}
+      {replies.isPending && (
+        <p role="status" className="text-small text-muted">
+          {copy.common.loading}…
+        </p>
+      )}
+      {empty && <EmptyState Icon={ChatIcon} title={t.emptyTitle} body={t.empty} />}
+      {items.map((item) => (
+        <ReplyCard
+          key={item.contact.id}
+          item={item}
+          outcomes={replies.data?.outcomes ?? []}
+          onOutcome={(l) => setLogged((all) => [l, ...all])}
+        />
+      ))}
+      {!empty && (
+        <p className="m-0 flex items-start gap-2 text-caption leading-[18px] text-muted">
+          {t.whyBody}
+        </p>
+      )}
+    </div>
   );
 }

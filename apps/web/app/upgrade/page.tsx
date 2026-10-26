@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
 import { RequireAuth } from "@/components/shell/Gates";
-import { Button } from "@/components/ui/Button";
+import { BottomBar } from "@/components/ui/BottomBar";
+import { Button, buttonClasses } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
+import { CheckIcon, CloseIcon } from "@/components/ui/icons";
 import { ApiError } from "@/lib/api/client";
 import { useMe } from "@/lib/api/hooks/account";
 import {
@@ -54,7 +57,6 @@ function UpgradeView() {
 
   const sprint = plans.data?.products.find((p) => p.product === "sprint");
   const pro = plans.data?.products.find((p) => p.product === "pro_monthly");
-  const proYear = plans.data?.products.find((p) => p.product === "pro_yearly");
   const sprintPrice = sprint ? rupees(sprint.price_paise) : "";
 
   async function finish(orderId: string) {
@@ -108,14 +110,17 @@ function UpgradeView() {
 
   if (phase.kind === "done") {
     return (
-      <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center gap-4 px-screen-x">
-        <h1 className="m-0 font-display text-h1 font-bold" role="status">
+      <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col items-center justify-center gap-5 px-screen-x text-center">
+        <span
+          aria-hidden="true"
+          className="flex size-[72px] items-center justify-center rounded-pill bg-grad text-on-primary shadow-cta"
+        >
+          <CheckIcon size={32} strokeWidth={2.4} />
+        </span>
+        <h1 className="m-0 title" role="status">
           {t.success(phase.days)}
         </h1>
-        <Link
-          href="/today"
-          className="inline-flex min-h-cta items-center justify-center rounded-button-lg bg-primary px-5 font-semibold text-on-primary no-underline"
-        >
+        <Link href="/today" className={buttonClasses({ size: "lg", fullWidth: true })}>
           {t.successAction}
         </Link>
       </main>
@@ -123,60 +128,94 @@ function UpgradeView() {
   }
 
   const busy = createOrder.isPending || checkoutResult.isPending || phase.kind === "processing";
+  const proOn = Boolean(pro?.enabled);
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col gap-4 px-screen-x pt-4 pb-8">
-      <button
-        type="button"
-        aria-label={t.close}
-        onClick={() => router.back()}
-        className="inline-flex size-tap items-center justify-center self-end rounded-pill border border-line bg-surface text-[18px]"
-      >
-        ×
-      </button>
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{t.title}</h1>
-      <p className="text-body text-ink-2">{reason === "regen" ? t.reasonRegen : t.reasonFree}</p>
-
-      <section className="flex flex-col gap-2 rounded-panel border-2 border-primary bg-surface p-4">
-        <span className="self-start rounded-pill bg-accent px-2 py-[3px] text-caption font-semibold text-on-accent">
-          {t.badge}
-        </span>
-        <h2 className="m-0 font-display text-h2 font-semibold">{t.sprintName}</h2>
-        <p className="m-0">
-          <span className="font-display text-[28px] font-bold">{sprintPrice}</span>
-          <span className="text-body text-muted">{t.sprintPer}</span>
+    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col gap-6 px-screen-x pt-6 pb-[260px]">
+      <div className="flex justify-end">
+        <IconButton label={t.close} onClick={() => router.back()}>
+          <CloseIcon size={20} />
+        </IconButton>
+      </div>
+      <div>
+        <h1 className="m-0 title-lg">{t.title}</h1>
+        <p className="m-0 mt-2.5 text-body leading-[22px] text-muted">
+          {reason === "regen" ? t.reasonRegen : t.reasonFree}
         </p>
-        <span className="text-small text-muted">{t.sprintTerm}</span>
-        <ul className="m-0 flex flex-col gap-1 pl-5 text-small text-ink-2">
-          {t.sprintBenefits.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
+      </div>
+
+      <section className="rounded-panel bg-grad p-[1.5px] shadow-[0_20px_40px_-20px_rgba(76,79,214,0.5)]">
+        <div className="flex flex-col gap-5 rounded-[26.5px] bg-surface p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col">
+              <span className="inline-flex h-6 items-center self-start rounded-badge bg-primary-soft px-2.5 text-label font-semibold text-primary">
+                {t.badge}
+              </span>
+              <h2 className="m-0 mt-3 font-display text-[24px] leading-[30px] font-semibold tracking-[-0.02em]">
+                {t.sprintName}
+              </h2>
+              <span className="text-small text-muted">{t.sprintTerm}</span>
+            </div>
+            <span className="font-display text-[36px] leading-10 font-semibold tracking-[-0.03em]">
+              {sprintPrice}
+            </span>
+          </div>
+          <ul className="m-0 flex list-none flex-col gap-3 border-t border-line p-0 pt-5">
+            {t.sprintBenefits.map((b) => (
+              <li key={b} className="flex items-start gap-3 text-body leading-[22px]">
+                <span
+                  aria-hidden="true"
+                  className="mt-px flex size-5 shrink-0 items-center justify-center rounded-pill bg-primary-soft text-primary"
+                >
+                  <CheckIcon size={12} strokeWidth={3} />
+                </span>
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
-      {pro && (
-        <section className="flex flex-col gap-1 rounded-panel border border-line bg-surface p-4">
-          <h2 className="m-0 font-display text-h2 font-semibold">{t.proName}</h2>
-          <p className="m-0">
-            <span className="font-display text-[22px] font-bold">{rupees(pro.price_paise)}</span>
-            <span className="text-body text-muted">{t.proPer}</span>
-          </p>
-          <span className="text-small text-ink-2">
-            {t.proBody.replace("₹2,499", proYear ? rupees(proYear.price_paise) : "₹2,499")}
+      {proOn && pro && (
+        <section className="flex items-center gap-3 rounded-card bg-surface px-5 py-[18px] hairline">
+          <div className="flex flex-1 flex-col">
+            <h2 className="m-0 text-[16px] leading-[22px] font-semibold">{t.proName}</h2>
+            <span className="text-small leading-5 text-muted">{t.proBody}</span>
+          </div>
+          <span className="text-[20px] font-semibold">
+            {rupees(pro.price_paise)}
+            <span className="text-small font-medium text-muted">{t.proPer}</span>
           </span>
-          {!pro.enabled && <span className="text-caption text-muted">{t.proSoon}</span>}
         </section>
       )}
 
-      {phase.kind === "dev" ? (
-        <div className="flex flex-col gap-2 rounded-card border border-dashed border-line-strong p-card">
-          <span className="text-small font-semibold">{t.devTitle}</span>
-          <span className="text-small text-muted">{t.devBody}</span>
+      {phase.kind === "dev" && (
+        <section className="flex flex-col gap-3 rounded-card bg-tint p-card">
+          <span className="label-caps text-primary">{t.devTitle}</span>
+          <span className="text-small text-ink-2">{t.devBody}</span>
           <Button loading={devComplete.isPending} onClick={() => void simulate(phase.order)}>
             {t.devConfirm}
           </Button>
-        </div>
-      ) : (
-        <>
+        </section>
+      )}
+      {(phase.kind === "processing" ||
+        phase.kind === "still_processing" ||
+        phase.kind === "cancelled") && (
+        <p role="status" aria-live="polite" className="m-0 text-small text-ink-2">
+          {phase.kind === "processing"
+            ? t.processing
+            : phase.kind === "cancelled"
+              ? t.cancelled
+              : t.processingStill}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="m-0 text-small text-danger">
+          {error}
+        </p>
+      )}
+
+      {phase.kind !== "dev" && (
+        <BottomBar>
           <Button
             size="lg"
             fullWidth
@@ -194,25 +233,9 @@ function UpgradeView() {
           >
             {t.payCard}
           </Button>
-        </>
+          <p className="m-0 text-center text-caption text-muted">{t.gst}</p>
+        </BottomBar>
       )}
-      {(phase.kind === "processing" ||
-        phase.kind === "still_processing" ||
-        phase.kind === "cancelled") && (
-        <p role="status" aria-live="polite" className="text-small text-ink-2">
-          {phase.kind === "processing"
-            ? t.processing
-            : phase.kind === "cancelled"
-              ? t.cancelled
-              : t.processingStill}
-        </p>
-      )}
-      {error && (
-        <p role="alert" className="text-small text-danger">
-          {error}
-        </p>
-      )}
-      <p className="text-caption text-muted">{t.gst}</p>
     </main>
   );
 }

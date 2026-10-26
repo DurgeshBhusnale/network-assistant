@@ -5,6 +5,7 @@ import { useRef, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { CheckIcon, LockIcon, PlusIcon } from "@/components/ui/icons";
 import { ApiError } from "@/lib/api/client";
 import {
   useCommitImport,
@@ -127,8 +128,8 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
 
       {preview ? (
         <Card aria-live="polite">
-          <h2 className="m-0 font-display text-h2 font-semibold">{t.previewTitle}</h2>
-          <p className="text-body">
+          <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.previewTitle}</h2>
+          <p className="m-0 text-body text-ink-2">
             {t.previewCounts(preview.counts.new, preview.counts.merged, preview.counts.skipped)}
           </p>
           {preview.errors.length > 0 && (
@@ -143,7 +144,7 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
               </ul>
             </details>
           )}
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <Button
               className="flex-1"
               loading={commit.isPending}
@@ -157,68 +158,108 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
             </Button>
           </div>
           {preview.counts.new + preview.counts.merged === 0 && (
-            <p className="text-small text-muted">{t.nothingNew}</p>
+            <p className="m-0 text-small text-muted">{t.nothingNew}</p>
           )}
         </Card>
       ) : (
         <>
-          <Card>
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="m-0 text-body font-semibold">{t.phoneTitle}</h2>
-              {phoneAdded > 0 && (
-                <span className="text-small font-semibold text-success">{t.added(phoneAdded)}</span>
-              )}
-            </div>
-            <p className="text-small text-muted">{pickerSupported ? t.phoneBody : t.vcardBody}</p>
-            <Button
-              variant="secondary"
-              loading={busy}
-              onClick={pickerSupported ? choosePhoneContacts : () => vcfInput.current?.click()}
-            >
-              {pickerSupported ? t.phoneButton : t.vcardButton}
-            </Button>
-          </Card>
+          {phoneAdded > 0 ? (
+            <section className="flex items-center gap-3.5 rounded-card bg-info p-card">
+              <span
+                aria-hidden="true"
+                className="flex size-11 shrink-0 items-center justify-center rounded-pill bg-surface text-info-text"
+              >
+                <CheckIcon size={22} strokeWidth={2.2} />
+              </span>
+              <span className="flex flex-1 flex-col">
+                <span className="text-[16px] leading-[22px] font-semibold">{t.phoneTitle}</span>
+                <span className="text-small text-info-text">{t.added(phoneAdded)}</span>
+              </span>
+              <Button
+                variant="ghost"
+                className="min-h-tap text-small"
+                loading={busy}
+                onClick={pickerSupported ? choosePhoneContacts : () => vcfInput.current?.click()}
+              >
+                {t.addMore}
+              </Button>
+            </section>
+          ) : (
+            <Card>
+              <div className="flex flex-col gap-1">
+                <h2 className="m-0 text-[16px] leading-[22px] font-semibold">{t.phoneTitle}</h2>
+                <p className="m-0 text-small leading-5 text-muted">
+                  {pickerSupported ? t.phoneBody : t.vcardBody}
+                </p>
+              </div>
+              <Button
+                variant="tonal"
+                loading={busy}
+                onClick={pickerSupported ? choosePhoneContacts : () => vcfInput.current?.click()}
+              >
+                {pickerSupported ? t.phoneButton : t.vcardButton}
+              </Button>
+            </Card>
+          )}
 
           {!linkedinHidden ? (
             <Card>
               <div className="flex items-center justify-between gap-2">
-                <h2 className="m-0 text-body font-semibold">{t.linkedinTitle}</h2>
+                <h2 className="m-0 text-[16px] leading-[22px] font-semibold">{t.linkedinTitle}</h2>
                 {added.linkedin_csv !== undefined && (
-                  <span className="text-small font-semibold text-success">
+                  <span className="text-small font-semibold text-info-text">
                     {t.added(added.linkedin_csv)}
                   </span>
                 )}
               </div>
-              <p className="text-small text-muted">{t.linkedinBody}</p>
-              <ol className="m-0 flex flex-col gap-1 pl-5 text-small text-ink-2">
-                {t.linkedinSteps.map((step) => (
-                  <li key={step}>{step}</li>
+              <ol className="m-0 flex list-none flex-col gap-4 p-0">
+                {t.linkedinSteps.map((step, i) => (
+                  <li
+                    key={step}
+                    className="flex items-start gap-3.5 text-small leading-[21px] text-ink-2"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="flex size-6 shrink-0 items-center justify-center rounded-pill bg-primary-soft text-label font-bold text-primary"
+                    >
+                      {i + 1}
+                    </span>
+                    {step}
+                  </li>
                 ))}
               </ol>
-              <div className="flex gap-2">
+              <div className="flex gap-2.5">
                 <Button
-                  className="flex-1"
-                  variant="secondary"
+                  className="flex-1 text-small"
+                  variant="tonal"
                   loading={busy}
                   onClick={() => csvInput.current?.click()}
                 >
                   {t.uploadCsv}
                 </Button>
-                <Button variant="ghost" onClick={remind}>
+                <Button variant="secondary" className="flex-1 text-small" onClick={remind}>
                   {t.remindLater}
                 </Button>
               </div>
             </Card>
           ) : (
-            remindLater && <p className="text-small text-muted">{t.remindLaterDone}</p>
+            remindLater && <p className="m-0 text-small text-muted">{t.remindLaterDone}</p>
           )}
 
           <Link
             href="/people/new"
-            className="flex min-h-tap flex-col gap-0.5 rounded-card border border-line bg-surface p-card text-ink no-underline"
+            className="flex items-center gap-3 rounded-card bg-surface py-4 pr-4 pl-5 text-ink no-underline hairline hover:text-ink"
           >
-            <span className="text-body font-semibold">{t.manualTitle}</span>
-            <span className="text-small text-muted">{t.manualBody}</span>
+            <span className="flex flex-1 flex-col">
+              <span className="text-[16px] leading-[22px] font-semibold">{t.manualTitle}</span>
+              <span className="text-small leading-5 text-muted">{t.manualBody}</span>
+            </span>
+            <span
+              aria-hidden="true"
+              className="flex size-11 items-center justify-center rounded-pill bg-field text-ink"
+            >
+              <PlusIcon size={20} />
+            </span>
           </Link>
         </>
       )}
@@ -233,7 +274,10 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
           )}
         </div>
       )}
-      <p className="text-caption text-muted">{t.privacy}</p>
+      <p className="m-0 flex items-center justify-center gap-2.5 text-center text-caption leading-[18px] text-muted">
+        <LockIcon size={16} />
+        {t.privacy}
+      </p>
     </div>
   );
 }

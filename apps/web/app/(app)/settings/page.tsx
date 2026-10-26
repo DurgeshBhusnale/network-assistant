@@ -49,7 +49,7 @@ function Select({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-[46px] rounded-button border border-line-strong bg-surface px-3 text-body text-ink"
+        className="h-field rounded-button bg-surface px-4 text-[16px] text-ink hairline-strong focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
       >
         {children}
       </select>
@@ -61,7 +61,7 @@ function SettingsLink({ href, title, body }: { href: string; title: string; body
   return (
     <Link
       href={href}
-      className="flex min-h-tap flex-col gap-0.5 rounded-card border border-line bg-surface p-card text-ink no-underline"
+      className="flex min-h-tap flex-col gap-0.5 rounded-card bg-surface p-card text-ink no-underline hairline hover:text-ink"
     >
       <span className="text-body font-semibold">{title}</span>
       <span className="text-small text-muted">{body}</span>
@@ -73,7 +73,7 @@ export default function SettingsPage() {
   const me = useMe();
   return (
     <>
-      <PageHeader title={copy.settings.title} />
+      <PageHeader title={copy.settings.title} back="/today" showSettings={false} />
       {me.data && <SettingsForm profile={me.data} />}
     </>
   );
@@ -113,9 +113,9 @@ function SettingsForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <div className="flex flex-col gap-gap-cards px-screen-x pt-2">
+    <div className="flex flex-col gap-gap-cards px-screen-x pt-5">
       <Card>
-        <h2 className="m-0 font-display text-h2 font-semibold">{t.profile}</h2>
+        <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.profile}</h2>
         <Input
           label={t.nameLabel}
           autoComplete="name"
@@ -168,7 +168,7 @@ function SettingsForm({ profile }: { profile: Profile }) {
       <SettingsLink href="/settings/privacy" title={t.privacyLink} body={t.privacyLinkBody} />
 
       <Card>
-        <h2 className="m-0 font-display text-h2 font-semibold">{t.account}</h2>
+        <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.account}</h2>
         {profile.email && <p className="text-small text-ink-2">{t.signedInAs(profile.email)}</p>}
         <Button variant="secondary" onClick={logout}>
           {t.signOut}

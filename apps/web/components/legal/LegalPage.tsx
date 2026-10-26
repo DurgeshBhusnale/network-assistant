@@ -11,7 +11,7 @@ export function LegalPage({ title, sections }: { title: string; sections: readon
       <Link href="/sign-in" className="min-h-tap self-start py-3 text-small text-primary">
         {copy.legal.back}
       </Link>
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{title}</h1>
+      <h1 className="m-0 title">{title}</h1>
       <p className="text-caption text-muted">{copy.legal.reviewNote}</p>
       {sections.map((s) => (
         <section key={s.heading} className="flex flex-col gap-1">

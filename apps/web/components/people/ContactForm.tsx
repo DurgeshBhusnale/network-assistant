@@ -54,8 +54,8 @@ function Textarea({
 }) {
   const id = useId();
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-small font-semibold">
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-small font-semibold text-ink">
         {label}
       </label>
       <textarea
@@ -64,7 +64,7 @@ function Textarea({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-button border border-line-strong bg-surface p-3 text-body"
+        className="rounded-button bg-surface p-4 text-[16px] hairline-strong placeholder:text-muted focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
       />
     </div>
   );
@@ -98,7 +98,7 @@ export function ContactForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
+    <form onSubmit={submit} className="flex flex-col gap-5">
       <Input
         label={t.name}
         required
@@ -159,7 +159,7 @@ export function ContactForm({
         onChange={set("how_known")}
       />
       {error && (
-        <p role="alert" className="text-small text-danger">
+        <p role="alert" className="m-0 text-small text-danger">
           {error}
         </p>
       )}

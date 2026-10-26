@@ -42,8 +42,8 @@ export function StyleForm({
 
   const summary = save.data?.summary ?? initial?.summary;
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-body text-ink-2">{t.body}</p>
+    <div className="flex flex-col gap-4">
+      <p className="m-0 text-body leading-[22px] text-muted">{t.body}</p>
       <label htmlFor="style-samples" className="text-small font-semibold">
         {t.label}
       </label>
@@ -54,14 +54,14 @@ export function StyleForm({
         placeholder={t.placeholder}
         onChange={(e) => setValue(e.target.value)}
         aria-describedby="style-count"
-        className="rounded-button border border-line-strong bg-surface p-3 text-body"
+        className="rounded-card bg-surface p-4 text-[16px] leading-6 hairline-strong placeholder:text-muted focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
       />
       <span id="style-count" className="text-caption text-muted">
         {t.count(samples.length)}
         {samples.length > 0 && samples.length < MIN_SAMPLES ? ` · ${t.tooFew}` : ""}
       </span>
       {save.error && (
-        <p role="alert" className="text-small text-danger">
+        <p role="alert" className="m-0 text-small text-danger">
           {save.error instanceof ApiError ? save.error.message : copy.common.genericError}
         </p>
       )}
@@ -75,8 +75,8 @@ export function StyleForm({
         {t.save}
       </Button>
       {summary && (
-        <div className="flex flex-col gap-1 rounded-card bg-primary-soft p-card">
-          <span className="text-small font-semibold text-primary">{t.summaryTitle}</span>
+        <div className="flex flex-col gap-2 rounded-card bg-tint p-card">
+          <span className="label-caps text-primary">{t.summaryTitle}</span>
           <span className="text-small text-ink">{summary}</span>
         </div>
       )}

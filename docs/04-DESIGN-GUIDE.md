@@ -1,80 +1,83 @@
-# Design Guide — Networking Assistant v1
+# Design Guide — Networking Assistant (v4)
 
-**Source:** Design canvas "Networking Assistant App Screens" (claude.ai Design). Reference markup for every screen is in `design/screens/*.dc.html`: open them as text and copy layout, spacing and colours. They use a canvas runtime (`support.js`, `<x-dc>`), so **they won't run standalone; rebuild them as React components**. Tokens: `design/tokens.css`.
+**Source:** the v4 design canvas ("Networking Assistant v4", 26 Oct 2026). Reference markup: `design/screens/Networking Assistant v4.dc.html` and `design/screens/BottomNavV4.dc.html` (with `support.js`). They use a canvas runtime (`<x-dc>`), so they won't run standalone: open them as text and copy layout, spacing and colours. Tokens: `design/tokens.css`. The older v1 files in `design/screens/` are superseded.
 
-The visual direction is provisional ("refine later"). Build components on tokens so a rebrand is a token change.
+> Quiet, spacious, precise. 24 px gutters, an 8 px rhythm, hairline borders instead of heavy shadows, and one gradient reserved for the primary action.
 
 ## Principles
 
-1. **Phone first.** Design at 390 × 844 (Android mid-range). Desktop just centres a 480 px column in v1.
+1. **Phone first.** Design at 390 × 844 (Android mid-range). Desktop centres a 480 px column.
 2. **Today is a short list, never a database.** Max 7 cards; each card answers who, why now, what next.
-3. **One primary action per screen** (blue, full width at the bottom or on the card).
+3. **One primary action per screen**, and only it gets the accent gradient. Everything else is secondary (hairline), tonal (soft accent) or ghost.
 4. **Calm, not gamified.** No streaks, confetti or guilt copy. Progress is factual.
-5. **Trust is visible.** State "Nothing is sent until you tap send" near send actions; privacy lines on import and capture.
+5. **Trust is visible.** "Nothing is sent until you tap send" under send actions; a lock + privacy line on import and capture.
 
 ## Foundations
 
 | Token | Value | Use |
 |---|---|---|
-| Ground | `--color-bg` #F3F5F7 | App background |
-| Surface | `--color-surface` #FFF | Cards, nav, sheets |
-| Dark surface | `--color-surface-dark` #14171F | Goal strip, stat card, recorder panel |
-| Primary | `--color-primary` #2340C9 | Primary buttons, links, active nav, "Ask" badge text |
-| Accent (marigold) | `--color-accent` #F2A33A | Capture FAB, referral highlights, "Referred me" button |
-| Accent soft / text | #FDF0DC / #7A4300 | Reason chips, next-step card |
-| Success | #1C7A4D on #E3F4EA | "Warm up"/"Follow up" badges, done checks |
-| Send | #1F7A4A | "Send on WhatsApp" button only |
-| Danger | #B4321F | Count badges, destructive actions |
-| On dark, soft | `--color-on-dark-soft` #E4E7EC | Live transcript text on the recorder panel |
-| Waveform idle | `--color-waveform-idle` #4A505C | Unplayed waveform bars on the recorder panel |
-| Neutral dot | `--color-dot-neutral` #9AA1AD | Neutral history-timeline dots (Person) |
+| Canvas | `--color-canvas-top` #FFFFFF → `--color-bg` #F4F5FD | Page background (vertical fade) |
+| Surface | `--color-surface` #FFF | Cards, nav, sheets, bottom bars |
+| Surface 2 | `--color-surface-2` #F4F5FD | Panels inside screens ("Why her, why now"), tags |
+| Field | `--color-field` #F1F2FA | Search field |
+| Ink | `--color-ink` #14183A | Text, dark button ("Yes, merge"), selected chip |
+| Ink 2 / Muted | #4A5075 / `--color-muted` #5F658A | Secondary text / meta, captions, section labels |
+| Hairline | `--color-line` #E6E8F4 | Card outlines, dividers |
+| Hairline strong | `--color-line-strong` #D5D9EE | Inputs, secondary buttons, chips |
+| Accent text | `--color-primary` #3D3FC0 | Links, active nav, section labels in accent, "Ask" badge |
+| Accent soft | `--color-primary-soft` #EEF0FF | Tonal buttons, active nav pill, avatars on Today header |
+| Accent gradient | `--color-grad-from` #3B5BDB → `--color-grad-to` #6D4AE8 | Primary buttons, capture FAB, progress fills, checks, bullet dots |
+| Indigo ink | `--color-hero-from` #141B4D → `--color-hero-to` #32258A | Today hero card, voice capture panel |
+| Tint | #E4E9FF → #EBE0FF | Next-step card, "Sent?" prompt, check-before-sending |
+| Info | #E3F3FF → #E4E9FF, text #0B5E8A | Referral card, done states, "Thank" badge |
+| Badge neutral | #F1F2F9 / #4A5075 | "Warm up", "Follow up", company status |
+| Avatars | `--avatar-1…6` (oklch 0.93/0.04 fill, 0.36/0.1 text) | Initials avatar, hue picked by a stable hash of the name |
+| Danger | #B4321F | Destructive actions only |
 
-Tokens map into Tailwind v4 with `@theme inline` in `apps/web/app/globals.css`, which imports `design/tokens.css`. The WhatsApp conversation design uses WhatsApp-like colours that aren't app tokens (it isn't an app screen).
+Utilities in `apps/web/app/globals.css`: `bg-grad`, `bg-grad-bar`, `bg-hero`, `bg-tint`, `bg-info`, `text-grad`, `hairline`, `hairline-strong`, `ring-selected`, `label-caps`, `title` (28 px), `title-lg` (32 px). Element defaults live in `@layer base` so utilities always win.
 
-Typography: display **Bricolage Grotesque** (600/700) for screen titles, names on Person, prices, big numbers; UI **Instrument Sans** (400/500/600) for everything else. Scale in `tokens.css`. Load via `next/font/google`.
+**Type:** **Bricolage Grotesque** 600 for titles and big numbers (display 56–64 "1 of 4", title 28–32, letter-spacing −0.02 to −0.04em); **Figtree** 400–700 for everything else. Heading 18/600; body 15–17 with 22–28 line height; secondary 14/20; labels 12/700 caps +0.08em. Loaded with `next/font/google`.
 
-Layout: screen side padding 20 px; card padding 14 px; gaps 10 px between cards; 8 px grid. Radius: cards 14, panels 16, buttons 10 (44 px) / 12 (52 px CTA), chips pill, badges 6.
+**Space and shape:** 24 px screen gutters; 8 px rhythm with 8 / 16 / 28 gaps (28 between sections). Card padding 20–24. Radii: cards 24, hero and draft card 28, goal tiles 20, buttons 16 (48 px) / 18 (56 px CTA), badges 12, chips pill. Hairlines (inset box-shadow) instead of borders; soft lifts only on cards (`shadow-card`), the hero (`shadow-hero`) and the primary CTA (`shadow-cta`).
 
-Icons: inline stroke SVG, 2 px stroke, 18–24 px (e.g., Lucide set). No emoji in UI.
+**Icons:** inline stroke SVG, 1.8 px stroke, 18–24 px (`components/ui/icons.tsx`). No emoji in UI.
 
 ## Components
 
 | Component | Spec |
 |---|---|
-| `Button` | Variants: primary (blue), secondary (white + line border), accent (marigold), send (green), ghost. Heights 44 / 52. Loading and disabled states. |
-| `IconButton` | 44 × 44, `aria-label` required. |
-| `Card` | Surface, 1 px line border, radius 14, padding 14. |
-| `PersonCard` (Today) | Avatar (40 px initials, tinted by hash), name 15/600, meta 13 muted, StageBadge top-right, 1–3 ReasonChips, actions row: primary "Open draft" + snooze IconButton. |
-| `StageBadge` | Ask (primary on primary-soft), Warm up / Follow up (success on success-soft), Thank (accent-text on accent-soft). 11.5/600, radius 6. |
-| `ReasonChip` | Highlight reason: accent-soft/accent-text; neutral: bg/ink-2. 12 px, pill. |
-| `GoalStrip` | Dark panel: label "CAREER SPRINT · DAY 12 OF 60", days-left pill (accent), goal title (display 18), 4 stats grid; referrals stat in accent. |
-| `BottomNav` | 5 slots: Today, People, Capture FAB (56 px marigold, raised 24 px), Progress, Replies (with danger count badge). Height 76 + safe area. |
-| `Stepper` | − value + in a 46 px field. |
-| `ChipInput` | Chips + dashed "+ Add" chip (companies, locations). |
-| `ProgressSteps` | 3-segment bar + "Step N of 3". |
-| `ConfirmCard` | Capture candidate: name, status label (New contact / Possible match), facts, follow-up date in accent-text, two buttons. |
-| `FunnelBar` | Label 92 px, track, value; referred bar in accent. Widths proportional to the first stage. |
-| `EmptyState` | Title, one line, one action. |
-| `Sheet` | Bottom sheet for notes and tone options. |
+| `Button` | primary (gradient, white text; 56 px `lg` with CTA shadow, 48 px `md`), secondary (white + strong hairline), tonal (accent soft), dark (ink), ghost (accent text), danger. `buttonClasses()` gives links the same look. |
+| `IconButton` | 44 px round, strong hairline, `aria-label` required. |
+| `Card` | White, radius 24, padding 20, hairline + soft lift. |
+| `PersonCard` (Today) | Avatar 48, name 17/600, role · company 14 muted, StageBadge right; reason tags (13 px, surface-2, highlight in accent soft); "Open draft" primary + 48 px snooze button. |
+| `GoalStrip` (hero) | Indigo gradient, radius 28, padding 24: caps label + "Day N of M"; display count + "of 4 referrals"; 4 px progress (soft gradient); 3 stats split by hairlines. |
+| `StageBadge` | 24 px, radius 12, 12/600: Ask (accent soft), Warm up / Follow up (neutral), Thank (info). |
+| `Chip` | Reason tags (13 px, radius 14). Tone chips on Draft: 44 px pills, selected = ink. |
+| `BottomNav` | 92 px incl. safe area; tab = 56×30 pill (accent soft when active) + 11 px label; centre 58 px gradient mic FAB raised 26 px with a white ring; Replies count badge in ink. Shown only on the four tab screens; detail screens use a back button. |
+| `BottomBar` | Pinned action bar on detail screens: "solid" (white 95% + top hairline: Draft, Upgrade) or "fade" (canvas fade: onboarding). |
+| `Stepper` | Label left, "− 4 +" pill right (48 px). |
+| `ChipInput` | Accent-soft chips with remove, "+ Add" pill with accent hairline. |
+| `ProgressSteps` | 3 bars (4 px, gradient when done) + "Step N of 3". |
+| `ConfirmCard` | Avatar + name, "Role · New contact" or "Is this X? / Possible duplicate"; facts with gradient dots; follow-up in a surface-2 chip; Save + Edit, or Yes, merge (dark) + New person. |
+| `SectionLabel` | 12/700 caps, muted or accent. |
+| `EmptyState` | Centred: 104 px tinted icon disc, 24 px display title, one line, primary action + optional text link. |
+| `Sheet` | Bottom sheet for notes, snooze and stage choice; tiles are 64 px hairline rows. |
 
 ## Screens
 
-Each references its design file. Copy text is final for v1 unless marked `[ ]`.
-
-| Screen | File | Key content | Primary action |
-|---|---|---|---|
-| Today (home) | `Main.dc.html` | Date line, "Good morning, {name}", avatar → Settings, GoalStrip, "Today · N people · about M min", PersonCards, BottomNav | Open draft |
-| Draft sheet | `Draft.dc.html` | Back, person name + meta, step badge "Step 2 of 3 · Ask for a referral", editable message card with word count and "Another version", tone chips, "Why {name}, why now" bullets, bottom: Send on WhatsApp, Copy for LinkedIn, Mark as sent, trust line | Send on WhatsApp |
-| Person | `Person.dc.html` | Avatar 72, name (display 24), title · company · city, how known; 3 action tiles; next-step card; "What you remember" list with source/date; History timeline with coloured dots | Draft message |
-| Did they reply? | `Replies.dc.html` | Title + explanation; per person: Replied / Not yet / Referred me (or Snooze); referred state card with "Draft a thank-you"; "Why we ask" dashed note | Per-card buttons |
-| Goal progress | `Progress.dc.html` | "1 of 4 referrals", stats (warm replies this week; days left), pipeline funnel, by-company list | — |
-| Set your goal | `Goal.dc.html` | ProgressSteps 1/3, title, 2×2 pack tiles (only "Get referred" enabled), role input, company chips, referrals stepper, where | Continue |
-| Bring in your people | `Import.dc.html` | ProgressSteps 2/3, phone contacts card (done state), LinkedIn card with 3-step export help + Upload CSV / Remind me later, add-by-hand card, privacy line | Continue with N people |
-| Voice capture | `Capture.dc.html` | Close, dark recorder panel (prompt, waveform, timer, stop button, live transcript), "Found N people · check before saving", ConfirmCards, WhatsApp tip | Save per card |
-| Upgrade | `Upgrade.dc.html` | Close, title, reason line, Sprint card (badge "Best for a job switch", ₹799 once, 60 days, 4 benefits), Pro card, Pay ₹799 with UPI, Pay by card, GST line | Pay with UPI |
-| WhatsApp assistant | `WhatsApp.dc.html` | Not an app screen: the conversation design for the bot (brief template + buttons, draft messages, voice note, capture confirm) | — |
-
-Screens not yet designed (build from components, same style): Sign in, Consents, Writing style, People list, Settings & privacy, Link WhatsApp card, Export/Delete confirmations, error and empty states.
+| Screen | Key content | Primary action |
+|---|---|---|
+| Today | Date line, "Good evening, {name}" (title 28), initial avatar → Settings; indigo hero; "Today's people · N · about M min"; PersonCards; empty: "Nobody to contact yet" + Add your contacts / Or speak who you met | Open draft |
+| Draft | Back + avatar 44 + name/role; caps stage label in accent; draft card (17/28 text, "N words · in your voice", Edit); tone chips (scroll); "Try another version"; "Why {name}, why now" panel; bottom bar: Send on WhatsApp, Copy for LinkedIn + Mark as sent, trust line | Send on WhatsApp |
+| Person | Back + more; avatar 96 with ring; name (title 28); role · company · city; "how you know them" pill; three round actions (Draft message gradient, Add note, Voice memory); Next step (tint); What you remember rows; History timeline | Draft message |
+| People | "People" (title 32) + "N contacts" + round add; search field; A–Z groups (accent letters), 68 px rows with 44 px avatars; no-results: "No one found for “X”" + Add someone by hand (tonal). Filter chips: later. | — |
+| Did they reply? | Title 32 + reassurance line; referral card (info) with Draft a thank-you; per person: Replied / Not yet / Referred me (tonal) | Per-card buttons |
+| Progress | Caps "Career Sprint · Day N"; gradient display "1 of 4" + "referrals"; 6 px bar; two stat cards; pipeline bars (lightest → gradient); By company rows with status badge | — |
+| Onboarding · Goal | Step 1/3; 2×2 tiles (selected: tint fill, accent ring, gradient check); role, company chips, referrals stepper, location; Continue in fade bar | Continue |
+| Onboarding · People | Step 2/3; phone contacts (info card when added), LinkedIn steps with numbered dots + Upload CSV (tonal) / Remind me later; add by hand row; lock + privacy line | Continue with N people (secondary "Skip for now" while empty) |
+| Voice capture | Indigo panel to the edge, radius 40 at the bottom: caps "Listening", prompt (24 display), gradient waveform, timer, white stop/record button; "Found N people" + ConfirmCards | Save |
+| Upgrade | Close; title 32; reason line; gradient-bordered Career Sprint card (badge, ₹799, Pay once · 60 days, 4 checks); Pro card only when `PRO_ENABLED`; bottom bar: Pay ₹799 with UPI, Pay by card, "Prices include GST" | Pay with UPI |
+| Sign in, Consents, Writing style, Settings, Admin, Legal, Offline | Not in the canvas: built from the same components (title 28–32, cards, hairline fields, gradient primary). | — |
 
 ## Copy rules
 
@@ -86,4 +89,4 @@ Screens not yet designed (build from components, same style): Sign in, Consents,
 
 ## Accessibility
 
-Contrast ≥ 4.5:1 (tokens comply); touch targets ≥ 44 px; real form labels; logical focus order; `aria-live` for draft generation and capture processing status; respects reduced motion; TalkBack tested.
+Contrast ≥ 4.5:1 (tokens comply: muted #5F658A on the canvas ≈ 5.2:1; white on both gradient ends ≥ 4.9:1); touch targets ≥ 44 px; real form labels; logical focus order; `aria-live` for draft generation and capture processing status; respects reduced motion; TalkBack tested.

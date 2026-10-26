@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/shell/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClasses } from "@/components/ui/Button";
+import { cn } from "@/components/ui/cn";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useContacts } from "@/lib/api/hooks/people";
+import { PeopleIcon, PlusIcon, SearchIcon } from "@/components/ui/icons";
+import { useContacts, type ContactSummary } from "@/lib/api/hooks/people";
 import { copy } from "@/lib/copy/en";
 
 const t = copy.people;
@@ -21,94 +22,146 @@ function useDebounced(value: string, ms: number): string {
   return debounced;
 }
 
+/** A–Z groups in list order (the API sorts by name). Non-letters go under "#". */
+function groupByLetter(
+  items: ContactSummary[],
+): Array<{ letter: string; items: ContactSummary[] }> {
+  const groups: Array<{ letter: string; items: ContactSummary[] }> = [];
+  for (const c of items) {
+    const first = c.full_name.trim().charAt(0).toUpperCase();
+    const letter = /[A-Z]/.test(first) ? first : "#";
+    const last = groups[groups.length - 1];
+    if (last && last.letter === letter) last.items.push(c);
+    else groups.push({ letter, items: [c] });
+  }
+  return groups;
+}
+
 export default function PeoplePage() {
   const [search, setSearch] = useState("");
   const q = useDebounced(search.trim(), 250);
   const contacts = useContacts(q);
-  const items = contacts.data?.pages.flatMap((p) => p.items) ?? [];
+  const items = useMemo(() => contacts.data?.pages.flatMap((p) => p.items) ?? [], [contacts.data]);
+  const total = contacts.data?.pages[0]?.total ?? null;
+  const groups = useMemo(() => groupByLetter(items), [items]);
+  const noneAtAll = !contacts.isPending && items.length === 0 && !q && total === 0;
 
   return (
-    <>
-      <PageHeader title={t.title} />
-      <div className="flex flex-col gap-3 px-screen-x pt-2">
-        <div className="flex gap-2">
+    <div className="flex flex-1 flex-col gap-5 px-screen-x pt-6">
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="m-0 title-lg">{t.title}</h1>
+        <div className="flex items-center gap-3">
+          {total !== null && total > 0 && (
+            <span className="text-small text-muted">{t.count(total)}</span>
+          )}
           <Link
             href="/people/import"
-            className="inline-flex min-h-tap flex-1 items-center justify-center rounded-button bg-primary px-4 text-[14px] font-semibold text-on-primary no-underline"
+            aria-label={t.add}
+            className="inline-flex size-tap items-center justify-center rounded-pill bg-primary-soft text-primary no-underline hover:text-primary"
           >
-            {t.add}
-          </Link>
-          <Link
-            href="/people/new"
-            className="inline-flex min-h-tap items-center justify-center rounded-button border border-line bg-surface px-4 text-[14px] font-semibold text-ink no-underline"
-          >
-            {t.addByHand}
+            <PlusIcon size={20} />
           </Link>
         </div>
+      </header>
 
-        <label htmlFor="people-search" className="sr-only">
-          {t.searchLabel}
-        </label>
-        <input
-          id="people-search"
-          type="search"
-          value={search}
-          placeholder={t.searchPlaceholder}
-          onChange={(e) => setSearch(e.target.value)}
-          className="h-[46px] rounded-button border border-line-strong bg-surface px-3 text-body"
-        />
+      {!noneAtAll && (
+        <div
+          className={cn(
+            "flex h-field items-center gap-3 rounded-button-lg px-4 text-muted",
+            search ? "bg-surface ring-selected" : "bg-field",
+          )}
+        >
+          <SearchIcon size={20} />
+          <label htmlFor="people-search" className="sr-only">
+            {t.searchLabel}
+          </label>
+          <input
+            id="people-search"
+            type="search"
+            value={search}
+            placeholder={t.searchPlaceholder}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-ink placeholder:text-muted focus:outline-none"
+          />
+        </div>
+      )}
 
-        {contacts.isPending ? (
-          <p className="text-small text-muted" role="status">
-            {copy.common.loading}…
-          </p>
-        ) : items.length === 0 ? (
-          q ? (
-            <p className="text-small text-muted">{t.noResults(q)}</p>
-          ) : (
-            <EmptyState
-              title={t.emptyTitle}
-              body={t.emptyBody}
-              action={
-                <Link href="/people/import" className="font-semibold">
+      {contacts.isPending ? (
+        <p className="text-small text-muted" role="status">
+          {copy.common.loading}…
+        </p>
+      ) : items.length === 0 ? (
+        q ? (
+          <EmptyState
+            title={t.noResults(q)}
+            body={t.noResultsBody}
+            action={
+              <Link href="/people/new" className={buttonClasses({ variant: "tonal" })}>
+                {t.addByHand}
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyState
+            Icon={PeopleIcon}
+            title={t.emptyTitle}
+            body={t.emptyBody}
+            action={
+              <>
+                <Link href="/people/import" className={buttonClasses({ size: "lg" })}>
                   {t.import}
                 </Link>
-              }
-            />
-          )
-        ) : (
-          <ul className="m-0 flex list-none flex-col rounded-card border border-line bg-surface p-0">
-            {items.map((c) => (
-              <li key={c.id} className="border-b border-line-soft last:border-b-0">
                 <Link
-                  href={`/people/${c.id}`}
-                  className="flex min-h-[60px] items-center gap-3 px-card py-2 text-ink no-underline"
+                  href="/people/new"
+                  className="flex h-11 items-center text-body font-semibold no-underline"
                 >
-                  <Avatar name={c.full_name} />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-body font-semibold">{c.full_name}</span>
-                    {(c.title || c.company) && (
-                      <span className="truncate text-small text-muted">
-                        {[c.title, c.company].filter(Boolean).join(" · ")}
-                      </span>
-                    )}
-                  </span>
+                  {t.addByHand}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+              </>
+            }
+          />
+        )
+      ) : (
+        <div className="flex flex-col">
+          {groups.map((g) => (
+            <section key={g.letter} aria-label={g.letter} className="flex flex-col">
+              <h2 className="m-0 pt-3 pb-1 label-caps text-primary">{g.letter}</h2>
+              <ul className="m-0 flex list-none flex-col p-0">
+                {g.items.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`/people/${c.id}`}
+                      className="flex h-[68px] items-center gap-4 text-ink no-underline hover:text-ink"
+                    >
+                      <Avatar name={c.full_name} size="md" />
+                      <span className="flex h-full min-w-0 flex-1 flex-col justify-center border-b border-line">
+                        <span className="truncate text-[16px] leading-[22px] font-semibold">
+                          {c.full_name}
+                        </span>
+                        {(c.company || c.title) && (
+                          <span className="truncate text-small leading-5 text-muted">
+                            {c.company ?? c.title}
+                          </span>
+                        )}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
 
-        {contacts.hasNextPage && (
-          <Button
-            variant="secondary"
-            loading={contacts.isFetchingNextPage}
-            onClick={() => void contacts.fetchNextPage()}
-          >
-            {t.loadMore}
-          </Button>
-        )}
-      </div>
-    </>
+      {contacts.hasNextPage && (
+        <Button
+          variant="secondary"
+          loading={contacts.isFetchingNextPage}
+          onClick={() => void contacts.fetchNextPage()}
+        >
+          {t.loadMore}
+        </Button>
+      )}
+    </div>
   );
 }

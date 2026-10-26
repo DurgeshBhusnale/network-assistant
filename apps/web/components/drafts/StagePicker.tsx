@@ -64,9 +64,9 @@ export function StagePicker({
               <button
                 type="button"
                 onClick={() => void pick(s.id)}
-                className="flex min-h-[56px] w-full flex-col items-start justify-center rounded-card border border-line bg-surface px-card text-left"
+                className="flex min-h-16 w-full flex-col items-start justify-center gap-0.5 rounded-tile bg-surface px-4 py-3 text-left hairline hover:bg-surface-2"
               >
-                <span className="text-body font-semibold">{s.label}</span>
+                <span className="text-[16px] font-semibold">{s.label}</span>
                 {descriptions[s.id] && (
                   <span className="text-small text-muted">{descriptions[s.id]}</span>
                 )}

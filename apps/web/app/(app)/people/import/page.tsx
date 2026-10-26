@@ -7,8 +7,9 @@ import { copy } from "@/lib/copy/en";
 export default function ImportPeoplePage() {
   return (
     <>
-      <PageHeader title={copy.people.import} />
-      <div className="px-screen-x pt-2">
+      <PageHeader title={copy.importFlow.title} back="/people" showSettings={false} />
+      <div className="flex flex-col gap-5 px-screen-x pt-3">
+        <p className="m-0 text-body leading-[22px] text-muted">{copy.importFlow.subtitle}</p>
         <ImportPanel />
       </div>
     </>

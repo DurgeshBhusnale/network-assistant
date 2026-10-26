@@ -36,14 +36,14 @@ describe("Button", () => {
   });
 
   it.each([
-    ["md", "min-h-tap"],
+    ["md", "min-h-button"],
     ["lg", "min-h-cta"],
   ] as const)("size %s meets the 44 px touch minimum via %s", (size, cls) => {
     render(<Button size={size}>Go</Button>);
     expect(screen.getByRole("button", { name: "Go" })).toHaveClass(cls);
   });
 
-  it.each(["primary", "secondary", "accent", "send", "ghost"] as const)(
+  it.each(["primary", "secondary", "tonal", "dark", "ghost", "danger"] as const)(
     "variant %s uses token classes",
     (variant) => {
       render(<Button variant={variant}>Go</Button>);

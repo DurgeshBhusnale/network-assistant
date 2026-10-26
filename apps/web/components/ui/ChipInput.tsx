@@ -51,22 +51,22 @@ export function ChipInput({
   }
 
   return (
-    <div role="group" aria-labelledby={`${id}-label`} className="flex flex-col gap-1.5">
-      <span id={`${id}-label`} className="text-small font-semibold">
+    <div role="group" aria-labelledby={`${id}-label`} className="flex flex-col gap-2.5">
+      <span id={`${id}-label`} className="text-small font-semibold text-ink">
         {label}
       </span>
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         {values.map((value) => (
           <span
             key={value}
-            className="inline-flex min-h-tap items-center gap-1 rounded-pill bg-primary-soft pr-1 pl-3 text-small font-semibold text-primary"
+            className="inline-flex h-10 items-center gap-0.5 rounded-pill bg-primary-soft pr-1 pl-4 text-small font-semibold text-primary"
           >
             {value}
             <button
               type="button"
               aria-label={removeLabel(value)}
               onClick={() => onChange(values.filter((v) => v !== value))}
-              className="inline-flex size-9 items-center justify-center rounded-pill text-[16px]"
+              className="inline-flex size-8 items-center justify-center rounded-pill text-[16px]"
             >
               ×
             </button>
@@ -84,14 +84,14 @@ export function ChipInput({
               commit();
               setAdding(false);
             }}
-            className="h-tap min-w-[140px] flex-1 rounded-pill border border-line-strong bg-surface px-3 text-body"
+            className="h-10 min-w-[140px] flex-1 rounded-pill bg-surface px-4 text-[15px] shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
           />
         ) : (
           !full && (
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="min-h-tap rounded-pill border border-dashed border-primary bg-transparent px-3 text-small font-semibold text-primary"
+              className="h-10 rounded-pill bg-transparent px-4 text-small font-semibold text-primary shadow-[inset_0_0_0_1px_var(--color-line-accent)]"
             >
               {addLabel}
             </button>

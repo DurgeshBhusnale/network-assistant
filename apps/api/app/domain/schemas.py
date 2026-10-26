@@ -125,6 +125,9 @@ class ContactSummary(BaseModel):
 class ContactList(BaseModel):
     items: list[ContactSummary]
     next_cursor: str | None
+    total: int | None = Field(
+        default=None, description="Everyone in the list (ignores q); first page only"
+    )
 
 
 class ContactCreate(_In):
@@ -332,6 +335,9 @@ class GoalStripOut(BaseModel):
     total_days: int
     days_left: int | None
     stats: list[StatOut]
+    success_count: int = Field(description="Outcomes reached so far (e.g. referrals)")
+    success_target: int | None = Field(description="Goal target, when the pack has one")
+    success_label: str = Field(description="Pack label for the outcome, e.g. 'Referrals'")
 
 
 class TodayOut(BaseModel):
@@ -406,6 +412,7 @@ class CompanyProgress(BaseModel):
     company: str
     people: int
     status: str
+    reached: bool = Field(default=False, description="The pack's outcome was reached here")
 
 
 class ProgressOut(BaseModel):

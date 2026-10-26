@@ -44,8 +44,8 @@ export default function NewPersonPage() {
 
   return (
     <>
-      <PageHeader title={copy.contactForm.newTitle} />
-      <div className="px-screen-x pt-2">
+      <PageHeader title={copy.contactForm.newTitle} back="/people" showSettings={false} />
+      <div className="px-screen-x pt-5">
         <ContactForm
           initial={emptyContact}
           multi={false}

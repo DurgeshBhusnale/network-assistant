@@ -44,8 +44,8 @@ export default function GoalSettingsPage() {
   const t = copy.goalSettings;
   return (
     <>
-      <PageHeader title={t.title} eyebrow={copy.settings.title} />
-      <div className="flex flex-col gap-gap-cards px-screen-x pt-2">
+      <PageHeader title={t.title} back="/settings" showSettings={false} />
+      <div className="flex flex-col gap-gap-cards px-screen-x pt-5">
         {goal.isPending ? (
           <p role="status" className="text-small text-muted">
             {copy.common.loading}…
@@ -57,7 +57,7 @@ export default function GoalSettingsPage() {
             <p className="text-body text-ink-2">{t.none}</p>
             <Link
               href="/onboarding/goal"
-              className="inline-flex min-h-tap items-center justify-center rounded-button bg-primary px-4 text-[14px] font-semibold text-on-primary no-underline"
+              className="inline-flex min-h-button items-center justify-center rounded-button bg-grad px-5 text-[15px] font-semibold text-on-primary no-underline hover:text-on-primary"
             >
               {t.start}
             </Link>
@@ -160,7 +160,7 @@ function GoalForm({ goal }: { goal: Goal }) {
             rows={3}
             value={links}
             onChange={(e) => setLinks(e.target.value)}
-            className="rounded-button border border-line-strong bg-surface p-3 text-body"
+            className="rounded-button bg-surface p-4 text-[16px] hairline-strong placeholder:text-muted focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none"
           />
         </div>
         <Button

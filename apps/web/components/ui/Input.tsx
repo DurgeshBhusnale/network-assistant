@@ -17,8 +17,8 @@ export function Input({ label, hint, error, className, ...rest }: InputProps) {
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-small font-semibold">
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-small font-semibold text-ink">
         {label}
       </label>
       <input
@@ -26,8 +26,9 @@ export function Input({ label, hint, error, className, ...rest }: InputProps) {
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          "h-[46px] rounded-button border bg-surface px-3 text-body text-ink",
-          error ? "border-danger" : "border-line-strong",
+          "h-field rounded-button bg-surface px-4 text-[16px] text-ink placeholder:text-muted",
+          "focus:shadow-[inset_0_0_0_1.5px_var(--color-primary-ring)] focus:outline-none",
+          error ? "shadow-[inset_0_0_0_1.5px_var(--color-danger)]" : "hairline-strong",
           className,
         )}
         {...rest}

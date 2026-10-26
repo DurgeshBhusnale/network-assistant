@@ -182,7 +182,22 @@ async def test_reply_outcome_thanks_and_progress(users: MakeUser) -> None:
     assert progress["warm_replies_this_week"] == 1
     funnel = {step["key"]: step["count"] for step in progress["funnel"]}
     assert funnel["referred"] == 1
-    thank = [i for i in ok(await u.get("/v1/today"))["items"] if i["contact"]["id"] == pid]
+    companies = {c["company"]: c for c in progress["by_company"]}
+    assert companies["Zoho"]["people"] == 1 and companies["Zoho"]["reached"] is True
+    assert companies["Razorpay"] == {
+        "company": "Razorpay",
+        "people": 0,
+        "status": "No one yet",
+        "reached": False,
+    }
+    today = ok(await u.get("/v1/today"))
+    strip = today["goal"]
+    assert (strip["success_count"], strip["success_target"], strip["success_label"]) == (
+        1,
+        4,
+        "Referrals",
+    )
+    thank = [i for i in today["items"] if i["contact"]["id"] == pid]
     assert [i["stage"] for i in thank] == ["thank"]
 
 

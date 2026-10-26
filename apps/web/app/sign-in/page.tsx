@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { Button } from "@/components/ui/Button";
+import { LockIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { supabase } from "@/lib/auth/supabase";
@@ -72,11 +73,11 @@ export default function SignInPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center gap-6 px-screen-x py-8">
-      <div className="flex flex-col gap-2">
-        <span className="text-small font-semibold text-muted">{copy.appName}</span>
-        <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{t.title}</h1>
-        <p className="text-body text-ink-2">{t.subtitle}</p>
+    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center gap-6 px-screen-x py-10">
+      <div className="flex flex-col gap-3">
+        <span className="label-caps text-primary">{copy.appName}</span>
+        <h1 className="m-0 title-lg">{t.title}</h1>
+        <p className="m-0 text-body leading-[22px] text-muted">{t.subtitle}</p>
       </div>
 
       <Button variant="secondary" size="lg" fullWidth onClick={google}>
@@ -106,7 +107,7 @@ export default function SignInPage() {
         </form>
       ) : (
         <form onSubmit={verify} className="flex flex-col gap-3">
-          <p className="text-small text-ink-2" aria-live="polite">
+          <p className="m-0 text-small text-ink-2" aria-live="polite">
             {t.codeSentTo(sentTo)}
           </p>
           <Input
@@ -133,11 +134,14 @@ export default function SignInPage() {
       )}
 
       {error && (
-        <p role="alert" className="text-small text-danger">
+        <p role="alert" className="m-0 text-small text-danger">
           {error}
         </p>
       )}
-      <p className="text-caption text-muted">{t.privacyLine}</p>
+      <p className="m-0 flex items-center gap-2 text-caption text-muted">
+        <LockIcon size={16} />
+        {t.privacyLine}
+      </p>
       <LegalLinks />
     </main>
   );

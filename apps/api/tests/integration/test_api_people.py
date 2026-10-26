@@ -64,12 +64,15 @@ async def test_contacts_search_and_paging(users: MakeUser, monkeypatch: pytest.M
         await a.contact(f"Person {i:02d}", company="Zoho" if i % 2 else "Infosys")
     first = ok(await a.get("/v1/contacts"))
     assert len(first["items"]) == 5 and first["next_cursor"]
+    assert first["total"] == 7  # whole list, shown as "7 contacts"
     rest = ok(await a.get("/v1/contacts", params={"cursor": first["next_cursor"]}))
+    assert rest["total"] is None  # only computed for the first page
     names = [c["full_name"] for c in first["items"] + rest["items"]]
     assert names == [f"Person {i:02d}" for i in range(7)]
     assert rest["next_cursor"] is None
     zoho = ok(await a.get("/v1/contacts", params={"q": "zoho"}))
     assert len(zoho["items"]) == 3
+    assert zoho["total"] == 7  # the count is of everyone, not the search
 
 
 async def test_linkedin_import_preview_then_idempotent_commit(users: MakeUser) -> None:
@@ -129,6 +132,7 @@ async def test_people_are_invisible_to_other_users(users: MakeUser) -> None:
     ]
     assert [p.status_code for p in probes] == [404] * len(probes)
     assert ok(await b.get("/v1/contacts"))["items"] == []
+    assert ok(await b.get("/v1/contacts"))["total"] == 0
     assert ok(await b.get("/v1/contacts", params={"q": "Priya"}))["items"] == []
 
     # B can hold the same phone number: dedupe is per user.

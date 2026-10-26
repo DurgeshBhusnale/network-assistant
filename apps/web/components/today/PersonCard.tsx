@@ -31,7 +31,7 @@ export function PersonCard({ item }: { item: SuggestionItem }) {
   const dismiss = useDismiss();
   const [menu, setMenu] = useState(false);
   const c = item.contact;
-  const meta = [c.title, c.company, c.how_known].filter(Boolean).join(" · ");
+  const meta = [c.title, c.company].filter(Boolean).join(" · ") || c.how_known;
   const sent = item.status === "sent";
 
   async function open() {
@@ -51,15 +51,15 @@ export function PersonCard({ item }: { item: SuggestionItem }) {
 
   return (
     <Card className={sent ? "opacity-70" : undefined}>
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-center gap-3.5">
         <Link
           href={`/people/${c.id}`}
-          className="flex min-w-0 items-center gap-2.5 text-ink no-underline"
+          className="flex min-w-0 flex-1 items-center gap-3.5 text-ink no-underline hover:text-ink"
         >
           <Avatar name={c.full_name} />
           <span className="flex min-w-0 flex-col">
-            <span className="truncate text-body font-semibold">{c.full_name}</span>
-            {meta && <span className="truncate text-small text-muted">{meta}</span>}
+            <span className="truncate text-lead leading-[22px] font-semibold">{c.full_name}</span>
+            {meta && <span className="truncate text-small leading-5 text-muted">{meta}</span>}
           </span>
         </Link>
         <StageBadge
@@ -68,7 +68,7 @@ export function PersonCard({ item }: { item: SuggestionItem }) {
         />
       </div>
       {item.reasons.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {item.reasons.map((r) => (
             <Chip key={r.text} tone={r.highlight ? "highlight" : "neutral"}>
               {r.text}
@@ -77,11 +77,15 @@ export function PersonCard({ item }: { item: SuggestionItem }) {
         </div>
       )}
       {!sent && (
-        <div className="flex gap-2">
+        <div className="flex gap-2.5">
           <Button className="flex-1" loading={draft.isPending} onClick={() => void open()}>
             {draft.isPending ? t.writing : item.draft_id ? t.viewDraft : t.openDraft}
           </Button>
-          <IconButton label={t.snooze} onClick={() => setMenu(true)}>
+          <IconButton
+            label={t.snooze}
+            className="size-button rounded-button text-ink-2"
+            onClick={() => setMenu(true)}
+          >
             <SnoozeIcon />
           </IconButton>
         </div>

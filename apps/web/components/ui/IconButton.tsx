@@ -20,7 +20,7 @@ export function IconButton({
       type={type}
       aria-label={label}
       className={cn(
-        "inline-flex size-tap shrink-0 items-center justify-center rounded-button border border-line bg-surface text-ink-2",
+        "inline-flex size-tap shrink-0 items-center justify-center rounded-pill bg-surface text-ink hairline-strong",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}

@@ -24,9 +24,14 @@ export default function StyleStepPage() {
   return (
     <>
       <ProgressSteps step={3} />
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{copy.style.title}</h1>
+      <h1 className="m-0 -mt-2 title">{copy.style.title}</h1>
       <StyleForm initial={style.data} onSaved={() => void finish()} />
-      <Button variant="ghost" loading={update.isPending} onClick={() => void finish()}>
+      <Button
+        variant="ghost"
+        className="self-center"
+        loading={update.isPending}
+        onClick={() => void finish()}
+      >
         {copy.common.skipForNow}
       </Button>
     </>

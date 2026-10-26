@@ -119,6 +119,9 @@ def goal_strip(goal: Goal, pack: Pack, today: date, counts: dict[str, int]) -> G
         total_days=total,
         days_left=max(0, (goal.ends_on - today).days) if goal.ends_on else None,
         stats=stats,
+        success_count=counts.get(success.outcome, 0),
+        success_target=int(target) if isinstance(target, int) else None,
+        success_label=str(copy.get("success_label", success.outcome)),
     )
 
 
@@ -371,10 +374,13 @@ async def progress(
             status = "Not contacted yet"
         else:
             status = state_labels.get(best.state, best.state)
-        n = len(group)
-        prefix = f"{n} {'person' if n == 1 else 'people'} · " if n else ""
         by_company.append(
-            CompanyProgress(company=display.get(t, t), people=n, status=prefix + status)
+            CompanyProgress(
+                company=display.get(t, t),
+                people=len(group),
+                status=status,
+                reached=best is not None and best.state == "won",
+            )
         )
 
     target = goal.params.get(pack.success_metric.target_param)

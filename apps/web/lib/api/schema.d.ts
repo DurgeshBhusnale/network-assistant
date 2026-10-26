@@ -1074,6 +1074,12 @@ export interface components {
             company: string;
             /** People */
             people: number;
+            /**
+             * Reached
+             * @description The pack's outcome was reached here
+             * @default false
+             */
+            reached: boolean;
             /** Status */
             status: string;
         };
@@ -1133,6 +1139,11 @@ export interface components {
             items: components["schemas"]["ContactSummary"][];
             /** Next Cursor */
             next_cursor: string | null;
+            /**
+             * Total
+             * @description Everyone in the list (ignores q); first page only
+             */
+            total?: number | null;
         };
         /** ContactSummary */
         ContactSummary: {
@@ -1373,6 +1384,21 @@ export interface components {
             label: string;
             /** Stats */
             stats: components["schemas"]["StatOut"][];
+            /**
+             * Success Count
+             * @description Outcomes reached so far (e.g. referrals)
+             */
+            success_count: number;
+            /**
+             * Success Label
+             * @description Pack label for the outcome, e.g. 'Referrals'
+             */
+            success_label: string;
+            /**
+             * Success Target
+             * @description Goal target, when the pack has one
+             */
+            success_target: number | null;
             /** Title */
             title: string;
             /** Total Days */

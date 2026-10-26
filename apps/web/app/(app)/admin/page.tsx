@@ -26,8 +26,8 @@ export default function AdminPage() {
 
   return (
     <>
-      <PageHeader title={t.title} />
-      <div className="flex flex-col gap-gap-cards px-screen-x pt-2">
+      <PageHeader title={t.title} back="/settings" showSettings={false} />
+      <div className="flex flex-col gap-gap-cards px-screen-x pt-5">
         {metrics.isPending && (
           <p role="status" className="text-small text-muted">
             {copy.common.loading}…
@@ -41,7 +41,7 @@ export default function AdminPage() {
         {m && (
           <>
             <Card>
-              <h2 className="m-0 font-display text-h2 font-semibold">{t.funnel}</h2>
+              <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.funnel}</h2>
               <dl className="m-0">
                 {(Object.keys(t.funnelRows) as (keyof typeof t.funnelRows)[]).map((k) => (
                   <Row key={k} label={t.funnelRows[k]} value={m.funnel[k]} />

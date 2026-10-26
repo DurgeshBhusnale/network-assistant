@@ -58,27 +58,29 @@ export function ConsentsForm({
 
   return (
     <>
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{t.title}</h1>
-      <p className="text-body text-ink-2">{t.intro}</p>
+      <div>
+        <h1 className="m-0 title">{t.title}</h1>
+        <p className="m-0 mt-2 text-body leading-[22px] text-muted">{t.intro}</p>
+      </div>
 
       <section
         aria-label="Privacy notice"
-        className="flex max-h-[320px] flex-col gap-3 overflow-y-auto rounded-card border border-line bg-surface p-card"
+        className="flex max-h-[320px] flex-col gap-4 overflow-y-auto rounded-card bg-surface-2 p-card hairline"
       >
         {t.noticeSections.map((s) => (
           <div key={s.heading} className="flex flex-col gap-1">
-            <h2 className="m-0 text-small font-semibold">{s.heading}</h2>
-            <p className="text-small text-ink-2">{s.body}</p>
+            <h2 className="m-0 label-caps text-muted">{s.heading}</h2>
+            <p className="m-0 text-small leading-[21px] text-ink-2">{s.body}</p>
           </div>
         ))}
-        <p className="text-caption text-muted">{t.reviewNote}</p>
+        <p className="m-0 text-caption text-muted">{t.reviewNote}</p>
         <LegalLinks />
       </section>
 
       <CheckboxRow label={t.acceptNotice} checked={accepted} onChange={setAccepted} />
 
-      <h2 className="m-0 font-display text-h2 font-semibold">{t.choicesTitle}</h2>
-      <div className="flex flex-col gap-gap-cards">
+      <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.choicesTitle}</h2>
+      <div className="flex flex-col gap-3">
         {KINDS.map((kind) => (
           <CheckboxRow
             key={kind}
@@ -91,7 +93,7 @@ export function ConsentsForm({
       </div>
 
       {error && (
-        <p role="alert" className="text-small text-danger">
+        <p role="alert" className="m-0 text-small text-danger">
           {error}
         </p>
       )}

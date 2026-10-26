@@ -3,7 +3,7 @@
 exports[`AppShell > matches the snapshot 1`] = `
 <div>
   <main
-    class="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col pb-[calc(var(--nav-height)+env(safe-area-inset-bottom)+16px)]"
+    class="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col pb-[calc(var(--nav-height)+env(safe-area-inset-bottom)+24px)]"
   >
     <p>
       Content
@@ -11,64 +11,67 @@ exports[`AppShell > matches the snapshot 1`] = `
   </main>
   <nav
     aria-label="Main"
-    class="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
+    class="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
   >
     <div
-      class="grid h-nav grid-cols-5 items-center"
+      class="grid grid-cols-5 items-start px-2 pt-2.5 pb-3"
     >
       <a
         aria-current="page"
-        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline font-semibold text-primary"
+        class="relative flex min-h-[52px] flex-col items-center justify-start gap-[3px] text-tiny font-semibold tracking-[0.01em] no-underline hover:text-primary text-primary"
         href="/today"
       >
-        <svg
-          aria-hidden="true"
-          fill="none"
-          focusable="false"
-          height="22"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="22"
+        <span
+          class="flex h-[30px] w-14 items-center justify-center rounded-pill bg-primary-soft"
         >
-          <path
-            d="M3 11 12 4l9 7v9H3z"
-          />
-        </svg>
+          <svg
+            aria-hidden="true"
+            fill="none"
+            focusable="false"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+            width="22"
+          >
+            <path
+              d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"
+            />
+          </svg>
+        </span>
         Today
       </a>
       <a
-        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline text-muted"
+        class="relative flex min-h-[52px] flex-col items-center justify-start gap-[3px] text-tiny font-semibold tracking-[0.01em] no-underline hover:text-primary text-muted"
         href="/people"
       >
-        <svg
-          aria-hidden="true"
-          fill="none"
-          focusable="false"
-          height="22"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="22"
+        <span
+          class="flex h-[30px] w-14 items-center justify-center rounded-pill"
         >
-          <circle
-            cx="9"
-            cy="8"
-            r="4"
-          />
-          <path
-            d="M2 20c1-4 4-6 7-6s6 2 7 6M17 4a4 4 0 0 1 0 8M22 20c-.5-2.5-2-4.2-4-5"
-          />
-        </svg>
+          <svg
+            aria-hidden="true"
+            fill="none"
+            focusable="false"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+            width="22"
+          >
+            <path
+              d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.8c2 .6 3.5 2.2 3.5 5.2"
+            />
+          </svg>
+        </span>
         People
       </a>
       <a
         aria-label="Capture by voice"
-        class="-mt-6 flex size-fab items-center justify-center justify-self-center rounded-pill bg-accent text-on-accent shadow-fab"
+        class="-mt-[26px] flex size-fab items-center justify-center justify-self-center rounded-pill bg-grad text-on-primary shadow-fab hover:text-on-primary"
         data-testid="capture-fab"
         href="/capture"
       >
@@ -80,64 +83,65 @@ exports[`AppShell > matches the snapshot 1`] = `
           stroke="currentColor"
           stroke-linecap="round"
           stroke-linejoin="round"
-          stroke-width="2"
+          stroke-width="1.8"
           viewBox="0 0 24 24"
           width="24"
         >
-          <rect
-            height="11"
-            rx="3"
-            width="6"
-            x="9"
-            y="3"
-          />
           <path
-            d="M5 11a7 7 0 0 0 14 0M12 18v3"
+            d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"
           />
         </svg>
       </a>
       <a
-        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline text-muted"
+        class="relative flex min-h-[52px] flex-col items-center justify-start gap-[3px] text-tiny font-semibold tracking-[0.01em] no-underline hover:text-primary text-muted"
         href="/progress"
       >
-        <svg
-          aria-hidden="true"
-          fill="none"
-          focusable="false"
-          height="22"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="22"
+        <span
+          class="flex h-[30px] w-14 items-center justify-center rounded-pill"
         >
-          <path
-            d="M4 20V10M10 20V4M16 20v-7M22 20H2"
-          />
-        </svg>
+          <svg
+            aria-hidden="true"
+            fill="none"
+            focusable="false"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+            width="22"
+          >
+            <path
+              d="M4 20v-6M10 20V5M16 20v-9M21 20H3"
+            />
+          </svg>
+        </span>
         Progress
       </a>
       <a
-        class="relative flex min-h-tap flex-col items-center justify-center gap-0.5 text-tiny no-underline text-muted"
+        class="relative flex min-h-[52px] flex-col items-center justify-start gap-[3px] text-tiny font-semibold tracking-[0.01em] no-underline hover:text-primary text-muted"
         href="/replies"
       >
-        <svg
-          aria-hidden="true"
-          fill="none"
-          focusable="false"
-          height="22"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="22"
+        <span
+          class="flex h-[30px] w-14 items-center justify-center rounded-pill"
         >
-          <path
-            d="M21 12a8 8 0 0 1-11.8 7L3 21l2-6A8 8 0 1 1 21 12z"
-          />
-        </svg>
+          <svg
+            aria-hidden="true"
+            fill="none"
+            focusable="false"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+            width="22"
+          >
+            <path
+              d="M4 5h16v11H9l-5 4z"
+            />
+          </svg>
+        </span>
         Replies
       </a>
     </div>

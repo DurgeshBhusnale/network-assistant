@@ -32,7 +32,7 @@ export function OnboardingPlaceholderStep({
   return (
     <>
       <ProgressSteps step={step} />
-      <h1 className="m-0 font-display text-h1 font-bold tracking-[-0.01em]">{title}</h1>
+      <h1 className="m-0 title">{title}</h1>
       <p className="text-body text-ink-2">{body}</p>
       {update.isError && (
         <p role="alert" className="text-small text-danger">

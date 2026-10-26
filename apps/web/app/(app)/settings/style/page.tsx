@@ -9,8 +9,8 @@ export default function SettingsStylePage() {
   const style = useStyle();
   return (
     <>
-      <PageHeader title={copy.settings.writingStyle} />
-      <div className="px-screen-x pt-2">
+      <PageHeader title={copy.settings.writingStyle} back="/settings" showSettings={false} />
+      <div className="px-screen-x pt-5">
         {style.isPending ? (
           <p role="status" className="text-small text-muted">
             {copy.common.loading}…

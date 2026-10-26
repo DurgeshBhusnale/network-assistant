@@ -2,6 +2,8 @@
 
 import { useId } from "react";
 
+import { cn } from "./cn";
+
 /** Full-width labelled checkbox with an optional detail line; the whole row is the target. */
 export function CheckboxRow({
   label,
@@ -18,7 +20,10 @@ export function CheckboxRow({
   return (
     <label
       htmlFor={id}
-      className="flex min-h-tap cursor-pointer items-start gap-3 rounded-card border border-line bg-surface p-card"
+      className={cn(
+        "flex min-h-tap cursor-pointer items-start gap-3.5 rounded-tile p-4",
+        checked ? "bg-selected ring-selected" : "bg-surface hairline",
+      )}
     >
       <input
         id={id}
@@ -26,12 +31,12 @@ export function CheckboxRow({
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         aria-describedby={detail ? `${id}-detail` : undefined}
-        className="mt-0.5 size-5 shrink-0 accent-[var(--color-primary)]"
+        className="mt-0.5 size-5 shrink-0 accent-[var(--color-grad-to)]"
       />
       <span className="flex flex-col gap-0.5">
-        <span className="text-body font-semibold">{label}</span>
+        <span className="text-[16px] leading-[22px] font-semibold">{label}</span>
         {detail && (
-          <span id={`${id}-detail`} className="text-small text-muted">
+          <span id={`${id}-detail`} className="text-small leading-5 text-muted">
             {detail}
           </span>
         )}

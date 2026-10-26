@@ -558,6 +558,12 @@
             "title": "People",
             "type": "integer"
           },
+          "reached": {
+            "default": false,
+            "description": "The pack's outcome was reached here",
+            "title": "Reached",
+            "type": "boolean"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -804,6 +810,18 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Everyone in the list (ignores q); first page only",
+            "title": "Total"
           }
         },
         "required": [
@@ -1597,6 +1615,28 @@
             "title": "Stats",
             "type": "array"
           },
+          "success_count": {
+            "description": "Outcomes reached so far (e.g. referrals)",
+            "title": "Success Count",
+            "type": "integer"
+          },
+          "success_label": {
+            "description": "Pack label for the outcome, e.g. 'Referrals'",
+            "title": "Success Label",
+            "type": "string"
+          },
+          "success_target": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Goal target, when the pack has one",
+            "title": "Success Target"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -1613,7 +1653,10 @@
           "day_number",
           "total_days",
           "days_left",
-          "stats"
+          "stats",
+          "success_count",
+          "success_target",
+          "success_label"
         ],
         "title": "GoalStripOut",
         "type": "object"

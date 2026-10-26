@@ -86,7 +86,15 @@ async def list_contacts(
     next_cursor = (
         _encode_cursor(rows[-1].full_name.lower(), rows[-1].id) if has_more and rows else None
     )
-    return ContactList(items=[summary(c) for c in rows], next_cursor=next_cursor)
+    total: int | None = None
+    if cursor is None:  # the count only matters for the header, i.e. the first page
+        count = await session.scalar(
+            select(func.count(Contact.id)).where(
+                Contact.user_id == user_id, Contact.deleted_at.is_(None)
+            )
+        )
+        total = int(count or 0)
+    return ContactList(items=[summary(c) for c in rows], next_cursor=next_cursor, total=total)
 
 
 async def get_contact(session: AsyncSession, user_id: uuid.UUID, contact_id: uuid.UUID) -> Contact:

@@ -1,78 +1,120 @@
-/* Design tokens — Networking Assistant v1
-   Source: Design canvas "Networking Assistant App Screens" (claude.ai).
+/* Design tokens — Networking Assistant v4
+   Source: design/screens/networking-assistant-v4.dc.html ("00 · Design system · v4").
+   "Quiet, spacious, precise. 24px gutters, an 8px rhythm, hairline borders instead of heavy
+   shadows, and one gradient reserved for the primary action."
    Mapped into Tailwind v4 with `@theme inline` in apps/web/app/globals.css.
    Components must reference tokens, never raw hex values. */
 
 :root {
   /* Surfaces */
-  --color-bg: #F3F5F7;            /* app ground */
-  --color-surface: #FFFFFF;       /* cards, sheets, nav */
-  --color-surface-dark: #14171F;  /* goal strip, stats card, recorder panel */
+  --color-bg: #F4F5FD;              /* app ground (bottom of the canvas gradient) */
+  --color-canvas-top: #FFFFFF;      /* top of the canvas gradient */
+  --color-surface: #FFFFFF;         /* cards, sheets, nav */
+  --color-surface-2: #F4F5FD;       /* tinted panels inside cards, tag chips */
+  --color-field: #F1F2FA;           /* search field */
+  --color-hero-from: #141B4D;       /* indigo ink: Today hero card, voice capture panel */
+  --color-hero-to: #32258A;
 
   /* Text */
-  --color-ink: #14171F;           /* primary text */
-  --color-ink-2: #3E4450;         /* secondary text on light */
-  --color-muted: #5B6270;         /* captions, meta (passes 4.5:1 on bg and surface) */
+  --color-ink: #14183A;             /* primary text */
+  --color-ink-2: #4A5075;           /* secondary text, tag text */
+  --color-muted: #5F658A;           /* captions, meta, section labels */
   --color-on-dark: #FFFFFF;
-  --color-on-dark-muted: #C9CED8;
-  --color-on-dark-soft: #E4E7EC;  /* live transcript on the recorder panel */
+  --color-on-dark-muted: #C9CFFF;   /* labels on the indigo hero */
+  --color-on-dark-soft: #E4E7FF;    /* body text on the indigo hero */
 
   /* Lines */
-  --color-line: #E2E5EA;          /* card borders */
-  --color-line-strong: #D9DDE4;   /* inputs */
-  --color-line-soft: #EEF0F3;     /* dividers inside cards */
+  --color-line: #E6E8F4;            /* hairline borders and dividers */
+  --color-line-strong: #D5D9EE;     /* inputs, secondary buttons, chips */
+  --color-line-soft: #E1E4F3;       /* progress track, timeline rail */
+  --color-line-accent: #B8BFEA;     /* dashed "+ Add" chip */
 
   /* Brand */
-  --color-primary: #2340C9;       /* primary buttons, links, active nav */
-  --color-primary-hover: #1A2F96;
-  --color-primary-soft: #E8ECFC;  /* selected states, "Ask" badge bg */
+  --color-primary: #3D3FC0;         /* accent text, links, active nav */
+  --color-primary-hover: #2A2C9A;
+  --color-primary-soft: #EEF0FF;    /* tonal buttons, "Ask" badge, active nav pill */
+  --color-primary-ring: #5B5FE0;    /* selected card and focused field outline */
+  --color-selected: #F3F4FF;        /* selected card fill */
   --color-on-primary: #FFFFFF;
+  --color-grad-from: #3B5BDB;       /* the one gradient: primary action only */
+  --color-grad-to: #6D4AE8;
+  --color-grad-soft-from: #8FA4FF;  /* progress fill on the indigo hero */
+  --color-grad-soft-to: #C4B5FF;
 
-  --color-accent: #F2A33A;        /* marigold: capture FAB, highlights, referral counts */
-  --color-on-accent: #2A1700;
-  --color-accent-soft: #FDF0DC;   /* reason chips, next-step card */
-  --color-accent-text: #7A4300;   /* text on accent-soft */
+  /* Tints */
+  --color-tint-from: #E4E9FF;       /* next-step card */
+  --color-tint-to: #EBE0FF;
+  --color-info-from: #E3F3FF;       /* referral / done cards */
+  --color-info-to: #E4E9FF;
+  --color-info-text: #0B5E8A;       /* "Thank" badge, info labels */
+
+  /* Stage badges */
+  --color-badge-neutral: #F1F2F9;   /* "Warm up", "Follow up" */
+  --color-badge-neutral-text: #4A5075;
+
+  /* Pipeline bars (lightest → strongest) */
+  --color-bar-1: #C9D2FF;
+  --color-bar-2: #A5B2FF;
+  --color-bar-3: #7F8CF2;
+  --color-bar-track: #EEF0F9;
+
+  /* Avatar tints: one hue per person (stable hash of the name), light fill + deep text */
+  --avatar-1-bg: oklch(0.93 0.04 235); --avatar-1-fg: oklch(0.36 0.1 235);
+  --avatar-2-bg: oklch(0.93 0.04 240); --avatar-2-fg: oklch(0.36 0.1 240);
+  --avatar-3-bg: oklch(0.93 0.04 250); --avatar-3-fg: oklch(0.36 0.1 250);
+  --avatar-4-bg: oklch(0.93 0.04 270); --avatar-4-fg: oklch(0.36 0.1 270);
+  --avatar-5-bg: oklch(0.93 0.04 290); --avatar-5-fg: oklch(0.36 0.1 290);
+  --avatar-6-bg: oklch(0.93 0.04 295); --avatar-6-fg: oklch(0.36 0.1 295);
 
   /* Semantic */
-  --color-success: #1C7A4D;       /* "Warm up"/"Follow up" badges, done states */
+  --color-success: #1C7A4D;
   --color-success-soft: #E3F4EA;
-  --color-send: #1F7A4A;          /* "Send on WhatsApp" button (generic green, not WhatsApp brand) */
-  --color-danger: #B4321F;        /* badges, destructive actions */
+  --color-danger: #B4321F;
+  --color-danger-soft: #FBE9E6;
 
-  /* Decorative (non-text) */
-  --color-waveform-idle: #4A505C; /* unplayed waveform bars on dark */
-  --color-dot-neutral: #9AA1AD;   /* neutral timeline dots */
+  /* Type: Bricolage Grotesque (display) + Figtree (text) */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif; /* 600 */
+  --font-body: 'Figtree', system-ui, sans-serif;                /* 400, 500, 600, 700 */
 
-  /* Type */
-  --font-display: 'Bricolage Grotesque', system-ui, sans-serif; /* weights 600, 700 */
-  --font-body: 'Instrument Sans', system-ui, sans-serif;        /* weights 400, 500, 600 */
-
-  --text-h1: 26px;      /* screen titles, 700, display font */
-  --text-h2: 18px;      /* section titles, 600, display font */
-  --text-body: 15px;    /* names, inputs, body */
-  --text-small: 13px;   /* meta lines, chips */
-  --text-caption: 12px; /* badges, helper text */
-  --text-tiny: 11.5px;  /* nav labels, stat labels */
-  --text-label-tracking: 0.06em; /* uppercase section labels, 13px/600, muted */
+  --text-display: 56px;   /* "1 of 4" (56–64), display font, -0.03em */
+  --text-title: 28px;     /* screen titles 28–32, display font, -0.02em */
+  --text-h1: 28px;
+  --text-h2: 18px;        /* section headings, 600, -0.01em */
+  --text-lead: 17px;      /* names on cards, draft text */
+  --text-body: 15px;      /* body 15–17 / 22–28 */
+  --text-small: 14px;     /* secondary 14 / 20 */
+  --text-caption: 13px;   /* meta */
+  --text-label: 12px;     /* uppercase labels, 700, 0.08em; badges 600 */
+  --text-tiny: 11px;      /* nav labels */
+  --text-label-tracking: 0.08em;
 
   /* Shape */
-  --radius-card: 14px;
-  --radius-panel: 16px;   /* dark goal strip, plan cards */
-  --radius-button: 10px;  /* 44px buttons */
-  --radius-button-lg: 12px; /* 52px primary CTA */
-  --radius-badge: 6px;
+  --radius-card: 24px;    /* cards */
+  --radius-panel: 28px;   /* hero card, draft card */
+  --radius-tile: 20px;    /* goal tiles */
+  --radius-button: 16px;  /* 48px buttons, inputs */
+  --radius-button-lg: 18px; /* 56px primary CTA, 52px secondary */
+  --radius-badge: 12px;
   --radius-pill: 999px;
 
-  /* Spacing (4/8 grid) */
-  --space-screen-x: 20px;
-  --space-card: 14px;
-  --gap-cards: 10px;
+  /* Spacing (8px rhythm) */
+  --space-screen-x: 24px;
+  --space-card: 20px;
+  --gap-cards: 16px;
+  --gap-section: 28px;
 
   /* Sizing */
   --tap-min: 44px;
-  --cta-height: 52px;
-  --nav-height: 76px;
-  --fab-size: 56px;
+  --button-height: 48px;
+  --cta-height: 56px;
+  --field-height: 52px;
+  --nav-height: 92px;
+  --fab-size: 58px;
 
-  --shadow-fab: 0 4px 12px rgba(20, 23, 31, 0.18);
+  /* Elevation: hairlines first, soft shadows only where the design has them */
+  --shadow-card: 0 0 0 1px var(--color-line), 0 12px 24px -16px rgba(20, 24, 58, 0.14);
+  --shadow-panel: 0 0 0 1px var(--color-line), 0 20px 40px -24px rgba(20, 24, 58, 0.2);
+  --shadow-hero: 0 20px 40px -20px rgba(50, 37, 138, 0.6);
+  --shadow-cta: 0 8px 20px -8px rgba(76, 79, 214, 0.55);
+  --shadow-fab: 0 10px 22px -6px rgba(76, 79, 214, 0.55), 0 0 0 6px var(--color-surface);
 }

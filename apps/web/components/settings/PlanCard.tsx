@@ -20,7 +20,7 @@ export function PlanCard() {
         : t.planPro(e.days_left ?? 0);
   return (
     <Card>
-      <h2 className="m-0 font-display text-h2 font-semibold">{t.planTitle}</h2>
+      <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.planTitle}</h2>
       <p className="text-body">{label}</p>
       {e.plan === "free" && (
         <Link href="/upgrade" className="font-semibold">
