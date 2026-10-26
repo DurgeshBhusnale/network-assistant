@@ -7,7 +7,7 @@ The coding agent updates this file at the end of every session. Newest entries a
 
 - **Current sprint:** core build (Sprints 0–8) and the full test pass done. Next: go-live credentials, Mumbai staging/prod projects, real-phone checks.
 - **Mode:** the build-fast phase (founder, 25 Oct 2026) ended with the full test pass on branch `sprint-9/test-pass`. Before that: build fast; testing deferred. No new automated tests and no E2E runs until the core sprints are done; each sprint ends with `pnpm check`, existing unit tests, a production build and a live API smoke run against the dev project. A full test pass (unit, integration incl. cross-user isolation, E2E, regression suite) happens after the core sprints.
-- **Branch:** `sprint-9/test-pass` (all sprint branches pushed; each builds on the previous)
+- **Branch:** `sprint-10/redesign` (all sprint branches pushed; each builds on the previous). PR #1 (`sprint-9/test-pass` → `main`) open.
 - **Last updated:** 25 Oct 2026
 
 ## Test pass (26 Oct 2026, branch `sprint-9/test-pass`)
@@ -101,6 +101,16 @@ Bugs found and fixed in the test pass:
 | Web → API proxy (`/api/v1/health` via :3100 → :8000) | ✅ manual (503 degraded, correct with no DB/Redis) |
 
 ## Decisions made during build
+
+Sprint 10 (v4 redesign + live AI, 26 Oct 2026):
+
+- v4 design system from the founder's canvas: tokens rewritten in `design/tokens.css` (ink #14183A, accent text #3D3FC0, hairlines, the one blue→violet gradient for primary actions, indigo hero, tint/info gradients, 6 avatar hues), Figtree replaces Instrument Sans, `docs/04-DESIGN-GUIDE.md` rewritten. Reference files belong in `design/screens/` (founder to copy `Networking Assistant v4.dc.html`, `BottomNavV4.dc.html`, `support.js` there).
+- Bottom nav only on the four tab screens; detail screens (draft, person, capture, settings, add/edit/import) use a back control, and Draft/Upgrade/onboarding keep their actions in a pinned `BottomBar`.
+- Element defaults (`a`, `body`) moved into `@layer base`: unlayered rules were overriding Tailwind utilities (links turned accent blue).
+- Founder decisions: People list without filter chips for now; Pro card only when `PRO_ENABLED`; contact count added (`ContactList.total`, first page only).
+- API additions for the design: `GoalStripOut.success_count/success_target/success_label` ("1 of 4 referrals" from pack config), `CompanyProgress.status` without the "N people ·" prefix plus `reached`.
+- Live AI (`AI_MODE=live` in `.env`) smoke found and fixed: (1) drafts invented facts when a contact had no notes ("saw your recent post…") and the fact check passed it; draft/factcheck v1 prompts tightened (edited in place, pre-launch): warm-ups mention only noted specifics, never "saw/read/heard" claims, open closing question; fact check treats such statements and event-assuming questions as claims. Re-run: 5/5 drafts factual. (2) AI relevance labelling found nobody after an import (goal_contacts only existed after Today ran); `label_contacts` now creates them first.
+- Live costs: a full run (import, labelling, 6 drafts with fact checks, 1 rewrite, 1 capture) ≈ ₹0.21. Draft generation takes 8–15 s on the dev setup (generation + fact check + any regeneration, plus Seoul round trips).
 
 Sprint 8:
 
@@ -281,6 +291,7 @@ Sprint 0 build:
 - **Go-live credentials:** step-by-step guide in `docs/GO-LIVE-CREDENTIALS.md` (the items below give the variable names).
 
 - **CI:** the integration and E2E jobs now run against the CLI Supabase stack with its keys exported; E2E is back on PRs (founder rule: while under 5 minutes). Not yet run on GitHub: check the first PR run.
+- **First Today load of the day ~10 s on dev** (ranking does many queries; ~125 ms each to Seoul). Fine co-located in Mumbai; batching the ranking queries is a later optimisation.
 - **Dev DB latency:** ~125 ms per round trip to Seoul (`/v1/today` ~2–3 s, `/v1/me` ~1 s, mostly round trips). Fine once API + DB are both in Mumbai; E2E timeouts are raised for now.
 - The draft screen saves edits twice when Send is tapped straight after typing (blur + before-send). Harmless; could dedupe later.
 - The fake extraction fixture's follow-up date (2026-10-26) will be in the past from tomorrow; nothing asserts on it.
@@ -317,6 +328,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 26 Oct 2026 — v4 redesign of every screen (tokens, fonts, components, layouts) with screenshot review; contact count; goal progress fields. `AI_MODE=live`: live smoke fixed invented facts in drafts (prompts) and AI labelling after imports. All checks, 469 API unit, 49 web unit, E2E 16/16 green.
 
 - 26 Oct 2026 — Full test pass: endpoint contracts for every route, table-driven engine/limits/import tests, integration suites against the dev project (isolation, send cap, free limits, webhooks, WhatsApp guard, export/delete, retention, RLS on every table, PII-free logs), E2E for the signed-in app, onboarding and send flows. Fixed 8 bugs (see Test pass). CI integration/E2E jobs updated for the local stack.
 

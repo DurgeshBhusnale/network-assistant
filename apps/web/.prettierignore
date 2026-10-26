@@ -5,3 +5,4 @@ test-results
 lib/api/schema.d.ts
 lib/api/openapi.json
 AGENTS.md
+e2e/.auth/
