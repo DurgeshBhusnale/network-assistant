@@ -100,7 +100,7 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
   const linkedinHidden = remindLater || (remindStored && !added.linkedin_csv);
 
   return (
-    <div className="flex flex-col gap-gap-cards">
+    <div className="flex flex-col gap-gap-cards lg:grid lg:max-w-[800px] lg:grid-cols-2 lg:items-start lg:gap-5">
       <input
         ref={vcfInput}
         type="file"
@@ -127,7 +127,7 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
       />
 
       {preview ? (
-        <Card aria-live="polite">
+        <Card aria-live="polite" className="lg:col-span-2">
           <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.previewTitle}</h2>
           <p className="m-0 text-body text-ink-2">
             {t.previewCounts(preview.counts.new, preview.counts.merged, preview.counts.skipped)}
@@ -203,7 +203,7 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
           )}
 
           {!linkedinHidden ? (
-            <Card>
+            <Card className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="m-0 text-[16px] leading-[22px] font-semibold">{t.linkedinTitle}</h2>
                 {added.linkedin_csv !== undefined && (
@@ -265,7 +265,7 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
       )}
 
       {error && (
-        <div role="alert" className="flex flex-col gap-1 text-small text-danger">
+        <div role="alert" className="flex flex-col gap-1 text-small text-danger lg:col-span-2">
           <span>{error.consent ? t.consentNeeded : error.message}</span>
           {error.consent && (
             <Link href="/onboarding/consents" className="font-semibold">
@@ -274,7 +274,7 @@ export function ImportPanel({ onAdded }: { onAdded?: (count: number) => void }) 
           )}
         </div>
       )}
-      <p className="m-0 flex items-center justify-center gap-2.5 text-center text-caption leading-[18px] text-muted">
+      <p className="m-0 flex items-center justify-center gap-2.5 text-center text-caption leading-[18px] text-muted lg:col-span-2 lg:justify-start">
         <LockIcon size={16} />
         {t.privacy}
       </p>

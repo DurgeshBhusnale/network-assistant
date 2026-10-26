@@ -2,8 +2,181 @@
 
 exports[`AppShell > matches the snapshot 1`] = `
 <div>
+  <aside
+    class="fixed inset-y-0 left-0 z-10 hidden w-[var(--sidebar-width)] flex-col border-r border-line bg-surface px-5 pt-7 pb-6 lg:flex"
+  >
+    <a
+      class="flex h-10 items-center gap-3 px-2 text-ink no-underline hover:text-ink"
+      href="/today"
+    >
+      <span
+        aria-hidden="true"
+        class="size-8 rounded-[10px] bg-grad"
+      />
+      <span
+        class="font-display text-[20px] font-semibold tracking-[-0.02em]"
+      >
+        [App name]
+      </span>
+    </a>
+    <a
+      class="mt-7 flex h-[52px] items-center justify-center gap-2.5 rounded-button bg-grad text-[15px] font-semibold text-on-primary no-underline shadow-cta hover:text-on-primary"
+      href="/capture"
+    >
+      <svg
+        aria-hidden="true"
+        fill="none"
+        focusable="false"
+        height="20"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="1.8"
+        viewBox="0 0 24 24"
+        width="20"
+      >
+        <path
+          d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"
+        />
+      </svg>
+      Voice capture
+    </a>
+    <nav
+      aria-label="Main"
+      class="mt-6 flex flex-col gap-1"
+    >
+      <a
+        aria-current="page"
+        class="flex h-12 items-center gap-3.5 rounded-[14px] px-3.5 text-[15px] font-semibold no-underline bg-primary-soft text-primary hover:text-primary"
+        href="/today"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"
+          />
+        </svg>
+        <span
+          class="flex-1"
+        >
+          Today
+        </span>
+      </a>
+      <a
+        class="flex h-12 items-center gap-3.5 rounded-[14px] px-3.5 text-[15px] font-semibold no-underline text-muted hover:bg-surface-2 hover:text-ink"
+        href="/people"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.8c2 .6 3.5 2.2 3.5 5.2"
+          />
+        </svg>
+        <span
+          class="flex-1"
+        >
+          People
+        </span>
+      </a>
+      <a
+        class="flex h-12 items-center gap-3.5 rounded-[14px] px-3.5 text-[15px] font-semibold no-underline text-muted hover:bg-surface-2 hover:text-ink"
+        href="/progress"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M4 20v-6M10 20V5M16 20v-9M21 20H3"
+          />
+        </svg>
+        <span
+          class="flex-1"
+        >
+          Progress
+        </span>
+      </a>
+      <a
+        class="flex h-12 items-center gap-3.5 rounded-[14px] px-3.5 text-[15px] font-semibold no-underline text-muted hover:bg-surface-2 hover:text-ink"
+        href="/replies"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          focusable="false"
+          height="22"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          width="22"
+        >
+          <path
+            d="M4 5h16v11H9l-5 4z"
+          />
+        </svg>
+        <span
+          class="flex-1"
+        >
+          Replies
+        </span>
+      </a>
+    </nav>
+    <div
+      class="flex-1"
+    />
+    <a
+      aria-label="Settings"
+      class="flex items-center gap-3 border-t border-line pt-5 text-ink no-underline hover:text-ink"
+      href="/settings"
+    >
+      <span
+        class="flex size-10 shrink-0 items-center justify-center rounded-pill bg-primary-soft font-bold text-primary"
+      >
+        ·
+      </span>
+      <span
+        class="flex min-w-0 flex-col"
+      >
+        <span
+          class="truncate text-[15px] leading-5 font-semibold"
+        >
+          Settings
+        </span>
+      </span>
+    </a>
+  </aside>
   <main
-    class="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col pb-[calc(var(--nav-height)+env(safe-area-inset-bottom)+24px)]"
+    class="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col pb-[calc(var(--nav-height)+env(safe-area-inset-bottom)+24px)] lg:mr-0 lg:ml-[var(--sidebar-width)] lg:w-[calc(100%-var(--sidebar-width))] lg:max-w-[1200px] lg:pb-12"
   >
     <p>
       Content
@@ -11,7 +184,7 @@ exports[`AppShell > matches the snapshot 1`] = `
   </main>
   <nav
     aria-label="Main"
-    class="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+    class="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
   >
     <div
       class="grid grid-cols-5 items-start px-2 pt-2.5 pb-3"

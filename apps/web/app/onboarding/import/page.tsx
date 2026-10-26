@@ -22,13 +22,15 @@ export default function ImportStepPage() {
 
   return (
     <>
-      <ProgressSteps step={2} />
+      <div className="lg:max-w-[640px]">
+        <ProgressSteps step={2} />
+      </div>
       <div className="-mt-1">
         <h1 className="m-0 title">{copy.importFlow.title}</h1>
         <p className="m-0 mt-2 text-body leading-[22px] text-muted">{copy.importFlow.subtitle}</p>
       </div>
       <ImportPanel onAdded={(n) => setCount((c) => c + n)} />
-      <BottomBar variant="fade">
+      <BottomBar variant="fade" desktop="footer">
         <Button
           size="lg"
           variant={count > 0 ? "primary" : "secondary"}

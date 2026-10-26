@@ -10,7 +10,7 @@ export default function SettingsStylePage() {
   return (
     <>
       <PageHeader title={copy.settings.writingStyle} back="/settings" showSettings={false} />
-      <div className="px-screen-x pt-5">
+      <div className="px-screen-x pt-5 lg:max-w-[816px] lg:pt-8">
         {style.isPending ? (
           <p role="status" className="text-small text-muted">
             {copy.common.loading}…

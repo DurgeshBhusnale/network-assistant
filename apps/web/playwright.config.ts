@@ -31,6 +31,16 @@ export default defineConfig({
       use: { ...devices["Pixel 7"], storageState: AUTH_FILE },
     },
     {
+      // ADR-0011: the same app at desktop width uses the web layout.
+      name: "desktop",
+      testMatch: /\.desktop\.spec\.ts$/,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        storageState: AUTH_FILE,
+      },
+    },
+    {
       name: "onboarding",
       testMatch: /\.onboarding\.spec\.ts$/,
       use: { ...devices["Pixel 7"], storageState: FRESH_AUTH_FILE },
@@ -42,7 +52,13 @@ export default defineConfig({
       command: `uv run uvicorn --factory app.main:create_app --port ${API_PORT}`,
       cwd: "../api",
       // One shared test user makes many quick page loads; the product limit (60/min) would 429.
-      env: { AI_MODE: "fake", RATE_LIMIT_GENERAL_PER_MINUTE: "1000" },
+      env: {
+        AI_MODE: "fake",
+        RATE_LIMIT_GENERAL_PER_MINUTE: "1000",
+        // Small pool: the dev database pooler is shared with `pnpm dev` (~15 clients in total).
+        DB_POOL_SIZE: "3",
+        DB_MAX_OVERFLOW: "0",
+      },
       url: `http://localhost:${API_PORT}/v1/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
@@ -50,6 +66,8 @@ export default defineConfig({
     {
       // Production build: the service worker only registers in production.
       command: `pnpm exec next build && pnpm exec next start --port ${PORT}`,
+      // The web app proxies /api/* to the E2E API (read at build time by next.config.ts).
+      env: { API_BASE_URL: `http://localhost:${API_PORT}` },
       url: `${BASE_URL}/offline`,
       reuseExistingServer: !process.env.CI,
       timeout: 420_000,

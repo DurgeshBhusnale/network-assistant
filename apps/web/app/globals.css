@@ -132,12 +132,18 @@
   letter-spacing: var(--text-label-tracking);
   text-transform: uppercase;
 }
+/* Screen titles: 28 / 32 px on the phone, 36 px on desktop (web design). */
 @utility title {
   font-family: var(--font-bricolage), system-ui, sans-serif;
   font-size: var(--text-title);
   line-height: 34px;
   font-weight: 600;
   letter-spacing: -0.02em;
+  @media (min-width: 1024px) {
+    font-size: 36px;
+    line-height: 44px;
+    letter-spacing: -0.025em;
+  }
 }
 @utility title-lg {
   font-family: var(--font-bricolage), system-ui, sans-serif;
@@ -145,6 +151,10 @@
   line-height: 38px;
   font-weight: 600;
   letter-spacing: -0.025em;
+  @media (min-width: 1024px) {
+    font-size: 36px;
+    line-height: 44px;
+  }
 }
 @utility no-scrollbar {
   scrollbar-width: none;

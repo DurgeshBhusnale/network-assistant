@@ -113,7 +113,7 @@ function SettingsForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <div className="flex flex-col gap-gap-cards px-screen-x pt-5">
+    <div className="flex flex-col gap-gap-cards px-screen-x pt-5 lg:max-w-[816px] lg:pt-8">
       <Card>
         <h2 className="m-0 text-h2 font-semibold tracking-[-0.01em]">{t.profile}</h2>
         <Input

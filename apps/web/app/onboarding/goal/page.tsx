@@ -79,10 +79,12 @@ export default function GoalPage() {
 
   return (
     <>
-      <ProgressSteps step={1} />
+      <div className="lg:max-w-[640px]">
+        <ProgressSteps step={1} />
+      </div>
       <h1 className="m-0 -mt-2 title">{t.title}</h1>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:max-w-[760px] lg:grid-cols-4">
         {packs.data?.map((pack) => {
           const isActive = pack.status === "active";
           const isSelected = pack.id === selected?.id;
@@ -120,7 +122,7 @@ export default function GoalPage() {
         })}
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 lg:grid lg:max-w-[760px] lg:grid-cols-2 lg:items-start lg:gap-x-5 lg:gap-y-6">
         <Input
           label={t.roleLabel}
           placeholder={t.rolePlaceholder}
@@ -152,7 +154,7 @@ export default function GoalPage() {
         />
 
         {showLinks ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 lg:col-span-2">
             <label htmlFor="job-links" className="text-small font-semibold">
               {t.jobLinksLabel}
             </label>
@@ -169,7 +171,11 @@ export default function GoalPage() {
             </p>
           </div>
         ) : (
-          <Button variant="ghost" className="self-start" onClick={() => setShowLinks(true)}>
+          <Button
+            variant="ghost"
+            className="self-start lg:col-span-2 lg:justify-self-start"
+            onClick={() => setShowLinks(true)}
+          >
             {t.jobLinksToggle}
           </Button>
         )}
@@ -180,7 +186,7 @@ export default function GoalPage() {
           {error}
         </p>
       )}
-      <BottomBar variant="fade">
+      <BottomBar variant="fade" desktop="footer">
         <Button
           size="lg"
           fullWidth

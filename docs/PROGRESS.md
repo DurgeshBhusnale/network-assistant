@@ -102,6 +102,13 @@ Bugs found and fixed in the test pass:
 
 ## Decisions made during build
 
+Sprint 10b (desktop web layout, 26 Oct 2026):
+
+- ADR-0011: one responsive app; below 1024 px the v4 mobile design is unchanged, from 1024 px the founder's web design ("Networking Assistant Web"): sidebar (`WebSidebar`), two-column screens, People table, split onboarding / capture / upgrade. Implemented with `lg:` variants only; `BottomBar` gained `desktop="card" | "footer" | "inline"`; `--space-screen-x` is 56 px on desktop.
+- Desktop E2E project (1440 × 900, `*.desktop.spec.ts`): sidebar navigation, no bottom nav, no horizontal scroll (caught an 8 px overflow), capture full-bleed.
+- E2E now starts its own API on :8100 with fake AI (`E2E_API_PORT`), never reusing `pnpm dev` (which runs live AI). Found while doing it: the dev session pooler caps clients at 15 and `pnpm dev` alone could reach 20 (API 5+5, worker 5+5), causing `EMAXCONNSESSION` 500s under load. Budget now API 4+2, worker 2+1 (`WORKER_DB_POOL_SIZE`/`WORKER_DB_MAX_OVERFLOW`), test runs 3; a unit test guards the total.
+- Desktop People shows "Import contacts" next to the designed "Add someone by hand" (import has no other entry point on desktop). Filter chips still deferred.
+
 Sprint 10 (v4 redesign + live AI, 26 Oct 2026):
 
 - v4 design system from the founder's canvas: tokens rewritten in `design/tokens.css` (ink #14183A, accent text #3D3FC0, hairlines, the one blue→violet gradient for primary actions, indigo hero, tint/info gradients, 6 avatar hues), Figtree replaces Instrument Sans, `docs/04-DESIGN-GUIDE.md` rewritten. Reference files belong in `design/screens/` (founder to copy `Networking Assistant v4.dc.html`, `BottomNavV4.dc.html`, `support.js` there).
@@ -328,6 +335,8 @@ Sprint 0 (USB port forwarding, see `docs/DEV-SETUP.md` §5; use a production bui
 - [ ] Airplane mode → open People → "You're offline" page; back online → Try again works.
 
 ## Session log
+
+- 26 Oct 2026 — Desktop web layout (ADR-0011) for every screen from the founder's web design, reviewed with 1440 × 900 screenshots; desktop E2E project; E2E isolated on its own fake-AI API; DB connection budget fixed (pooler 500s). Checks, 470 API unit, 53 web unit, E2E 18/18 green.
 
 - 26 Oct 2026 — v4 redesign of every screen (tokens, fonts, components, layouts) with screenshot review; contact count; goal progress fields. `AI_MODE=live`: live smoke fixed invented facts in drafts (prompts) and AI labelling after imports. All checks, 469 API unit, 49 web unit, E2E 16/16 green.
 

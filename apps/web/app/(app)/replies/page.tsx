@@ -37,18 +37,25 @@ function ThankCard({ logged, thankStage }: { logged: Logged; thankStage: string 
     }
   }
   return (
-    <section className="flex flex-col gap-4 rounded-card bg-info p-card">
-      <div className="flex items-center gap-3.5">
-        <Avatar name={logged.name} />
+    <section className="flex flex-col gap-4 rounded-card bg-info p-card lg:flex-row lg:items-center lg:gap-5 lg:rounded-panel lg:p-7">
+      <div className="flex items-center gap-3.5 lg:flex-1 lg:gap-5">
+        <Avatar name={logged.name} size="xl" />
         <div className="flex min-w-0 flex-col">
           <SectionLabel as="span" tone="info">
             {logged.outcomeLabel}
           </SectionLabel>
-          <span className="text-[16px] leading-[22px] font-semibold">{logged.name}</span>
+          <span className="text-[16px] leading-[22px] font-semibold lg:text-[20px] lg:leading-7 lg:tracking-[-0.01em]">
+            {logged.name}
+          </span>
+          <p className="m-0 mt-1 hidden text-small text-ink-2 lg:block">{t.thankBody}</p>
         </div>
       </div>
-      <p className="m-0 text-small text-ink-2">{t.thankBody}</p>
-      <Button loading={create.isPending} onClick={() => void draftThanks()}>
+      <p className="m-0 text-small text-ink-2 lg:hidden">{t.thankBody}</p>
+      <Button
+        className="lg:h-[52px] lg:px-7 lg:shadow-cta"
+        loading={create.isPending}
+        onClick={() => void draftThanks()}
+      >
         {t.draftThanks}
       </Button>
     </section>
@@ -153,10 +160,14 @@ export default function RepliesPage() {
   const empty = replies.data && items.length === 0 && logged.length === 0;
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-screen-x pt-6">
+    <div className="flex flex-1 flex-col gap-5 px-screen-x pt-6 lg:gap-8 lg:pt-10">
       <header>
         <h1 className="m-0 title-lg">{t.title}</h1>
-        {!empty && <p className="m-0 mt-2 text-body leading-[23px] text-muted">{t.intro}</p>}
+        {!empty && (
+          <p className="m-0 mt-2 max-w-[560px] text-body leading-[23px] text-muted lg:text-[16px] lg:leading-6">
+            {t.intro}
+          </p>
+        )}
       </header>
       {logged.map((l) => (
         <ThankCard key={l.contactId} logged={l} thankStage={thankStage} />
@@ -167,14 +178,18 @@ export default function RepliesPage() {
         </p>
       )}
       {empty && <EmptyState Icon={ChatIcon} title={t.emptyTitle} body={t.empty} />}
-      {items.map((item) => (
-        <ReplyCard
-          key={item.contact.id}
-          item={item}
-          outcomes={replies.data?.outcomes ?? []}
-          onOutcome={(l) => setLogged((all) => [l, ...all])}
-        />
-      ))}
+      {items.length > 0 && (
+        <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2">
+          {items.map((item) => (
+            <ReplyCard
+              key={item.contact.id}
+              item={item}
+              outcomes={replies.data?.outcomes ?? []}
+              onOutcome={(l) => setLogged((all) => [l, ...all])}
+            />
+          ))}
+        </div>
+      )}
       {!empty && (
         <p className="m-0 flex items-start gap-2 text-caption leading-[18px] text-muted">
           {t.whyBody}

@@ -34,7 +34,7 @@ export default function PrivacySettingsPage() {
   return (
     <>
       <PageHeader title={t.title} back="/settings" showSettings={false} />
-      <div className="flex flex-col gap-gap-cards px-screen-x pt-5">
+      <div className="flex flex-col gap-gap-cards px-screen-x pt-5 lg:max-w-[816px] lg:pt-8">
         {consents.isPending ? (
           <p role="status" className="text-small text-muted">
             {copy.common.loading}…

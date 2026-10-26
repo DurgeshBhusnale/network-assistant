@@ -1,11 +1,10 @@
+import { OnboardingFrame } from "@/components/shell/OnboardingFrame";
 import { RequireAuth } from "@/components/shell/Gates";
 
 export default function OnboardingLayout({ children }: LayoutProps<"/onboarding">) {
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col gap-section px-screen-x pt-6 pb-[150px]">
-        {children}
-      </main>
+      <OnboardingFrame>{children}</OnboardingFrame>
     </RequireAuth>
   );
 }

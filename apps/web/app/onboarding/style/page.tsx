@@ -23,7 +23,9 @@ export default function StyleStepPage() {
   if (style.isPending) return <FullScreenLoader />;
   return (
     <>
-      <ProgressSteps step={3} />
+      <div className="lg:max-w-[640px]">
+        <ProgressSteps step={3} />
+      </div>
       <h1 className="m-0 -mt-2 title">{copy.style.title}</h1>
       <StyleForm initial={style.data} onSaved={() => void finish()} />
       <Button

@@ -6,7 +6,7 @@
 
 ## Principles
 
-1. **Phone first.** Design at 390 × 844 (Android mid-range). Desktop centres a 480 px column.
+1. **Phone first, desktop too (ADR-0011).** Design at 390 × 844 (Android mid-range); from 1024 px the same screens switch to the web layout (below). Reference: `design/screens/Networking Assistant Web.dc.html` + `WebSidebar.dc.html`.
 2. **Today is a short list, never a database.** Max 7 cards; each card answers who, why now, what next.
 3. **One primary action per screen**, and only it gets the accent gradient. Everything else is secondary (hairline), tonal (soft accent) or ghost.
 4. **Calm, not gamified.** No streaks, confetti or guilt copy. Progress is factual.
@@ -78,6 +78,22 @@ Utilities in `apps/web/app/globals.css`: `bg-grad`, `bg-grad-bar`, `bg-hero`, `b
 | Voice capture | Indigo panel to the edge, radius 40 at the bottom: caps "Listening", prompt (24 display), gradient waveform, timer, white stop/record button; "Found N people" + ConfirmCards | Save |
 | Upgrade | Close; title 32; reason line; gradient-bordered Career Sprint card (badge, ₹799, Pay once · 60 days, 4 checks); Pro card only when `PRO_ENABLED`; bottom bar: Pay ₹799 with UPI, Pay by card, "Prices include GST" | Pay with UPI |
 | Sign in, Consents, Writing style, Settings, Admin, Legal, Offline | Not in the canvas: built from the same components (title 28–32, cards, hairline fields, gradient primary). | — |
+
+## Desktop (web) layout — from 1024 px
+
+| Area | Layout |
+|---|---|
+| Shell | 248 px white sidebar (logo, gradient "Voice capture" button, Today / People / Progress / Replies with count badge, user block → Settings); content on the canvas gradient, 56 px gutters, 40 px top, max 1200 px. No bottom nav. Voice capture is full-bleed (no sidebar). |
+| Today | Header: date + greeting (36 px) left, "N people · about M min" right. Grid `1fr / 360px`: left caps label + 2-column person cards; right hero card + "Met someone today?" card (tonal "Start voice capture"). |
+| Draft | Header: back, avatar 52, name (28 px display), role; stage pill right. Grid `1fr / 380px`: draft card (20/34 text), tone chips, "Try another version", Why panel; right a sticky white card with Send on WhatsApp, Copy for LinkedIn, Mark as sent, trust line. |
+| Person | Header row: back, avatar 96, name 36, role · company · city, "how you know them" pill, more menu. Grid `1fr / 400px`: three 72 px action tiles, Next step (tint), What you remember (date right); History in a card on the right. |
+| People | Title + "N contacts" under it; Import contacts (secondary) + Add someone by hand (tonal) right; 420 px search; table card with Name / Company / Role and letter groups. |
+| Did they reply? | Intro max 560 px; referral card as a row (avatar 56, label + name, Draft a thank-you); reply cards in 2 columns. |
+| Progress | Row: gradient "1 of 4" (80 px) with bar, then two 240 px stat cards; below, Pipeline and By company as side-by-side cards. |
+| Onboarding | Left 480 px indigo panel (logo, "Get results from people you already know.", steps 1–3 with current/done states); right content (max ~760 px, 72 px gutters; goal tiles 4 across, fields 2 across; import cards 2 across); white 104 px footer with the button right-aligned. |
+| Voice capture | Left 640 px indigo panel, full height (Listening, 32 px prompt, waveform, timer, record/stop); right "Found N people" cards (max 560 px). |
+| Upgrade | Left: 52 px title, reason, Pro card (if enabled), Pay with UPI / Pay by card, GST line (max 520 px). Right 640 px tint panel: close button, 460 px Career Sprint card. |
+| Settings, add/edit person, admin | Sidebar + page header; content capped at 816 px. |
 
 ## Copy rules
 

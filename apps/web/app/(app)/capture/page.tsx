@@ -110,8 +110,8 @@ function Recorder({
 
   const voice = supported && mode === "voice";
   return (
-    <section className="flex flex-col items-center gap-6 rounded-b-[40px] bg-hero px-screen-x pt-6 pb-9 text-on-dark">
-      <div className="flex w-full items-center justify-between">
+    <section className="flex flex-col items-center gap-6 rounded-b-[40px] bg-hero px-screen-x pt-6 pb-9 text-on-dark lg:sticky lg:top-0 lg:min-h-dvh lg:justify-center lg:gap-7 lg:rounded-none lg:px-16 lg:py-12">
+      <div className="flex w-full items-center justify-between lg:absolute lg:top-8 lg:right-8 lg:left-16 lg:w-auto">
         <span className="flex items-center gap-2 label-caps text-on-dark-muted">
           <span
             aria-hidden="true"
@@ -131,7 +131,7 @@ function Recorder({
           <CloseIcon size={20} />
         </button>
       </div>
-      <h1 className="m-0 text-center font-display text-[24px] leading-[31px] font-semibold tracking-[-0.015em]">
+      <h1 className="m-0 text-center font-display text-[24px] leading-[31px] font-semibold tracking-[-0.015em] lg:text-[32px] lg:leading-10 lg:tracking-[-0.02em]">
         {contactName ? t.promptPerson(contactName) : t.prompt}
       </h1>
       {voice ? (
@@ -336,7 +336,12 @@ export default function CapturePage() {
   const failed = status === "failed" ? capture.data?.error : null;
 
   return (
-    <div className="flex flex-col gap-gap-cards">
+    <div
+      className={cn(
+        "flex flex-col gap-gap-cards",
+        status !== "ready" && "lg:grid lg:min-h-dvh lg:grid-cols-[640px_minmax(0,1fr)] lg:gap-0",
+      )}
+    >
       {status !== "ready" ? (
         <Recorder
           contactName={contactName}
@@ -345,14 +350,21 @@ export default function CapturePage() {
           busy={working}
         />
       ) : (
-        <div className="flex items-center justify-between px-screen-x pt-6">
+        <div className="flex items-center justify-between px-screen-x pt-6 lg:mx-auto lg:w-full lg:max-w-[704px] lg:pt-10">
           <h1 className="m-0 title">{t.title}</h1>
           <IconButton label={t.close} onClick={() => router.back()}>
             <CloseIcon size={20} />
           </IconButton>
         </div>
       )}
-      <div className="flex flex-col gap-gap-cards px-screen-x pt-3">
+      <div
+        className={cn(
+          "flex flex-col gap-gap-cards px-screen-x pt-3",
+          status !== "ready"
+            ? "lg:justify-center lg:px-[72px] lg:py-14 lg:[&>*]:max-w-[560px]"
+            : "lg:mx-auto lg:w-full lg:max-w-[704px]",
+        )}
+      >
         {working && (
           <p role="status" aria-live="polite" className="m-0 text-center text-body text-ink-2">
             {upload.isPending ? t.uploading : t.processing}

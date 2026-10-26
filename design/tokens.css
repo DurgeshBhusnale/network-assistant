@@ -118,3 +118,11 @@
   --shadow-cta: 0 8px 20px -8px rgba(76, 79, 214, 0.55);
   --shadow-fab: 0 10px 22px -6px rgba(76, 79, 214, 0.55), 0 0 0 6px var(--color-surface);
 }
+
+/* Desktop web layout (ADR-0011): wider gutters and the sidebar width. */
+@media (min-width: 1024px) {
+  :root {
+    --space-screen-x: 56px;
+    --sidebar-width: 248px;
+  }
+}

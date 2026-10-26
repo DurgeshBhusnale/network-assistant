@@ -11,7 +11,7 @@ export function GoalStrip({ goal }: { goal: GoalStripData }) {
   return (
     <section
       aria-label={goal.label}
-      className="flex flex-col gap-5 rounded-panel bg-hero p-6 text-on-dark shadow-hero"
+      className="flex flex-col gap-5 rounded-panel bg-hero p-6 text-on-dark shadow-hero lg:p-7"
     >
       <div className="flex justify-between gap-2 label-caps text-on-dark-muted">
         <span>{goal.label}</span>
@@ -19,7 +19,7 @@ export function GoalStrip({ goal }: { goal: GoalStripData }) {
       </div>
       <div>
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display text-display leading-none font-semibold tracking-[-0.03em]">
+          <span className="font-display text-display leading-none font-semibold tracking-[-0.03em] lg:text-[64px]">
             {goal.success_count}
           </span>
           <span className="text-lead text-on-dark-soft">

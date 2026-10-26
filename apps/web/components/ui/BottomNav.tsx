@@ -63,7 +63,7 @@ export function BottomNav({ repliesCount = 0 }: { repliesCount?: number }) {
   return (
     <nav
       aria-label={copy.nav.label}
-      className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[480px] border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
       <div className="grid grid-cols-5 items-start px-2 pt-2.5 pb-3">
         {leftTabs.map((tab) => (

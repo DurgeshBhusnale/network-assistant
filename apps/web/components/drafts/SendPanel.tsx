@@ -90,7 +90,7 @@ export function SendPanel({
 
   if (draft.sent_at) {
     return (
-      <BottomBar>
+      <BottomBar desktop="card">
         <p role="status" className="m-0 text-center text-body font-semibold text-success">
           {t.sentDone}
         </p>
@@ -100,7 +100,7 @@ export function SendPanel({
 
   const hasPhone = (person?.phones.length ?? 0) > 0;
   return (
-    <BottomBar>
+    <BottomBar desktop="card">
       {asking && pending && (
         <div
           role="dialog"
@@ -131,7 +131,7 @@ export function SendPanel({
       >
         {t.whatsapp}
       </Button>
-      <div className="flex gap-3">
+      <div className="flex gap-3 lg:flex-col lg:gap-3.5">
         <Button
           variant="secondary"
           className="flex-1 px-3"

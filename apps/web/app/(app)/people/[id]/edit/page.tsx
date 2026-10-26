@@ -69,7 +69,7 @@ export default function EditPersonPage() {
   return (
     <>
       <PageHeader title={copy.contactForm.editTitle} back={`/people/${id}`} showSettings={false} />
-      <div className="px-screen-x pt-5">
+      <div className="px-screen-x pt-5 lg:max-w-[816px] lg:pt-8">
         {person.data ? (
           <EditForm person={person.data} />
         ) : (

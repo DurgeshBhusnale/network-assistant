@@ -5,7 +5,8 @@ import path from "node:path";
 loadEnvConfig(path.resolve(__dirname, "../../.."), false, undefined, true);
 
 export const PORT = 3100;
-export const API_PORT = 8000;
+// Its own API (fake AI), never the developer's `pnpm dev` server on :8000 (which may run live AI).
+export const API_PORT = Number(process.env.E2E_API_PORT ?? 8100);
 export const BASE_URL = `http://localhost:${PORT}`;
 export const AUTH_FILE = path.join(__dirname, ".auth", "user.json");
 export const FRESH_AUTH_FILE = path.join(__dirname, ".auth", "fresh-user.json");
