@@ -13,6 +13,7 @@ from app.core.db import service_session
 from app.domain.models import Contact, GoalContact, Memory
 from app.engine.relevance import llm_labels, weight
 from app.services.loop import active_goal_and_pack
+from app.services.ranking import ensure_goal_contacts
 
 BATCH = 50
 
@@ -34,6 +35,9 @@ async def label_contacts(engine: AsyncEngine, router: AIRouter, user_id: uuid.UU
         if found is None:
             return 0
         goal, pack = found
+        # Goal-contact rows are otherwise created when Today is ranked; right after an import
+        # there are none yet, and labelling would find nobody.
+        await ensure_goal_contacts(session, user_id, goal, pack)
         contacts = list(
             await session.scalars(
                 select(Contact)
