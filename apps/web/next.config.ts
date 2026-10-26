@@ -47,6 +47,12 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // The app is behind sign-in and renders client-side after the auth gate, so automatic
+    // instant-navigation validation would flag every page as "dropped". Only segments that
+    // export `instant` are validated.
+    instantInsights: { validationLevel: "manual-warning" },
+  },
   turbopack: {
     rules: {
       "*.css": {
@@ -54,6 +60,9 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async redirects() {
+    return [{ source: "/", destination: "/today", permanent: false }];
   },
   // One origin for the browser/phone: /api/* is proxied to the FastAPI service.
   async rewrites() {
